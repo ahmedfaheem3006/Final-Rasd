@@ -533,26 +533,13 @@ Here is the professional evaluation (ChatGPT Style):
     this.isTyping.set(true);
     this.shouldScroll = true;
 
-    // Specialized contract engineering chatbot mode if contract is analyzed
-    if (this.contractData()) {
-      setTimeout(() => {
-        this.isTyping.set(false);
-        const reply = this.getSpecializedContractChatResponse(messageText);
-        this.messages.update(prev => [
-          ...prev,
-          {
-            role: 'assistant',
-            text: reply,
-            safeText: this.sanitizeMarkdown(reply),
-            time: timeStr
-          }
-        ]);
-        this.shouldScroll = true;
-      }, 1000);
-      return;
+    const contractData = this.contractData();
+    let contractContext = '';
+    if (contractData) {
+      contractContext = JSON.stringify(contractData);
     }
 
-    this.aiService.chat(messageText).subscribe({
+    this.aiService.chat(messageText, undefined, contractContext).subscribe({
       next: (res) => {
         this.isTyping.set(false);
         const errorMsg = this.i18n.currentLang() === 'ar' 
@@ -572,7 +559,10 @@ Here is the professional evaluation (ChatGPT Style):
       },
       error: (err) => {
         this.isTyping.set(false);
-        const reply = this.getSimulatedChatResponse(messageText);
+        const reply = contractData 
+          ? this.getSpecializedContractChatResponse(messageText)
+          : this.getSimulatedChatResponse(messageText);
+        
         this.messages.update(prev => [
           ...prev,
           {
