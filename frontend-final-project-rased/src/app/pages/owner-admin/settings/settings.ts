@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../services/toast.service';
 import { I18nService } from '../../../services/i18n.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-settings',
@@ -13,6 +14,7 @@ import { I18nService } from '../../../services/i18n.service';
 export class Settings implements OnInit {
   public i18n = inject(I18nService);
   private toastService = inject(ToastService);
+  private authService = inject(AuthService);
   private readonly STORAGE_KEY = 'rasd_settings_data';
 
   activeTab = signal('company');
@@ -34,15 +36,24 @@ export class Settings implements OnInit {
   currentPassword = '';
   newPassword = '';
 
-  tabs = signal([
-    { id: 'company', label: 'إعدادات الشركة', icon: 'building' },
-    { id: 'notifications', label: 'الإشعارات', icon: 'bell' },
-    { id: 'security', label: 'الأمان والخصوصية', icon: 'lock' },
-    { id: 'billing', label: 'الاشتراك والفوترة', icon: 'card' },
-  ]);
+  tabs = signal<any[]>([]);
 
   ngOnInit() {
     this.loadSettings();
+
+    const isHr = this.authService.userRole()?.toLowerCase() === 'hr';
+    const allTabs = [
+      { id: 'company', labelKey: 'settings.tab.company', icon: 'building' },
+      { id: 'notifications', labelKey: 'settings.tab.notifications', icon: 'bell' },
+      { id: 'security', labelKey: 'settings.tab.security', icon: 'lock' },
+      { id: 'billing', labelKey: 'settings.tab.billing', icon: 'card' },
+    ];
+
+    if (isHr) {
+      this.tabs.set(allTabs.filter(t => t.id !== 'billing'));
+    } else {
+      this.tabs.set(allTabs);
+    }
   }
 
   setTab(tab: string) {
@@ -77,12 +88,26 @@ export class Settings implements OnInit {
     // If security tab and password is typed, validate
     if (this.activeTab() === 'security' && (this.currentPassword || this.newPassword)) {
       if (!this.currentPassword || !this.newPassword) {
-        this.toastService.warning('الرجاء كتابة كلمة المرور الحالية والجديدة معاً.');
+        this.toastService.warning(this.i18n.isRtl() ? 'الرجاء كتابة كلمة المرور الحالية والجديدة معاً.' : 'Please enter both current and new passwords.');
         return;
       }
-      this.toastService.success('تم تحديث كلمة المرور الخاصة بك بنجاح.', 'تحديث كلمة المرور');
-      this.currentPassword = '';
-      this.newPassword = '';
+      this.authService.changePassword(this.currentPassword, this.newPassword).subscribe({
+        next: (res) => {
+          if (res && res.success) {
+            this.toastService.success(
+              this.i18n.isRtl() ? 'تم تحديث كلمة المرور الخاصة بك بنجاح.' : 'Your password has been changed successfully.',
+              this.i18n.isRtl() ? 'تحديث كلمة المرور' : 'Update Password'
+            );
+            this.currentPassword = '';
+            this.newPassword = '';
+          }
+        },
+        error: (err) => {
+          const msg = err.error?.message || (this.i18n.isRtl() ? 'فشل تحديث كلمة المرور.' : 'Failed to update password.');
+          this.toastService.error(msg, this.i18n.isRtl() ? 'خطأ' : 'Error');
+        }
+      });
+      return;
     }
 
     const dataToSave = {

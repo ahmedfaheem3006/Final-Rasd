@@ -78,8 +78,8 @@ export class Meetings implements OnInit, OnDestroy {
 
   // Permissions logic
   canSchedule = computed(() => {
-    const role = this.userRole();
-    return ['owner-admin', 'sales-manager', 'employee-manager'].includes(role || '');
+    const role = this.userRole()?.toLowerCase();
+    return ['owner-admin', 'sales-manager', 'employee-manager', 'hr'].includes(role || '');
   });
 
   isAllSelected = computed(() => {

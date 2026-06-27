@@ -1,0 +1,87 @@
+<div class="leaves-container animate-fade-in">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.isRtl() ? 'الموارد البشرية / طلبات الإجازات' : 'HR / Leave Approvals' }}</div>
+      <h1>{{ i18n.isRtl() ? 'اعتماد طلبات الإجازات العامة' : 'Company-Wide Leave Approvals' }}</h1>
+      <p class="subtitle">{{ i18n.isRtl() ? 'مراجعة طلبات الإجازات المرفوعة من مدراء الأقسام المختلفة مع تقدير الأثر المالي على مسير الرواتب' : 'Approve or reject leave requests across all departments with financial impact details.' }}</p>
+    </div>
+  </header>
+
+  <!-- Inbox Table Card -->
+  <div class="glass-card">
+    <div class="card-header-toolbar">
+      <h3><i class="fa-solid fa-inbox"></i> {{ i18n.isRtl() ? 'صندوق الوارد: طلبات بانتظار الاعتماد' : 'Inbox: Pending Leave Requests' }}</h3>
+      <span class="pending-count">{{ requests().filter(r => r.status === 'Pending').length }} {{ i18n.isRtl() ? 'معلقة' : 'Pending' }}</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="leaves-table">
+        <thead>
+          <tr>
+            <th>{{ i18n.isRtl() ? 'الموظف' : 'Employee' }}</th>
+            <th>{{ i18n.isRtl() ? 'القسم' : 'Department' }}</th>
+            <th>{{ i18n.isRtl() ? 'نوع الإجازة' : 'Leave Type' }}</th>
+            <th>{{ i18n.isRtl() ? 'المدة والتواريخ' : 'Duration & Dates' }}</th>
+            <th>{{ i18n.isRtl() ? 'الأثر المالي والرواتب' : 'Financial Impact' }}</th>
+            <th>{{ i18n.isRtl() ? 'الحالة' : 'Status' }}</th>
+            <th>{{ i18n.isRtl() ? 'الإجراءات' : 'Actions' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (req of requests(); track req.id) {
+            <tr [class.highlight-pending]="req.status === 'Pending'">
+              <td>
+                <div class="emp-cell">
+                  <div class="emp-avatar-circle">{{ req.employeeName.slice(0,2) }}</div>
+                  <span class="emp-name">{{ req.employeeName }}</span>
+                </div>
+              </td>
+              <td>{{ i18n.isRtl() ? req.department : req.departmentEn }}</td>
+              <td>
+                <span class="badge-type">{{ i18n.isRtl() ? req.leaveType : req.leaveTypeEn }}</span>
+              </td>
+              <td>
+                <div class="dates-cell">
+                  <strong>{{ req.days }} {{ i18n.isRtl() ? 'أيام' : 'days' }}</strong>
+                  <span>{{ req.startDate }} {{ i18n.isRtl() ? 'إلى' : 'to' }} {{ req.endDate }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="impact-cell" [ngClass]="req.impactType.toLowerCase()">
+                  <i class="fa-solid" [ngClass]="{
+                    'fa-circle-check': req.impactType === 'Paid',
+                    'fa-triangle-exclamation': req.impactType === 'Unpaid',
+                    'fa-circle-minus': req.impactType === 'Partial'
+                  }"></i>
+                  <span>{{ i18n.isRtl() ? req.impactDetails : req.impactDetailsEn }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge-status" [ngClass]="req.status.toLowerCase()">
+                  {{ req.status === 'Pending' ? (i18n.isRtl() ? 'معلقة' : 'Pending') : '' }}
+                  {{ req.status === 'Approved' ? (i18n.isRtl() ? 'معتمدة' : 'Approved') : '' }}
+                  {{ req.status === 'Rejected' ? (i18n.isRtl() ? 'مرفوضة' : 'Rejected') : '' }}
+                </span>
+              </td>
+              <td>
+                <div class="actions-buttons">
+                  @if (req.status === 'Pending') {
+                    <button (click)="approveRequest(req.id)" class="btn-approve" [title]="i18n.isRtl() ? 'اعتماد الإجازة' : 'Approve'">
+                      <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button (click)="rejectRequest(req.id)" class="btn-reject" [title]="i18n.isRtl() ? 'رفض الإجازة' : 'Reject'">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  } @else {
+                    <span class="action-done-label"><i class="fa-solid fa-lock"></i></span>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

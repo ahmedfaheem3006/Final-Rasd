@@ -143,6 +143,16 @@ export class Navbar implements OnInit {
       this.currentTitle = 'sidebar.dept_leaves';
     } else if (url.includes('emp-manager/attendance')) {
       this.currentTitle = 'sidebar.attendance_monitor';
+    } else if (url.includes('hr/dashboard')) {
+      this.currentTitle = 'sidebar.hr_dashboard';
+    } else if (url.includes('hr/employees')) {
+      this.currentTitle = 'sidebar.hr_employees';
+    } else if (url.includes('hr/leaves')) {
+      this.currentTitle = 'sidebar.hr_leaves';
+    } else if (url.includes('hr/recruitment')) {
+      this.currentTitle = 'sidebar.hr_recruitment';
+    } else if (url.includes('hr/reports')) {
+      this.currentTitle = 'sidebar.hr_reports';
     } else if (url.includes('employee/tasks')) {
       this.currentTitle = 'sidebar.my_tasks';
     } else if (url.includes('employee/attendance')) {
