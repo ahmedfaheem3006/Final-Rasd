@@ -1,0 +1,122 @@
+<div class="page-container animate-fade-in">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <div class="breadcrumbs">الموارد البشرية / إدارة الموظفين</div>
+      <h1>إدارة شؤون موظفي القسم</h1>
+      <p class="subtitle">تتبع بيانات موظفي قسمك، ومعدل انضباطهم وحالة الحضور والغياب الحالية</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="openModal()" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>إضافة موظف للقسم</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HR Stats -->
+  <div class="stats-grid animate-reveal" style="margin-top: 24px;">
+    <div class="stat-card">
+      <div class="stat-body">
+        <div class="stat-value">{{ totalCount() }} موظفين</div>
+        <div class="stat-title">إجمالي الموظفين في القسم</div>
+      </div>
+    </div>
+    <div class="stat-card" style="border-right: 4px solid var(--success);">
+      <div class="stat-body">
+        <div class="stat-value" style="color: var(--success);">{{ activeCount() }} نشط</div>
+        <div class="stat-title">موظفين على رأس العمل حالياً</div>
+      </div>
+    </div>
+    <div class="stat-card" style="border-right: 4px solid var(--warning);">
+      <div class="stat-body">
+        <div class="stat-value" style="color: var(--warning);">{{ leaveCount() }} إجازة</div>
+        <div class="stat-title">موظفين في إجازة معتمدة</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee Cards Grid -->
+  <div class="employee-cards-grid animate-reveal" style="margin-top: 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+    @for (emp of employees(); track emp.id) {
+      <div class="card employee-card">
+        <div class="emp-card-header" style="display: flex; gap: 16px; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 16px; margin-bottom: 16px;">
+          <div class="user-avatar-sm" style="width: 46px; height: 46px; border-radius: 50%; font-size: 0.95rem;">{{ emp.avatar }}</div>
+          <div>
+            <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-title);">{{ emp.name }}</h3>
+            <p style="font-size: 0.78rem; color: var(--text-muted);">{{ emp.role }}</p>
+          </div>
+        </div>
+        <div class="emp-card-body" style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="info-row" style="display: flex; justify-content: space-between; font-size: 0.825rem;">
+            <span class="text-muted">البريد الإلكتروني:</span>
+            <span class="fw-bold" style="color: var(--text-title);">{{ emp.email }}</span>
+          </div>
+          <div class="info-row" style="display: flex; justify-content: space-between; font-size: 0.825rem;">
+            <span class="text-muted">تاريخ الانضمام:</span>
+            <span class="fw-bold">{{ emp.joinDate }}</span>
+          </div>
+          <div class="info-row" style="display: flex; justify-content: space-between; font-size: 0.825rem; align-items: center;">
+            <span class="text-muted">نسبة الانضباط:</span>
+            <span class="fw-bold" [ngClass]="emp.attendanceRate >= 95 ? 'text-success' : 'text-warning'">{{ emp.attendanceRate }}%</span>
+          </div>
+          <div class="info-row" style="display: flex; justify-content: space-between; font-size: 0.825rem; align-items: center; margin-top: 6px;">
+            <span class="text-muted">حالة العمل:</span>
+            @if (emp.status === 'active') {
+              <span class="badge badge-success">على رأس العمل</span>
+            } @else if (emp.status === 'leave') {
+              <span class="badge badge-warning">في إجازة</span>
+            } @else {
+              <span class="badge badge-danger">غياب اليوم</span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Add Employee Modal -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>تعيين موظف جديد بالقسم</h3>
+          <button (click)="closeModal()" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>اسم الموظف بالكامل *</label>
+            <input type="text" [(ngModel)]="newName" placeholder="مثال: يوسف خالد" required />
+          </div>
+          <div class="form-group">
+            <label>المسمى الوظيفي *</label>
+            <input type="text" [(ngModel)]="newRole" placeholder="مثال: مندوب مبيعات ميداني" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>البريد الإلكتروني للموظف *</label>
+              <input type="email" [(ngModel)]="newEmail" placeholder="yousef@rasd.com" required />
+            </div>
+            <div class="form-group">
+              <label>نسبة الحضور المبدئية (%)</label>
+              <input type="number" [(ngModel)]="newAttendance" placeholder="100" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>حالة العمل الأولى</label>
+            <select [(ngModel)]="newStatus">
+              <option value="active">على رأس العمل (نشط)</option>
+              <option value="leave">في إجازة</option>
+              <option value="absent">غائب</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button (click)="closeModal()" class="btn btn-secondary">إلغاء</button>
+          <button (click)="addEmployee()" class="btn btn-primary">تسجيل الموظف</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+

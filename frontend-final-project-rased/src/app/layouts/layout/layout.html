@@ -1,0 +1,20 @@
+<div class="layout-wrapper">
+  <!-- Sidebar backdrop overlay (mobile only) -->
+  <div class="sidebar-backdrop" [class.active]="sidebarRef.isMobileOpen()" (click)="sidebarRef.closeMobile()"></div>
+
+  <!-- Sidebar Panel -->
+  <app-sidebar #sidebarRef class="app-sidebar-container" [class.sidebar-open]="sidebarRef.isMobileOpen()"></app-sidebar>
+  
+  <!-- Main Application Area -->
+  <div class="main-app-container">
+    <!-- Top Navbar -->
+    <app-navbar class="app-navbar-container" (toggleSidebar)="sidebarRef.toggleMobile()"></app-navbar>
+    
+    <!-- Child route rendering area -->
+    <main class="content-panel">
+      <div class="content-panel-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+</div>

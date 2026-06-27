@@ -1,0 +1,125 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">الموظف / المهام / تفاصيل المهمة</div>
+      <h1>{{ task().title }}</h1>
+      <p class="subtitle">{{ task().project }} — المسندة من {{ task().assignedBy }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <span>تعديل</span>
+      </button>
+      <button class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>تحديث الحالة</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="detail-grid animate-reveal">
+    <!-- Main Content -->
+    <div class="main-column">
+      <!-- Task Info Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3>تفاصيل المهمة</h3>
+          @if (task().status === 'in-progress') {
+            <span class="badge badge-info">قيد التنفيذ</span>
+          } @else if (task().status === 'completed') {
+            <span class="badge badge-success">مكتملة</span>
+          } @else if (task().status === 'overdue') {
+            <span class="badge badge-danger">متأخرة</span>
+          } @else {
+            <span class="badge badge-warning">معلقة</span>
+          }
+        </div>
+        <p class="task-description">{{ task().description }}</p>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">الأولوية</span>
+            <span class="priority-badge" [ngClass]="task().priority">
+              @if (task().priority === 'high') { عالية }
+              @else if (task().priority === 'medium') { متوسطة }
+              @else { منخفضة }
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">تاريخ الإنشاء</span>
+            <span class="info-value">{{ task().createdDate }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">تاريخ الاستحقاق</span>
+            <span class="info-value due-date">{{ task().dueDate }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">المرفقات</span>
+            <span class="info-value">{{ task().attachments }} ملفات</span>
+          </div>
+        </div>
+
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-label">نسبة الإنجاز</span>
+            <span class="progress-value">{{ task().progress }}%</span>
+          </div>
+          <div class="progress-bar-bg-lg">
+            <div class="progress-bar-fill-lg" [style.width.%]="task().progress"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtasks Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3>المهام الفرعية</h3>
+          <span class="subtitle">2 / 5 مكتملة</span>
+        </div>
+        <div class="subtasks-list">
+          @for (sub of subtasks(); track sub.title) {
+            <div class="subtask-item" [class.done]="sub.done">
+              <div class="subtask-check" [class.checked]="sub.done">
+                @if (sub.done) {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                }
+              </div>
+              <span class="subtask-title">{{ sub.title }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Column -->
+    <div class="side-column">
+      <!-- Assigned By Card -->
+      <div class="card assigner-card">
+        <div class="card-header"><h3>مسند المهمة</h3></div>
+        <div class="assigner-info">
+          <div class="assigner-avatar">AM</div>
+          <div>
+            <div class="assigner-name">{{ task().assignedBy }}</div>
+            <div class="assigner-role">{{ task().assignedByRole }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline Card -->
+      <div class="card timeline-card">
+        <div class="card-header"><h3>سجل النشاط</h3></div>
+        <div class="timeline">
+          @for (event of timeline(); track event.date + event.time) {
+            <div class="timeline-item">
+              <div class="timeline-dot" [ngClass]="event.type"></div>
+              <div class="timeline-content">
+                <div class="timeline-action">{{ event.action }}</div>
+                <div class="timeline-meta">{{ event.user }} — {{ event.date }}، {{ event.time }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

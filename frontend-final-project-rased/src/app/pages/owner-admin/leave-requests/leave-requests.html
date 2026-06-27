@@ -1,0 +1,311 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.t('leaves.breadcrumbs') }}</div>
+      <h1>{{ i18n.t('leaves.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('leaves.subtitle') }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>{{ i18n.t('leaves.btn.new') }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Premium Statistics Cards -->
+  @if (loading()) {
+    <div class="premium-stats-grid">
+      @for (_ of [1,2,3,4]; track _) {
+        <div class="premium-stat-card skeleton">
+          <div class="premium-stat-content">
+            <div class="premium-stat-top">
+              <div class="skeleton-icon"></div>
+              <div class="skeleton-badge"></div>
+            </div>
+            <div class="skeleton-value"></div>
+            <div class="skeleton-label"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="premium-stats-grid animate-reveal">
+      @for (card of premiumStats(); track card.label; let i = $index) {
+        <div class="premium-stat-card" [class]="'accent-' + card.color">
+          <div class="premium-stat-glow"></div>
+          <div class="premium-stat-gradient-bar"></div>
+          <div class="premium-stat-content">
+            <div class="premium-stat-top">
+              <div class="premium-stat-icon-wrap" [class]="'icon-' + card.color">
+                <i class="fa-solid {{ card.icon }}"></i>
+              </div>
+              <span class="premium-stat-trend" [class.trend-up]="card.trendUp" [class.trend-down]="!card.trendUp">
+                <i class="fa-solid" [class.fa-arrow-up]="card.trendUp" [class.fa-arrow-down]="!card.trendUp"></i>
+                {{ card.trendLabel }}
+              </span>
+            </div>
+            <div class="premium-stat-value">{{ card.displayValue }}</div>
+            <div class="premium-stat-label">{{ i18n.t(card.label) }}</div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Requests Table -->
+  <div class="card animate-reveal">
+    <div class="card-header">
+      <div>
+        <h3>{{ i18n.t('leaves.list.title') }}</h3>
+        <p class="subtitle">{{ i18n.t('leaves.list.subtitle') }}</p>
+      </div>
+      <div class="filters-row">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" [placeholder]="i18n.t('leaves.search.placeholder')" (input)="onSearch($event)" />
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">{{ i18n.t('leaves.filter.all') }}</button>
+          <button class="filter-tab" [class.active]="activeFilter() === 'Pending'" (click)="setFilter('Pending')">{{ i18n.t('leaves.filter.pending') }}</button>
+          <button class="filter-tab" [class.active]="activeFilter() === 'Approved'" (click)="setFilter('Approved')">{{ i18n.t('leaves.filter.approved') }}</button>
+          <button class="filter-tab" [class.active]="activeFilter() === 'Rejected'" (click)="setFilter('Rejected')">{{ i18n.t('leaves.filter.rejected') }}</button>
+        </div>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('leaves.table.employee') }}</th>
+            <th>{{ i18n.t('leaves.table.type') }}</th>
+            <th>{{ i18n.t('leaves.table.from') }}</th>
+            <th>{{ i18n.t('leaves.table.to') }}</th>
+            <th>{{ i18n.t('leaves.table.days') }}</th>
+            <th>{{ i18n.t('leaves.table.date') }}</th>
+            <th>{{ i18n.t('leaves.table.status') }}</th>
+            <th>{{ i18n.t('leaves.table.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            <tr>
+              <td colspan="8" style="text-align:center;padding:40px">
+                <div class="table-state">
+                  <i class="fa-solid fa-spinner fa-spin"></i>
+                  <p>{{ i18n.t('leaves.loading') }}</p>
+                </div>
+              </td>
+            </tr>
+          } @else if (paginatedRequests().length === 0) {
+            <tr>
+              <td colspan="8" style="text-align:center;padding:40px">
+                <div class="table-state">
+                  <i class="fa-solid fa-inbox"></i>
+                  <p>{{ i18n.t('leaves.no_data') }}</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (req of paginatedRequests(); track req.id) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-sm">{{ req.employeeAvatar }}</div>
+                    <div>
+                      <div class="user-name-cell">{{ req.employeeName }}</div>
+                      <div class="user-role-cell">{{ translateRoleName(req.roleName) }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="leave-type-badge">{{ translateLeaveType(req.leaveType) }}</span></td>
+                <td class="text-muted">{{ formatDate(req.startDate) }}</td>
+                <td class="text-muted">{{ formatDate(req.endDate) }}</td>
+                <td><span class="days-badge">{{ req.totalDays }} {{ i18n.t('leaves.days') }}</span></td>
+                <td class="text-muted">{{ formatDate(req.createdAt) }}</td>
+                <td>
+                  @if (req.status === 'Approved') {
+                    <span class="badge badge-success">{{ i18n.t('leaves.status.approved') }}</span>
+                  } @else if (req.status === 'Pending') {
+                    <span class="badge badge-warning">{{ i18n.t('leaves.status.pending') }}</span>
+                  } @else {
+                    <span class="badge badge-danger">{{ i18n.t('leaves.status.rejected') }}</span>
+                  }
+                </td>
+                <td>
+                  <div class="action-btns">
+                    @if (req.status === 'Pending') {
+                      <button class="action-btn approve" [title]="i18n.t('leaves.action.approve')" (click)="onApproveLeave(req)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      </button>
+                      <button class="action-btn reject" [title]="i18n.t('leaves.action.reject')" (click)="onRejectLeave(req)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    }
+                    <button class="action-btn delete" [title]="i18n.t('leaves.action.delete')" (click)="onDeleteRequest(req)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button class="page-btn" [class.disabled]="currentPage() === 1" (click)="prevPage()">{{ i18n.t('leaves.pagination.prev') }}</button>
+        <span class="page-info">{{ pageInfoText() }}</span>
+        <button class="page-btn" [class.disabled]="currentPage() === totalPages()" (click)="nextPage()">{{ i18n.t('leaves.pagination.next') }}</button>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ADD LEAVE REQUEST MODAL — Premium Enterprise Design
+     ═══════════════════════════════════════════════ -->
+<div #modalOverlay class="premium-modal-overlay" [class.active]="showModal()" [class.light]="isLightTheme" (click)="closeModal()">
+  <div #premiumModal class="premium-modal" [class.active]="showModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="i18n.t('leaves.add_aria')">
+
+    <!-- ═══ Header ═══ -->
+    <div class="premium-header">
+      <div class="premium-header-left">
+        <div class="premium-header-icon">
+          <i class="fa-solid fa-file-signature"></i>
+        </div>
+        <div class="premium-header-text">
+          <h2 class="premium-title">{{ i18n.t('leaves.modal.title') }}</h2>
+          <p class="premium-subtitle">{{ i18n.t('leaves.modal.subtitle') }}</p>
+        </div>
+      </div>
+      <button class="premium-close-btn" (click)="closeModal()" type="button">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="premium-header-divider"></div>
+
+    <form (ngSubmit)="onSubmit()">
+      <!-- ═══ Scrollable Body ═══ -->
+      <div class="premium-body">
+
+        <!-- Employee Autocomplete -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-user"></i> {{ i18n.t('leaves.form.employee') }}</label>
+          <div class="autocomplete-wrapper">
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user-tag input-icon"></i>
+              <input type="text" class="autocomplete-input"
+                [ngModel]="searchTerm()"
+                (ngModelChange)="onSearchInput($event)"
+                name="employeeSearch" required
+                [placeholder]="i18n.t('leaves.form.search_employee')"
+                autocomplete="off"
+                (focus)="onSearchFocus()" (blur)="onSearchBlur()"
+                (keydown)="onDropdownKeydown($event)">
+              @if (loadingEmployees()) {
+                <i class="fa-solid fa-spinner fa-spin autocomplete-spinner"></i>
+              }
+            </div>
+            @if (showDropdown() && !loadingEmployees()) {
+              <div class="autocomplete-dropdown">
+                @if (filteredEmployees().length > 0) {
+                  @for (emp of filteredEmployees(); track emp.id; let i = $index) {
+                    <div class="autocomplete-item"
+                      [class.highlighted]="filteredIndex() === i"
+                      (mousedown)="selectEmployee(emp)">
+                      <div class="autocomplete-item-info">
+                        <span class="autocomplete-item-name">{{ emp.fullName }}</span>
+                        <span class="autocomplete-item-email">{{ emp.email }}</span>
+                      </div>
+                      <span class="autocomplete-item-role">{{ emp.roleLabel }}</span>
+                    </div>
+                  }
+                } @else {
+                  <div class="autocomplete-empty">
+                    <i class="fa-solid fa-user-slash"></i>
+                    <span>{{ i18n.t('leaves.form.no_employee') }}</span>
+                  </div>
+                }
+              </div>
+            }
+            @if (employeeError()) {
+              <div class="autocomplete-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ employeeError() }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Role (read-only) -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-briefcase"></i> {{ i18n.t('leaves.form.role') }}</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-id-card input-icon"></i>
+            <input type="text" [ngModel]="newRole" name="newRole" readonly class="role-readonly" [placeholder]="i18n.t('leaves.form.role_placeholder')">
+          </div>
+        </div>
+
+        <!-- Leave Type -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-business-time"></i> {{ i18n.t('leaves.form.type') }}</label>
+          <div class="input-wrapper select-wrapper">
+            <i class="fa-solid fa-clock-rotate-left input-icon"></i>
+            <select [(ngModel)]="newType" name="newType">
+              @for (type of leaveTypeOptions; track type) {
+                <option [value]="type">{{ i18n.t('leaves.type.' + type.toLowerCase()) }}</option>
+              }
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Start Date -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-calendar-days"></i> {{ i18n.t('leaves.form.start_date') }}</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-calendar-plus input-icon"></i>
+            <input type="date" [(ngModel)]="newStartDate" name="newStartDate" required>
+          </div>
+        </div>
+
+        <!-- End Date -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-calendar-days"></i> {{ i18n.t('leaves.form.end_date') }}</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-calendar-minus input-icon"></i>
+            <input type="date" [(ngModel)]="newEndDate" name="newEndDate" required>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-pen"></i> {{ i18n.t('leaves.form.reason') }}</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-align-left input-icon"></i>
+            <input type="text" [(ngModel)]="newReason" name="newReason" [placeholder]="i18n.t('leaves.form.reason') + ' (' + i18n.t('common.optional') + ')'">
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Sticky Footer ═══ -->
+      <div class="premium-footer">
+        <button type="button" class="premium-btn premium-btn-ghost" (click)="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+          {{ i18n.t('common.cancel') }}
+        </button>
+        <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="premium-btn-loader"></span>
+            {{ i18n.t('common.loading') }}
+          } @else {
+            <i class="fa-solid fa-paper-plane"></i>
+            {{ i18n.t('common.submit') }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

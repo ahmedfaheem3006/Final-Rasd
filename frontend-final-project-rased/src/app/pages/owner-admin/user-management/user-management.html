@@ -1,0 +1,584 @@
+<div class="page-container">
+  <!-- Page Header -->
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        <i class="fa-solid fa-house-chimney"></i>
+        {{ i18n.t('users.breadcrumbs') }}
+      </div>
+      <h1>{{ i18n.t('users.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('users.subtitle') }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="onExport()">
+        <i class="fa-solid fa-file-export"></i>
+        <span>{{ i18n.t('users.btn.export') }}</span>
+      </button>
+      <button class="btn btn-primary" (click)="openAddModal()">
+        <i class="fa-solid fa-user-plus"></i>
+        <span>{{ i18n.t('users.btn.add') }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Premium Stats Row -->
+  @if (loadingStats()) {
+    <div class="premium-stats-grid">
+      @for (s of [1,2,3,4]; track s) {
+        <div class="premium-stat-card skeleton">
+          <div class="premium-stat-content">
+            <div class="premium-stat-top">
+              <div class="skeleton-icon"></div>
+              <div class="skeleton-badge"></div>
+            </div>
+            <div class="skeleton-value"></div>
+            <div class="skeleton-label"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="premium-stats-grid animate-reveal">
+      @for (card of premiumStats(); track card.label; let i = $index) {
+        <div class="premium-stat-card accent-{{ card.color }}">
+          <div class="premium-stat-glow"></div>
+          <div class="premium-stat-gradient-bar"></div>
+          <div class="premium-stat-content">
+            <div class="premium-stat-top">
+              <div class="premium-stat-icon-wrap icon-{{ card.color }}">
+                <i class="fa-solid {{ card.icon }}"></i>
+              </div>
+              <span class="premium-stat-trend"
+                [class.trend-up]="card.trendUp"
+                [class.trend-down]="!card.trendUp">
+                @if (card.trendUp) {
+                  <i class="fa-solid fa-arrow-trend-up"></i>
+                } @else {
+                  <i class="fa-solid fa-arrow-trend-down"></i>
+                }
+                {{ card.trendLabel }}
+              </span>
+            </div>
+            <div class="premium-stat-value">{{ card.displayValue }}</div>
+            <div class="premium-stat-label">{{ i18n.t(card.label) }}</div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Users Table Card -->
+  <div class="card table-card animate-reveal">
+    <div class="card-header">
+      <div>
+        <h3>{{ i18n.t('users.list.title') }}</h3>
+        <p class="subtitle">{{ i18n.t('users.list.subtitle') }}</p>
+      </div>
+      <div class="filters-row">
+          <select class="filter-select"
+            [value]="filterRoleId()"
+            (change)="onFilterChange($event)">
+            <option value="">{{ i18n.t('users.list.all_roles') }}</option>
+            @for (role of selectableRoles(); track role.id) {
+              <option [value]="role.id">{{ role.label }}</option>
+            }
+          </select>
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" [placeholder]="i18n.t('users.search.placeholder')" />
+        </div>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('users.table.user') }}</th>
+            <th>{{ i18n.t('users.table.email') }}</th>
+            <th>{{ i18n.t('users.table.role') }}</th>
+            <th>{{ i18n.t('users.table.joined') }}</th>
+            <th>{{ i18n.t('users.table.status') }}</th>
+            <th>{{ i18n.t('users.table.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (usersLoading()) {
+            <tr>
+              <td colspan="6" style="text-align:center;padding:40px 20px">
+                <div class="table-state">
+                  <i class="fa-solid fa-spinner fa-spin" style="font-size:1.4rem;color:var(--text-muted)"></i>
+                  <p style="margin:10px 0 0;color:var(--text-muted);font-size:0.9rem">{{ i18n.t('users.loading') }}</p>
+                </div>
+              </td>
+            </tr>
+          } @else if (displayUsers().length === 0) {
+            <tr>
+              <td colspan="6" style="text-align:center;padding:40px 20px">
+                <div class="table-state">
+                  <i class="fa-solid fa-users-slash" style="font-size:1.4rem;color:var(--text-muted)"></i>
+                  <p style="margin:10px 0 0;color:var(--text-muted);font-size:0.9rem">{{ i18n.t('users.no_data') }}</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (user of displayUsers(); track user.email) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-sm">{{ user.avatar }}</div>
+                    <div class="user-info">
+                      <div class="user-name-cell">{{ user.name }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-muted">{{ user.email }}</td>
+                <td>
+                  @if (isPrivilegedUser(user)) {
+                    <span class="badge badge-protected">
+                      <i class="fa-solid fa-shield-halved"></i>
+                      {{ i18n.t('users.protected_role') }}
+                    </span>
+                  } @else {
+                    <span class="role-tag">{{ user.roleDisplay }}</span>
+                  }
+                </td>
+                <td class="text-muted">{{ user.joinedDisplay }}</td>
+                <td>
+                  @if (user.status === 'active') {
+                    <span class="badge badge-success"><i class="fa-solid fa-circle" style="font-size:6px"></i> {{ i18n.t('users.status.active') }}</span>
+                  } @else if (user.status === 'pending') {
+                    <span class="badge badge-warning"><i class="fa-solid fa-circle" style="font-size:6px"></i> {{ i18n.t('users.status.pending') }}</span>
+                  } @else if (user.status === 'suspended') {
+                    <span class="badge badge-danger"><i class="fa-solid fa-circle" style="font-size:6px"></i> {{ i18n.t('users.status.suspended') }}</span>
+                  } @else {
+                    <span class="badge badge-secondary"><i class="fa-solid fa-circle" style="font-size:6px"></i> {{ i18n.t('users.status.inactive') }}</span>
+                  }
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="action-btn edit"
+                      [class.disabled]="isPrivilegedUser(user)"
+                      [disabled]="isPrivilegedUser(user)"
+                      [title]="isPrivilegedUser(user) ? i18n.t('users.protected_tooltip') : i18n.t('users.edit_role.title')"
+                      (click)="!isPrivilegedUser(user) && openEditModal(user)">
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="action-btn delete"
+                      [class.disabled]="isPrivilegedUser(user)"
+                      [disabled]="isPrivilegedUser(user)"
+                      [title]="isPrivilegedUser(user) ? i18n.t('users.delete_protected_tooltip') : i18n.t('common.delete')"
+                      (click)="!isPrivilegedUser(user) && onDeleteUser(user)">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ADD USER MODAL — Premium Enterprise Design
+     ═══════════════════════════════════════════════ -->
+<div #modalOverlay class="premium-modal-overlay" [class.active]="showAddModal()" [class.light]="isLightTheme" (click)="closeAddModal()">
+  <div #premiumModal class="premium-modal" [class.active]="showAddModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="i18n.t('users.add_aria')">
+
+    <!-- ═══ Success State — Premium Enterprise ═══ -->
+    @if (showSuccess()) {
+      <div class="premium-success">
+        <div class="success-particles">
+          <span class="particle p1"></span>
+          <span class="particle p2"></span>
+          <span class="particle p3"></span>
+        </div>
+        <div class="success-icon-wrap">
+          <div class="success-glow"></div>
+          <div class="success-ring"></div>
+          <div class="success-circle">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 12 10 16 18 8" />
+            </svg>
+          </div>
+        </div>
+        <div class="success-badge">{{ i18n.t('users.success_title') }}</div>
+        <h3 class="success-title">{{ i18n.t('users.success_msg') }}</h3>
+        <p class="success-desc">{{ i18n.t('users.success_desc') }}</p>
+        <div class="success-divider"></div>
+        <div class="success-actions">
+          <button class="success-btn success-btn-primary" (click)="closeAddModal()">
+            <i class="fa-solid fa-users"></i>
+            {{ i18n.t('users.view_users') }}
+          </button>
+          <button class="success-btn success-btn-ghost" (click)="closeAddModal()">
+            {{ i18n.t('users.close') }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- ═══ Header ═══ -->
+      <div class="premium-header">
+        <div class="premium-header-left">
+          <div class="premium-header-icon">
+            <i class="fa-solid fa-user-plus"></i>
+          </div>
+          <div class="premium-header-text">
+            <h2 class="premium-title">{{ i18n.t('users.modal.title') }}</h2>
+            <p class="premium-subtitle">{{ i18n.t('users.modal.subtitle') }}</p>
+          </div>
+        </div>
+        <button class="premium-close-btn" (click)="closeAddModal()" type="button">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="premium-header-divider"></div>
+
+      <form (ngSubmit)="onAddUser()">
+        <!-- ═══ Scrollable Body ═══ -->
+        <div class="premium-body">
+
+          <!-- ─── 2-Column Form Grid ─── -->
+          <div class="premium-form-grid">
+
+            <!-- Full Name -->
+            <div class="premium-field">
+              <div class="premium-input-group">
+                <div class="premium-input-wrapper">
+                  <input
+                    id="newFullName"
+                    type="text"
+                    [(ngModel)]="newFullName"
+                    name="newFullName"
+                    required
+                    placeholder=" "
+                    autocomplete="name"
+                    class="premium-input"
+                  />
+                  <i class="fa-solid fa-user premium-input-icon"></i>
+                  <label for="newFullName" class="premium-label">{{ i18n.t('users.form.full_name') }}</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="premium-field">
+              <div class="premium-input-group">
+                <div class="premium-input-wrapper">
+                  <input
+                    id="newEmail"
+                    type="email"
+                    [(ngModel)]="newEmail"
+                    name="newEmail"
+                    required
+                    placeholder=" "
+                    autocomplete="email"
+                    class="premium-input"
+                    dir="ltr"
+                  />
+                  <i class="fa-solid fa-envelope premium-input-icon"></i>
+                  <label for="newEmail" class="premium-label">{{ i18n.t('users.form.email') }}</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="premium-field">
+              <div class="premium-input-group">
+                <div class="premium-input-wrapper">
+                  <input
+                    id="newPhone"
+                    type="tel"
+                    [(ngModel)]="newPhone"
+                    name="newPhone"
+                    placeholder=" "
+                    autocomplete="tel"
+                    class="premium-input"
+                    dir="ltr"
+                  />
+                  <i class="fa-solid fa-phone premium-input-icon"></i>
+                  <label for="newPhone" class="premium-label">{{ i18n.t('users.form.phone') }}</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Role / Department (placeholder) -->
+            <div class="premium-field">
+              <div class="premium-input-group">
+                <div class="premium-input-wrapper">
+                  <input
+                    id="newDepartment"
+                    type="text"
+                    placeholder=" "
+                    class="premium-input"
+                  />
+                  <i class="fa-solid fa-building premium-input-icon"></i>
+                  <label for="newDepartment" class="premium-label">{{ i18n.t('users.form.department') }}</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="premium-field">
+              <div class="premium-input-group">
+                <div class="premium-input-wrapper">
+                  <input
+                    id="newPassword"
+                    [type]="showPassword() ? 'text' : 'password'"
+                    [(ngModel)]="newPassword"
+                    name="newPassword"
+                    required
+                    placeholder=" "
+                    autocomplete="new-password"
+                    class="premium-input"
+                    (input)="onPasswordChange()"
+                  />
+                  <i class="fa-solid fa-lock premium-input-icon"></i>
+                  <label for="newPassword" class="premium-label">{{ i18n.t('users.form.password') }}</label>
+                  <button type="button" class="premium-password-toggle" (click)="togglePassword()" tabindex="-1">
+                    @if (showPassword()) {
+                      <i class="fa-solid fa-eye-slash"></i>
+                    } @else {
+                      <i class="fa-solid fa-eye"></i>
+                    }
+                  </button>
+                </div>
+                @if (newPassword) {
+                  <div class="premium-strength-meter">
+                    <div class="premium-strength-bar">
+                      <div class="premium-strength-fill" [style.width.%]="passwordStrength()"
+                        [class.weak]="passwordStrength() < 40"
+                        [class.medium]="passwordStrength() >= 40 && passwordStrength() < 70"
+                        [class.strong]="passwordStrength() >= 70">
+                      </div>
+                    </div>
+                    <span class="premium-strength-label"
+                      [class.weak]="passwordStrength() < 40"
+                      [class.medium]="passwordStrength() >= 40 && passwordStrength() < 70"
+                      [class.strong]="passwordStrength() >= 70">
+                      {{ passwordStrengthLabel() }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="premium-field">
+              <div class="premium-input-group">
+                <div class="premium-input-wrapper">
+                  <input
+                    id="confirmPassword"
+                    [type]="showPassword() ? 'text' : 'password'"
+                    [(ngModel)]="confirmPassword"
+                    name="confirmPassword"
+                    required
+                    placeholder=" "
+                    autocomplete="new-password"
+                    class="premium-input"
+                    [class.error]="confirmPassword && newPassword !== confirmPassword"
+                    [class.success]="confirmPassword && newPassword === confirmPassword"
+                  />
+                  <i class="fa-solid fa-shield premium-input-icon"></i>
+                  <label for="confirmPassword" class="premium-label">{{ i18n.t('users.form.confirm_password') }}</label>
+                  @if (confirmPassword && newPassword !== confirmPassword) {
+                    <i class="fa-solid fa-circle-exclamation premium-input-error-icon"></i>
+                  }
+                  @if (confirmPassword && newPassword === confirmPassword) {
+                    <i class="fa-solid fa-circle-check premium-input-success-icon"></i>
+                  }
+                </div>
+                @if (confirmPassword && newPassword !== confirmPassword) {
+                  <span class="premium-field-error">{{ i18n.t('users.form.password_mismatch') }}</span>
+                }
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ─── Section: الدور الوظيفي ─── -->
+          <div class="premium-section">
+            <div class="premium-section-header">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>{{ i18n.t('users.form.role') }}</span>
+            </div>
+            <div class="premium-role-grid">
+              @for (role of roleCards; track role.id) {
+                <div class="premium-role-card"
+                  [class.selected]="selectedRoleCard === role.id"
+                  (click)="selectRole(role.id)">
+                  <div class="premium-role-card-icon" [class.selected]="selectedRoleCard === role.id">
+                    <i class="fa-solid {{ role.icon }}"></i>
+                  </div>
+                  <div class="premium-role-card-info">
+                    <span class="premium-role-card-title">{{ i18n.t(role.label) }}</span>
+                    <span class="premium-role-card-desc">{{ i18n.t(role.description) }}</span>
+                  </div>
+                  @if (selectedRoleCard === role.id) {
+                    <div class="premium-role-card-check">
+                      <i class="fa-solid fa-check"></i>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- ─── Section: الصلاحيات ─── -->
+          <div class="premium-section">
+            <div class="premium-section-header collapsible" (click)="showPermissions.set(!showPermissions())">
+              <div class="premium-section-header-left">
+                <i class="fa-solid fa-lock"></i>
+                <span>{{ i18n.t('users.form.permissions') }}</span>
+              </div>
+              <i class="fa-solid fa-chevron-down premium-section-arrow"
+                [class.open]="showPermissions()"></i>
+            </div>
+            @if (showPermissions()) {
+              <div class="premium-permissions-grid">
+                <div class="premium-permission-item">
+                  <div class="premium-permission-info">
+                    <i class="fa-solid fa-address-book"></i>
+                    <span>CRM</span>
+                  </div>
+                  <label class="premium-toggle">
+                    <input type="checkbox" [checked]="permissions['crm']" (change)="togglePermission('crm')"/>
+                    <span class="premium-toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="premium-permission-item">
+                  <div class="premium-permission-info">
+                    <i class="fa-solid fa-users"></i>
+                    <span>{{ i18n.t('users.form.users_perm') }}</span>
+                  </div>
+                  <label class="premium-toggle">
+                    <input type="checkbox" [checked]="permissions['users']" (change)="togglePermission('users')"/>
+                    <span class="premium-toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="premium-permission-item">
+                  <div class="premium-permission-info">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>{{ i18n.t('users.form.invoices_perm') }}</span>
+                  </div>
+                  <label class="premium-toggle">
+                    <input type="checkbox" [checked]="permissions['invoices']" (change)="togglePermission('invoices')"/>
+                    <span class="premium-toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="premium-permission-item">
+                  <div class="premium-permission-info">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>{{ i18n.t('users.form.tasks_perm') }}</span>
+                  </div>
+                  <label class="premium-toggle">
+                    <input type="checkbox" [checked]="permissions['tasks']" (change)="togglePermission('tasks')"/>
+                    <span class="premium-toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="premium-permission-item">
+                  <div class="premium-permission-info">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>{{ i18n.t('users.form.reports_perm') }}</span>
+                  </div>
+                  <label class="premium-toggle">
+                    <input type="checkbox" [checked]="permissions['reports']" (change)="togglePermission('reports')"/>
+                    <span class="premium-toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="premium-permission-item">
+                  <div class="premium-permission-info">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>{{ i18n.t('users.form.ai_perm') }}</span>
+                  </div>
+                  <label class="premium-toggle">
+                    <input type="checkbox" [checked]="permissions['aiAssistant']" (change)="togglePermission('aiAssistant')"/>
+                    <span class="premium-toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            }
+          </div>
+
+        </div>
+
+        <!-- ═══ Sticky Footer ═══ -->
+        <div class="premium-footer">
+          <button type="button" class="premium-btn premium-btn-ghost" (click)="closeAddModal()">
+            <i class="fa-solid fa-xmark"></i>
+            {{ i18n.t('users.btn.cancel') }}
+          </button>
+          <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="premium-btn-loader"></span>
+              {{ i18n.t('users.btn.creating') }}
+            } @else {
+              <i class="fa-solid fa-user-check"></i>
+              {{ i18n.t('users.btn.create') }}
+            }
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     EDIT ROLE MODAL
+     ═══════════════════════════════════════════════ -->
+<div class="modal-overlay" [class.active]="showEditModal()" (click)="closeEditModal()">
+  <div class="modal-container modal-sm" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge warning">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </div>
+        <div>
+          <h3>{{ i18n.t('users.edit_role.title') }}</h3>
+          <p class="modal-subtitle">{{ i18n.t('users.edit_role.subtitle') }} <strong>{{ selectedUserName }}</strong></p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeEditModal()" type="button">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form (ngSubmit)="onUpdateRole()">
+      <div class="modal-body">
+        <div class="form-group-modal">
+          <label for="editRoleId">
+            <i class="fa-solid fa-shield-halved"></i>
+            {{ i18n.t('users.edit_role.new_role') }}
+          </label>
+          <div class="input-wrapper select-wrapper">
+            <i class="fa-solid fa-briefcase input-icon"></i>
+            <select
+              id="editRoleId"
+              [(ngModel)]="editRoleId"
+              name="editRoleId"
+            >
+              @for (role of selectableRoles(); track role.id) {
+                <option [value]="role.id">{{ i18n.t(role.label) }}</option>
+              }
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" (click)="closeEditModal()">
+          <i class="fa-solid fa-arrow-right"></i>
+          {{ i18n.t('users.edit_role.btn.cancel') }}
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-floppy-disk"></i>
+          {{ i18n.t('users.edit_role.btn.save') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

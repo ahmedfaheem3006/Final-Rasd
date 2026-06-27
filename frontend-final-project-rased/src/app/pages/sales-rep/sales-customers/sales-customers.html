@@ -1,0 +1,131 @@
+<div class="page-container animate-fade-in">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <div class="breadcrumbs">المبيعات / العملاء</div>
+      <h1>عملائي المسجلين</h1>
+      <p class="subtitle">إدارة وتتبع قائمة العملاء والشركات الخاصة بك ومتابعة التواصل</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="openModal()" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>إضافة عميل جديد</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Controls Row (Search and Filters) -->
+  <div class="card controls-card animate-reveal" style="margin-top: 24px;">
+    <div class="filters-row">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" placeholder="ابحث باسم العميل، الشركة، البريد أو الهاتف..." />
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label">الحالة:</label>
+        <select class="filter-select" [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)">
+          <option value="all">جميع الحالات</option>
+          <option value="active">نشط / متعاقد</option>
+          <option value="interested">مهتم / تفاوض</option>
+          <option value="unreachable">لم يتم الرد / معلق</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customers Table Card -->
+  <div class="card table-card animate-reveal" style="margin-top: 20px;">
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>الاسم والعميل</th>
+            <th>الشركة / المؤسسة</th>
+            <th>رقم الهاتف</th>
+            <th>البريد الإلكتروني</th>
+            <th>آخر تواصل</th>
+            <th>الحالة</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cust of filteredCustomers(); track cust.email) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar-sm">{{ cust.avatar }}</div>
+                  <div class="user-name-cell">{{ cust.name }}</div>
+                </div>
+              </td>
+              <td class="fw-bold">{{ cust.company }}</td>
+              <td class="text-muted">{{ cust.phone }}</td>
+              <td class="text-muted">{{ cust.email }}</td>
+              <td class="text-muted">{{ cust.lastContact }}</td>
+              <td>
+                @if (cust.status === 'active') {
+                  <span class="badge badge-success">نشط / متعاقد</span>
+                } @else if (cust.status === 'interested') {
+                  <span class="badge badge-warning">مهتم / تفاوض</span>
+                } @else {
+                  <span class="badge badge-danger">لم يتم الرد</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center text-muted" style="padding: 40px 0;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; color: var(--text-muted);"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <p>لا يوجد عملاء يطابقون خيارات البحث الحالية.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Customer Modal -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>إضافة عميل جديد للمنظومة</h3>
+          <button (click)="closeModal()" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>اسم العميل الثنائي أو الثلاثي *</label>
+            <input type="text" [(ngModel)]="newName" placeholder="مثال: خالد الدوسري" required />
+          </div>
+          <div class="form-group">
+            <label>الشركة / المؤسسة الممثلة *</label>
+            <input type="text" [(ngModel)]="newCompany" placeholder="مثال: شركة الخليج للتجارة" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>البريد الإلكتروني *</label>
+              <input type="email" [(ngModel)]="newEmail" placeholder="name@company.com" required />
+            </div>
+            <div class="form-group">
+              <label>رقم الجوال</label>
+              <input type="text" [(ngModel)]="newPhone" placeholder="05xxxxxxxx" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>حالة العميل المبدئية</label>
+            <select [(ngModel)]="newStatus">
+              <option value="interested">مهتم / في مرحلة التفاوض</option>
+              <option value="active">نشط / تم التعاقد</option>
+              <option value="unreachable">لم يتم الرد بعد</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button (click)="closeModal()" class="btn btn-secondary">إلغاء</button>
+          <button (click)="addCustomer()" class="btn btn-primary">إضافة العميل</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+

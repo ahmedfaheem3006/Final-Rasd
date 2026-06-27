@@ -1,0 +1,114 @@
+<div class="system-overview-container">
+  <!-- Page Header -->
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        {{ i18n.currentLang() === 'ar' ? 'المشرف العام / نظرة عامة' : 'System Admin / Overview' }}
+      </div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'لوحة إشراف النظام' : 'System Admin Dashboard' }}</h1>
+      <p class="subtitle">
+        {{ i18n.currentLang() === 'ar' ? 'مراقبة حالة البنية التحتية، حسابات الشركات المشتركة وسجلات التشغيل.' : 'Monitor infrastructure health, registered company tenants, and live operation logs.' }}
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>{{ i18n.currentLang() === 'ar' ? 'تصدير السجلات الفنية' : 'Export Technical Logs' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Server Health Indicators Grid -->
+  <div class="health-grid">
+    @for (metric of healthMetrics(); track metric.name) {
+      <div class="health-card">
+        <div class="health-status-header">
+          <span class="health-title">{{ metric.name }}</span>
+          <span class="badge" [ngClass]="'badge-' + metric.color">{{ metric.status }}</span>
+        </div>
+        <div class="health-value-block">
+          <span class="pulse-dot" [ngClass]="metric.color"></span>
+          <span class="health-value">{{ metric.value }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Detailed Dashboard Modules (2-Column Grid) -->
+  <div class="system-grid">
+    <!-- Right Column: Tenants (Companies) -->
+    <div class="main-column">
+      <div class="card table-card">
+        <div class="card-header">
+          <h3>{{ i18n.currentLang() === 'ar' ? 'الشركات والمنشآت المسجلة' : 'Registered Companies' }}</h3>
+          <p class="subtitle">
+            {{ i18n.currentLang() === 'ar' ? 'إدارة الشركات المشتركة ومتابعة باقاتهم وحالتهم التشغيلية' : 'Manage subscribed tenants, plans, and active statuses.' }}
+          </p>
+        </div>
+        <div class="table-wrapper">
+          <table class="system-table">
+            <thead>
+              <tr>
+                <th>{{ i18n.currentLang() === 'ar' ? 'اسم المنشأة' : 'Company Name' }}</th>
+                <th>{{ i18n.currentLang() === 'ar' ? 'مالك الحساب' : 'Account Owner' }}</th>
+                <th>{{ i18n.currentLang() === 'ar' ? 'الباقة الحالية' : 'Active Plan' }}</th>
+                <th>{{ i18n.currentLang() === 'ar' ? 'تاريخ التسجيل' : 'Registration Date' }}</th>
+                <th>{{ i18n.currentLang() === 'ar' ? 'الحالة' : 'Status' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tenant of tenants(); track tenant.name) {
+                <tr>
+                  <td class="tenant-name">{{ tenant.name }}</td>
+                  <td>{{ tenant.owner }}</td>
+                  <td>
+                    <span class="badge badge-info">{{ tenant.plan }}</span>
+                  </td>
+                  <td class="tenant-date">{{ tenant.date }}</td>
+                  <td>
+                    @if (tenant.status === 'نشط' || tenant.status === 'Active') {
+                      <span class="badge badge-success">{{ tenant.status }}</span>
+                    } @else {
+                      <span class="badge badge-warning">{{ tenant.status }}</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Left Column: Live System Logs -->
+    <div class="side-column">
+      <div class="card logs-card">
+        <div class="card-header">
+          <h3>{{ i18n.currentLang() === 'ar' ? 'سجل الأحداث الفنية المباشر' : 'Live Technical Event Logs' }}</h3>
+          <p class="subtitle">
+            {{ i18n.currentLang() === 'ar' ? 'مراقبة الأنشطة البرمجية وتكاملات النظام بشكل حي' : 'Monitor real-time system activities and platform integrations.' }}
+          </p>
+        </div>
+        <div class="logs-timeline">
+          @for (log of systemLogs(); track log.event) {
+            <div class="log-item" [ngClass]="log.type">
+              <div class="log-icon-wrapper">
+                @if (log.type === 'error') {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                } @else if (log.type === 'warning') {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                }
+              </div>
+              <div class="log-details">
+                <div class="log-text">{{ log.event }}</div>
+                <div class="log-time">{{ log.time }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+.error-page { display: flex; align-items: center; justify-content: center; min-height: 80vh; direction: rtl; }
+.error-card { text-align: center; max-width: 480px; padding: 48px; }
+.error-icon { margin-bottom: 24px; opacity: 0.8; }
+.error-card h1 { font-size: 5rem; font-weight: 900; background: linear-gradient(135deg, #f43f5e, #e11d48); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; margin-bottom: 8px; }
+.error-card h2 { font-size: 1.4rem; font-weight: 700; color: var(--text-title); margin-bottom: 16px; }
+.error-card p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 32px; }
+.error-actions { display: flex; gap: 12px; justify-content: center; }

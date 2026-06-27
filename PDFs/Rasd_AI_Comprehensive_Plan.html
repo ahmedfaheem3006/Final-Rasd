@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خطة مشروع تخرج رصد AI الشاملة</title>
+    <!-- Google Fonts: Cairo & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #0d9488;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --danger: #e11d48;
+            --warning: #ea580c;
+            --info: #0284c7;
+            --success: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.8;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .logo-area {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo-area span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--dark);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .meta-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 5px 15px;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-primary { background-color: #e0e7ff; color: #3730a3; }
+        .badge-secondary { background-color: #ccfbf1; color: #115e59; }
+        .badge-dark { background-color: #f1f5f9; color: #334155; }
+
+        /* Print Button */
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+            transition: all 0.2s ease;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -3px rgba(79, 70, 229, 0.5);
+        }
+
+        /* Typography & Layout */
+        h2 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            border-right: 4px solid var(--primary);
+            padding-right: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        h3 {
+            color: var(--dark);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+            color: #334155;
+        }
+
+        ul, ol {
+            margin-bottom: 20px;
+            padding-right: 25px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 12px 15px;
+            text-align: right;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        /* Callout Box / Alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-right: 5px solid;
+        }
+
+        .alert-danger {
+            background-color: #fff1f2;
+            border-right-color: var(--danger);
+            color: #9f1239;
+        }
+
+        .alert-warning {
+            background-color: #fff7ed;
+            border-right-color: var(--warning);
+            color: #9a3412;
+        }
+
+        .alert-info {
+            background-color: #f0f9ff;
+            border-right-color: var(--info);
+            color: #075985;
+        }
+
+        .alert-success {
+            background-color: #f0fdf4;
+            border-right-color: var(--success);
+            color: #166534;
+        }
+
+        /* Features Cards Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--primary-light);
+            background: #f1f5f9;
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+                font-size: 12pt;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                border: none;
+                max-width: 100%;
+            }
+
+            .print-btn {
+                display: none !important;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+
+            h2, h3 {
+                page-break-inside: avoid;
+            }
+
+            table, tr, td {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="print-btn" onclick="window.print()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        حفظ كـ PDF / طباعة
+    </button>
+
+    <div class="container">
+        <header>
+            <div class="logo-area">
+                <span>رصد AI — Rasd AI</span>
+            </div>
+            <h1>خطة تطوير البرمجيات الشاملة والمشتركة</h1>
+            <p>منصة SaaS ذكية متعددة الشركات لإدارة علاقات العملاء، المبيعات، الفواتير، والمهام مع الذكاء الاصطناعي</p>
+            <div class="meta-badges">
+                <span class="badge badge-primary">الفريق: 6 أفراد (تطوير مشترك)</span>
+                <span class="badge badge-secondary">المدة المستهدفة: 3 أسابيع (تطوير مكثف)</span>
+                <span class="badge badge-dark">التقنيات: ASP.NET Core + Angular + AI</span>
+            </div>
+        </header>
+
+        <!-- القسم الأول -->
+        <section>
+            <h2>1. الفلسفة العامة للخطة: "الجميع يعمل على كل شيء"</h2>
+            <p>
+                بما أن الفريق يفضل عدم حصر أي فرد في مسمى وظيفي واحد (مثل واجهات فقط أو قاعدة بيانات فقط)، بل يرغب الجميع في المشاركة في دورة التطوير كاملة (Full-Stack)، فقد تم تصميم هذه الخطة باتباع منهجية <strong>تطوير الميزات المتكاملة (Feature-Driven & Cross-Functional Development)</strong>.
+            </p>
+            <p>
+                <strong>كيف سيتم تنظيم العمل؟</strong>
+                سنقسم الـ 6 أفراد إلى <strong>3 مجموعات ثنائية (Pairs)</strong> تتغير تركيبتها دورياً. كل مجموعة ثنائية تتبنى ميزة كاملة (Feature) وتقوم ببرمجتها بالكامل: بدءاً من تصميم جدول قاعدة البيانات، مروراً بكتابة الـ API في الـ Backend، ووصولاً لبناء الواجهات في الـ Frontend وربطها بالذكاء الاصطناعي واختبارها.
+            </p>
+            <div class="alert alert-success">
+                <strong>ميزة هذا الأسلوب:</strong> يضمن زيادة المهارات الفنية للجميع بالتساوي في الـ Backend و الـ Frontend و الـ AI، ويسرع وتيرة العمل ويسد الفجوات البرمجية، بالإضافة إلى ضمان عمل واجهات متناسقة مع منطق البرمجة الخلفية بشكل فوري.
+            </div>
+        </section>
+
+        <!-- القسم الثاني -->
+        <div class="page-break"></div>
+        <section>
+            <h2>2. مسار تدفق الأدوار والمستخدمين في النظام (User Flows)</h2>
+            <p>قبل كتابة الكود، يجب فهم كيف سيعمل النظام من لحظة دخول المستخدم وحتى انتهائه. تم تقسيم الصلاحيات والأدوار كالتالي:</p>
+            
+            <h3>أ. مسار مالك الشركة (Owner - مستأجر النظام)</h3>
+            <ol>
+                <li><strong>التسجيل والتأسيس:</strong> يدخل إلى صفحة التسجيل ➔ يملأ بيانات شركته (أول مستأجر) وحسابه الشخصي كمالك للشركة.</li>
+                <li><strong>عزل البيانات:</strong> يقوم النظام بتوليد معرف فريد <code>TenantId</code> وربطه بجميع بيانات شركته لضمان الخصوصية التامة.</li>
+                <li><strong>إعداد الفريق:</strong> يذهب إلى لوحة تحكم الإدارة ➔ يرسل دعوات إلكترونية للموظفين ويسند إليهم أدوارهم (Admin, Sales, Accountant, Support).</li>
+                <li><strong>الرقابة:</strong> يراقب الرسوم البيانية اللحظية (SignalR) لأرباح الشركة، المهام المفتوحة، والفواتير المتأخرة، ويسأل المساعد الذكي عن إحصائيات شركته.</li>
+            </ol>
+
+            <h3>ب. مسار مدير العمليات (Admin)</h3>
+            <ol>
+                <li><strong>القبول والدخول:</strong> يقبل دعوة المالك ➔ يسجل كلمة مروره ➔ يسجل الدخول للنظام وتظهر له البيانات المفلترة لشركته فقط.</li>
+                <li><strong>إدارة العمل والصفقات:</strong> يراجع مسار الصفقات المفتوحة (Deals Pipeline) وأعمال موظفي المبيعات.</li>
+                <li><strong>رفع الاجتماعات (Meeting Intelligence):</strong> يقوم برفع تسجيل اجتماع الفريق ➔ ينتظر معالجة الصوت (Whisper) والتلخيص (AI) ➔ يظهر له ملخص الاجتماع وتاسكات مقترحة ➔ يراجعها ويضغط <strong>"Approve & Create"</strong> لتتحول فوراً لتاسكات مضافة ومسندة في النظام.</li>
+            </ol>
+
+            <h3>ج. مسار مندوب المبيعات (Sales)</h3>
+            <ol>
+                <li><strong>إدارة علاقات العملاء CRM:</strong> يضيف عميلاً جديداً ➔ يسجل الملاحظات ويرفع المرفقات الخاصة بالعميل.</li>
+                <li><strong>المبيعات والصفقات:</strong> ينشئ صفقة جديدة للعميل ➔ يتحكم في حالتها بسحبها وإفلاتها (Drag & Drop) في لوحة الصفقات التفاعلية.</li>
+                <li><strong>تحليل العقود (Contract Intelligence):</strong> يرفع ملف العقد المتفق عليه (PDF/Word) ➔ يقرأ تحليل الذكاء الاصطناعي الملون (أحمر للمخاطر، برتقالي للتحذيرات، أزرق للمعلومات) للتأكد من سلامة البنود قبل توقيعها وحفظها بملف العميل.</li>
+                <li><strong>المهام اليومية:</strong> يتابع المهام الموكلة إليه (المستخرجة من الاجتماعات مثلاً) ويقوم بتغيير حالتها (Todo ➔ In Progress ➔ Done).</li>
+            </ol>
+
+            <h3>د. مسار المحاسب (Accountant)</h3>
+            <ol>
+                <li><strong>توليد الفواتير:</strong> يسجل الدخول ➔ ينشئ فاتورة جديدة لصفقة مبيعات رابحة (Won Deal).</li>
+                <li><strong>التصدير والطباعة:</strong> يقوم بتصدير الفاتورة كملف PDF احترافي منسق (QuestPDF) لإرسالها للعميل.</li>
+                <li><strong>متابعة التحصيل:</strong> يغير حالة الفاتورة لـ (Paid) عند السداد. الفواتير غير المدفوعة التي تتجاوز تاريخ استحقاقها تتحول تلقائياً إلى (Overdue) عبر وظيفة خلفية (Hangfire).</li>
+            </ol>
+
+            <h3>هـ. مسار الدعم الفني (Support)</h3>
+            <ol>
+                <li><strong>المراجعة والمساعدة:</strong> يسجل الدخول بصلاحيات مقيدة تسمح له بالبحث في العملاء ومراجعة تفاصيلهم وكتابة ملاحظات (Notes) لحل مشاكلهم، دون أي إمكانية للوصول للفواتير أو الصفقات المالية.</li>
+            </ol>
+        </section>
+
+        <!-- القسم الثالث -->
+        <div class="page-break"></div>
+        <section>
+            <h2>3. خطة العمل التفصيلية (3 أسابيع - تطوير كامل متوازي)</h2>
+            <p>
+                تم تقسيم المهام أسبوعياً بحيث تعمل المجموعات الثلاث في نفس الوقت على مهام متوازية ومتكاملة لضمان اكتمال المنتج في 21 يوماً.
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">الفترة</th>
+                        <th style="width: 28%;">المجموعة الثنائية الأولى (الأفراد 1 & 2)</th>
+                        <th style="width: 28%;">المجموعة الثنائية الثانية (الأفراد 3 & 4)</th>
+                        <th style="width: 28%;">المجموعة الثنائية الثالثة (الأفراد 5 & 6)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>الأسبوع الأول: التأسيس والهوية</strong></td>
+                        <td>
+                            <strong>تأسيس الهيكل والـ DB</strong>
+                            <ul>
+                                <li>بناء هيكل Clean Architecture في الـ Backend.</li>
+                                <li>تصميم قاعدة البيانات PostgreSQL و Migrations.</li>
+                                <li>إعداد نظام الـ Multi-Tenancy وعزل البيانات (Global Query Filters).</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <strong>نظام المصادقة والصلاحيات (Auth)</strong>
+                            <ul>
+                                <li>برمجة نظام الهوية (Identity + JWT).</li>
+                                <li>تطوير شاشات تسجيل الشركات والدخول (Angular Auth UI).</li>
+                                <li>كتابة الـ Middleware لعزل الـ Tenants وتمرير الـ JWT.</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <strong>تأسيس واجهة المستخدم (Angular Shell)</strong>
+                            <ul>
+                                <li>إنشاء وتكوين مشروع Angular والـ Routing.</li>
+                                <li>بناء الهيكل والنمط العام وتنسيق التصميم والمكونات المشتركة.</li>
+                                <li>عمل Seed لبيانات تجريبية واقعية (Demo Data).</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>الأسبوع الثاني: موديولات العمليات</strong></td>
+                        <td>
+                            <strong>موديول إدارة العملاء CRM</strong>
+                            <ul>
+                                <li>برمجة الـ APIs والـ CRUD للعملاء والملاحظات والمرفقات.</li>
+                                <li>تطوير شاشة مسار الصفقات التفاعلية (Kanban Deals Board).</li>
+                                <li>ربط المبيعات بعلاقات مع العملاء وقيم الصفقات المتوقعة.</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <strong>موديول المهام والـ Live Dashboard</strong>
+                            <ul>
+                                <li>تطوير موديول المهام (Tasks CRUD) وإسنادها للمستخدمين وتحديث حالتها.</li>
+                                <li>برمجة الـ SignalR Hub لإرسال تحديثات لوحة القيادة اللحظية.</li>
+                                <li>بناء شاشات الرسوم البيانية للـ KPIs والمبيعات المباشرة.</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <strong>موديول الفواتير والعمليات الخلفية</strong>
+                            <ul>
+                                <li>تطوير الـ APIs للفواتير وحالاتها وتوليد رقم الفاتورة التلقائي.</li>
+                                <li>برمجة تصدير الفواتير كـ PDF احترافي (QuestPDF).</li>
+                                <li>إعداد جدولة المهام بـ Hangfire لتحديث الحالات تلقائياً وإرسال إيميلات التذكير.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>الأسبوع الثالث: الذكاء الاصطناعي والصقل</strong></td>
+                        <td>
+                            <strong>ميزة ذكاء المستندات وتحليل العقود</strong>
+                            <ul>
+                                <li>برمجة استخراج النصوص من ملفات Word/PDF (PdfPig + OpenXML).</li>
+                                <li>إعداد برومبت الذكاء الاصطناعي للـ LLM لاستخراج التلخيص والأخطار والتحذيرات كـ JSON.</li>
+                                <li>شاشات رفع وعرض العقود وتحليلها بالألوان (Danger, Warning, Info).</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <strong>ميزة ذكاء الاجتماعات وتفريغ الفيديو</strong>
+                            <ul>
+                                <li>إدماج Whisper لتفريغ ملفات الفيديو والصوت المرفوعة إلى نصوص.</li>
+                                <li>كتابة برومبت استخراج القرارات والتاسكات المقترحة من النص المفرغ.</li>
+                                <li>شاشات رفع الفيديو وعرض المهام المقترحة وزر الحفظ التلقائي في موديول المهام.</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <strong>المساعد الذكي ونشر النظام (DevOps)</strong>
+                            <ul>
+                                <li>تطوير الـ AI Assistant في الشات باستخدام الـ Tool Calling لقراءة بيانات الشركة بشكل آمن.</li>
+                                <li>تأمين المشروع من ثغرات عزل البيانات واختبار ثغرات الـ IDOR.</li>
+                                <li>إعداد Docker وحزم المشروع والـ deployment على سيرفر حي للعرض.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- القسم الرابع -->
+        <div class="page-break"></div>
+        <section>
+            <h2>4. ميزات إضافية ذات أثر هندسي وتجاري حقيقي</h2>
+            <p>لضمان تميز المشروع وحصوله على الدرجات النهائية وتجاوز لجان التقييم بالامتياز، نقترح إضافة الميزتين التاليتين:</p>
+            
+            <div class="features-grid">
+                <div class="card">
+                    <div class="card-title">
+                        <span style="color: var(--secondary);">✦</span>
+                        التنبيهات الاستباقية الذكية والربط بالواتساب (AI WhatsApp Alerts)
+                    </div>
+                    <p style="font-size: 0.9rem; color: #475569;">
+                        بدلاً من تصفح المحاسب للفواتير المتأخرة، يقوم خادم <code>Hangfire</code> بالخلفية بفحص الفواتير يومياً. الفواتير التي يقترب موعد استحقاقها تُرسل للـ LLM الذي يصيغ رسالة تنبيه مخصصة ولطيفة باللغة العربية للعميل، ويقوم النظام بإرسالها تلقائياً له كرسالة WhatsApp عبر API مثل (Twilio/Ultramsg) أو كـ Email.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-title">
+                        <span style="color: var(--secondary);">✦</span>
+                        البحث الدلالي والـ RAG داخل العقود (Semantic Document Search)
+                    </div>
+                    <p style="font-size: 0.9rem; color: #475569;">
+                        عند رفع عشرات العقود، يستطيع المستخدم كتابة سؤال مثل: "ما هي غرامة التأخير في عقد شركة النور؟". نستخدم إضافة <code>pgvector</code> لحفظ نصوص العقود كـ Embeddings في قاعدة PostgreSQL، حيث يقوم النظام بالبحث الدلالي عن المعنى، واستخلاص الفقرة المعنية وعرضها ملخصة ومباشرة للمستخدم.
+                    </p>
+                </div>
+            </div>
+
+            <div class="alert alert-warning">
+                <strong>توصية ذهبية ليوم العرض (Demo Day):</strong>
+                لتجنب أي بطء قد يسببه تشغيل نماذج الـ AI محلياً على أجهزة معالجاتها متوسطة (CPU)، صممنا طبقة الـ AI بنمط <code>Provider Pattern</code> (حيث يمكن التبديل بين تشغيل نموذج محلي Ollama أو نموذج سحابي API مجاني كـ Gemini Free Tier بسطر واحد في ملف الإعدادات). يفضل بشدة استخدام ملفات فيديو قصيرة (2-4 دقائق) وعقود قصيرة (2-5 صفحات) أثناء العرض أمام اللجنة لضمان سرعة الاستجابة الفورية للميزات واستعراض الذكاء الاصطناعي بشكل مقنع ومبهر.
+            </div>
+        </section>
+    </div>
+
+</body>
+</html>

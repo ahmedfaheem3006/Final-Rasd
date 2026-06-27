@@ -1,0 +1,55 @@
+﻿<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">الموظف / الحضور والانصراف</div>
+      <h1>سجل الحضور والانصراف</h1>
+      <p class="subtitle">تتبع أوقات حضورك وانصرافك اليومية وساعات عملك</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> <span>عرض الشهر</span></button>
+    </div>
+  </header>
+
+  <div class="stats-grid animate-reveal">
+    @for (s of stats(); track s.title) {
+      <div class="stat-card"><div class="stat-icon" [ngClass]="s.color"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="stat-body"><div class="stat-value">{{ s.value }}</div><div class="stat-title">{{ s.title }}</div></div></div>
+    }
+  </div>
+
+  <div class="today-card card animate-reveal">
+    <div class="card-header"><h3>حالة اليوم</h3><span class="badge badge-success">حاضر</span></div>
+    <div class="today-grid">
+      <div class="today-item"><span class="today-label">وقت الحضور</span><span class="today-value highlight">{{ todayStatus().checkInTime }}</span></div>
+      <div class="today-item"><span class="today-label">وقت الانصراف</span><span class="today-value">{{ todayStatus().checkOutTime }}</span></div>
+      <div class="today-item"><span class="today-label">إجمالي الساعات</span><span class="today-value">{{ todayStatus().totalHours }}</span></div>
+      <div class="today-item action-item"><button class="btn btn-primary btn-clock">تسجيل الانصراف</button></div>
+    </div>
+  </div>
+
+  <div class="card table-card animate-reveal">
+    <div class="card-header"><h3>سجل الحضور التفصيلي</h3><p class="subtitle">آخر 30 يوم</p></div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>التاريخ</th><th>اليوم</th><th>وقت الحضور</th><th>وقت الانصراف</th><th>ساعات العمل</th><th>الحالة</th></tr></thead>
+        <tbody>
+          @for (r of records(); track r.date) {
+            <tr>
+              <td class="fw-bold">{{ r.date }}</td>
+              <td>{{ r.day }}</td>
+              <td class="text-muted">{{ r.checkIn }}</td>
+              <td class="text-muted">{{ r.checkOut }}</td>
+              <td class="fw-bold">{{ r.hours }}</td>
+              <td>
+                @if (r.status === 'present') { <span class="badge badge-success">حاضر</span> }
+                @else if (r.status === 'late') { <span class="badge badge-warning">متأخر</span> }
+                @else if (r.status === 'absent') { <span class="badge badge-danger">غائب</span> }
+                @else if (r.status === 'overtime') { <span class="badge badge-info">إضافي</span> }
+                @else { <span class="badge badge-muted">عطلة</span> }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,145 @@
+<div class="pipeline-container">
+  <!-- Header -->
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.t('pipeline.breadcrumbs') }}</div>
+      <h1>{{ i18n.t('pipeline.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('pipeline.subtitle') }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <span>{{ i18n.t('pipeline.btn.list') }}</span>
+      </button>
+      <button class="btn btn-primary" (click)="openModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>{{ i18n.t('pipeline.btn.new') }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Pipeline Stats -->
+  <div class="pipeline-stats animate-reveal">
+    @for (stage of stagesDisplay(); track stage.name) {
+      <div class="pipeline-stat-card" [ngClass]="'border-' + stage.color">
+        <div class="pstat-label">{{ stage.displayName }}</div>
+        <div class="pstat-value">{{ stage.value }}</div>
+        <div class="pstat-count"><span class="badge" [ngClass]="'badge-' + stage.color">{{ stage.displayCount }}</span></div>
+      </div>
+    }
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-board animate-reveal">
+    @for (stage of stagesDisplay(); track stage.name) {
+      <div class="kanban-column" [ngClass]="'col-' + stage.color">
+        <div class="column-header">
+          <div class="col-title">
+            <span class="col-dot" [ngClass]="stage.color"></span>
+            <span>{{ stage.displayName }}</span>
+          </div>
+          <span class="col-count">{{ stage.count }}</span>
+        </div>
+        <div class="deals-list">
+          @for (deal of stage.deals; track deal.client) {
+            <div class="deal-card">
+              <div class="deal-client">{{ deal.client }}</div>
+              <div class="deal-value">{{ deal.value }}</div>
+              <div class="deal-footer">
+                <div class="deal-agent">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 8 0v2"/></svg>
+                  {{ deal.agent }}
+                </div>
+                <div class="deal-date">{{ deal.date }}</div>
+              </div>
+            </div>
+          }
+          <button class="add-deal-btn" (click)="openModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            {{ i18n.t('pipeline.btn.add') }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ADD DEAL MODAL — Premium Enterprise Design
+     ═══════════════════════════════════════════════ -->
+<div #premiumModalOverlay class="premium-modal-overlay" [class.active]="showModal()" [class.light]="isLightTheme" (click)="closeModal()">
+  <div #premiumModal class="premium-modal" [class.active]="showModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="i18n.t('pipeline.add_aria')">
+
+    <!-- Header -->
+    <div class="premium-header">
+      <div class="premium-header-left">
+        <div class="premium-header-icon">
+          <i class="fa-solid fa-folder-plus"></i>
+        </div>
+        <div class="premium-header-text">
+          <h2 class="premium-title">{{ i18n.t('pipeline.modal.title') }}</h2>
+          <p class="premium-subtitle">{{ i18n.t('pipeline.modal.subtitle') }}</p>
+        </div>
+      </div>
+      <button class="premium-close-btn" (click)="closeModal()" type="button">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="premium-header-divider"></div>
+
+    <form (ngSubmit)="addDeal()">
+      <div class="premium-body">
+
+        <!-- Client Name -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-user-tie"></i> {{ i18n.t('pipeline.form.client') }}</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-building input-icon"></i>
+            <input type="text" [(ngModel)]="newClient" name="newClient" required [placeholder]="i18n.t('pipeline.form.client_placeholder')" />
+          </div>
+        </div>
+
+        <!-- Deal Value -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-sack-dollar"></i> {{ i18n.t('pipeline.form.value') }}</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-dollar-sign input-icon"></i>
+            <input type="number" lang="en" [(ngModel)]="newValue" name="newValue" required [placeholder]="i18n.t('pipeline.form.value_placeholder')" />
+          </div>
+        </div>
+
+        <!-- Deal Stage -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-chart-line"></i> {{ i18n.t('pipeline.form.stage') }}</label>
+          <div class="input-wrapper select-wrapper">
+            <i class="fa-solid fa-magnifying-glass-chart input-icon"></i>
+            <select [(ngModel)]="newDealStatus" name="newDealStatus">
+              <option value="Proposal">{{ i18n.t('pipeline.stage.prospects') }}</option>
+              <option value="Negotiation">{{ i18n.t('pipeline.stage.negotiation') }}</option>
+              <option value="Won">{{ i18n.t('pipeline.stage.closed') }}</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sticky Footer -->
+      <div class="premium-footer">
+        <button type="button" class="premium-btn premium-btn-ghost" (click)="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+          {{ i18n.t('pipeline.btn.cancel') }}
+        </button>
+        <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="premium-btn-loader"></span>
+            {{ i18n.t('pipeline.btn.creating') }}
+          } @else {
+            <i class="fa-solid fa-circle-plus"></i>
+            {{ i18n.t('pipeline.btn.create') }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

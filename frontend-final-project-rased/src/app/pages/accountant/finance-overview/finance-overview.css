@@ -1,0 +1,103 @@
+.page-container { direction: rtl; display: flex; flex-direction: column; gap: 30px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; }
+.header-info h1 { font-size: 1.85rem; font-weight: 800; color: var(--text-title); margin: 4px 0; }
+.breadcrumbs { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
+.header-info .subtitle { font-size: 0.9rem; color: var(--text-body); }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.stat-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm); transition: var(--transition-normal); }
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.stat-label { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; }
+.stat-change { font-size: 0.78rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+.stat-change.positive { background: var(--success-light); color: var(--success); }
+.stat-change.negative { background: var(--danger-light); color: var(--danger); }
+.stat-value { font-size: 1.6rem; font-weight: 800; }
+.color-primary { color: var(--primary); } .color-success { color: var(--success); } .color-warning { color: var(--warning); } .color-danger { color: var(--danger); }
+.content-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start; }
+.card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-md); }
+.card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-title); margin-bottom: 20px; }
+.finance-chart { width: 100%; height: auto; display: block; }
+.chart-legend { display: flex; gap: 16px; margin-top: 16px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: var(--text-body); }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.success { background: var(--success); } .dot.danger { background: var(--danger); }
+.txn-list { display: flex; flex-direction: column; gap: 14px; }
+.txn-item { display: flex; align-items: center; gap: 12px; }
+.txn-icon { width: 32px; height: 32px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.txn-icon.income { background: var(--success-light); color: var(--success); }
+.txn-icon.expense { background: var(--danger-light); color: var(--danger); }
+.txn-info { flex: 1; }
+.txn-desc { font-size: 0.875rem; font-weight: 600; color: var(--text-title); }
+.txn-date { font-size: 0.78rem; color: var(--text-muted); }
+.txn-amount { font-weight: 700; font-size: 0.9rem; }
+.txn-amount.income { color: var(--success); }
+.txn-amount.expense { color: var(--danger); }
+@media (max-width: 1000px) { .content-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .page-header { flex-direction: column; align-items: flex-start; gap: 16px; } .stats-grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 480px) {
+  .page-container {
+    gap: 20px;
+  }
+  .stat-card {
+    padding: 14px;
+  }
+  .stat-value {
+    font-size: 1.3rem;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  .card {
+    padding: 16px;
+  }
+  .card h3 {
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+  }
+  .txn-item {
+    gap: 8px;
+  }
+  .txn-desc {
+    font-size: 0.8rem;
+  }
+  .txn-date {
+    font-size: 0.7rem;
+  }
+  .txn-amount {
+    font-size: 0.82rem;
+  }
+  .chart-legend {
+    gap: 10px;
+  }
+  .legend-item {
+    font-size: 0.72rem;
+  }
+  .header-info h1 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .stat-card {
+    padding: 12px;
+  }
+  .stat-value {
+    font-size: 1.15rem;
+  }
+  .card {
+    padding: 12px;
+  }
+  .header-info h1 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .header-info h1 {
+    font-size: 1rem;
+  }
+  .stats-grid {
+    gap: 10px;
+  }
+}

@@ -1,0 +1,153 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">الموارد البشرية / الاجتماعات</div>
+      <h1>جدولة الاجتماعات</h1>
+      <p class="subtitle">إدارة وجدولة اجتماعات الفريق والمقابلات والدورات التدريبية</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>جدولة اجتماع</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Upcoming Meetings -->
+  <div class="section-header animate-fade-in">
+    <h2>الاجتماعات القادمة</h2>
+    <span class="section-count">{{ upcomingMeetings().length }} اجتماعات</span>
+  </div>
+
+  <div class="meetings-list animate-reveal">
+    @for (meeting of upcomingMeetings(); track meeting.id) {
+      <div class="meeting-card" [ngClass]="'type-' + meeting.type">
+        <div class="meeting-time-col">
+          <div class="meeting-date">{{ meeting.date }}</div>
+          <div class="meeting-hour">{{ meeting.time }}</div>
+          <div class="meeting-duration">{{ meeting.duration }}</div>
+        </div>
+        <div class="meeting-divider"></div>
+        <div class="meeting-info">
+          <div class="meeting-title">{{ meeting.title }}</div>
+          <div class="meeting-meta-row">
+            <div class="meeting-location">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {{ meeting.location }}
+            </div>
+            <div class="meeting-organizer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              {{ meeting.organizer }}
+            </div>
+          </div>
+          <div class="meeting-attendees">
+            @for (att of meeting.attendees; track att) {
+              <span class="attendee-chip">{{ att }}</span>
+            }
+          </div>
+        </div>
+        <div class="meeting-actions">
+          <span class="meeting-type-badge" [ngClass]="meeting.type">
+            @if (meeting.type === 'internal') { داخلي }
+            @else if (meeting.type === 'training') { تدريبي }
+            @else { عميل }
+          </span>
+          <button class="btn btn-secondary" style="font-size:0.8rem;padding:7px 14px;">الانضمام</button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Past Meetings -->
+  <div class="section-header animate-fade-in">
+    <h2>الاجتماعات السابقة</h2>
+  </div>
+
+  <div class="card animate-reveal" style="padding: 0 24px;">
+    @for (m of pastMeetings(); track m.title) {
+      <div class="past-meeting-item">
+        <div class="past-meeting-left">
+          <div class="past-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="past-meeting-info">
+            <div class="past-title">{{ m.title }}</div>
+            <div class="past-outcome">{{ m.outcome }}</div>
+          </div>
+        </div>
+        <div class="past-meta">
+          <div class="past-date">{{ m.date }}</div>
+          <span class="badge badge-success">مكتمل</span>
+          <span class="participants-count">{{ m.participants }} مشاركين</span>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Add Meeting Modal -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>جدولة اجتماع جديد</h3>
+        <button class="modal-close" (click)="closeModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group" style="flex:1">
+            <label>عنوان الاجتماع *</label>
+            <input type="text" class="form-control" [(ngModel)]="newTitle" placeholder="مثال: اجتماع متابعة الأداء">
+          </div>
+          <div class="form-group" style="width:180px">
+            <label>نوع الاجتماع</label>
+            <select class="form-control" [(ngModel)]="newType">
+              <option value="internal">داخلي</option>
+              <option value="training">تدريبي</option>
+              <option value="client">عميل</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:1">
+            <label>التاريخ *</label>
+            <input type="date" class="form-control" [(ngModel)]="newDate">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>الوقت *</label>
+            <input type="time" class="form-control" [(ngModel)]="newTime">
+          </div>
+          <div class="form-group" style="width:150px">
+            <label>المدة (دقيقة)</label>
+            <input type="number" class="form-control" [(ngModel)]="newDuration" placeholder="60" min="15">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:1">
+            <label>الموقع / القاعة</label>
+            <input type="text" class="form-control" [(ngModel)]="newLocation" placeholder="مثال: قاعة A أو Zoom">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>المنظّم</label>
+            <select class="form-control" [(ngModel)]="newOrganizer">
+              <option>سارة القحطاني</option>
+              <option>يوسف حسن</option>
+              <option>خالد الدوسري</option>
+              <option>فهد المطيري</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>الحضور (مبادئ الأحرف مفصولة بفواصل)</label>
+          <input type="text" class="form-control" [(ngModel)]="newAttendeesStr" placeholder="مثال: SQ, FM, KD">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">إلغاء</button>
+        <button class="btn btn-primary" (click)="saveMeeting()">حفظ الاجتماع</button>
+      </div>
+    </div>
+  </div>
+}

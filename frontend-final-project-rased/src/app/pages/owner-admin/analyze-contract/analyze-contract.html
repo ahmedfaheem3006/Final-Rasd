@@ -1,0 +1,124 @@
+<div class="ai-container">
+  <!-- Header -->
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.t('sidebar.smart_tools') }} / {{ i18n.t('sidebar.analyze_contract') }}</div>
+      <h1 class="animate-gradient-text">{{ i18n.currentLang() === 'ar' ? 'تحليل العقود الذكي' : 'Smart Contract Analysis' }}</h1>
+      <p class="subtitle">{{ i18n.currentLang() === 'ar' ? 'قم بتحميل ملف العقد بصيغة PDF لاستخراج البنود والالتزامات والمخاطر ومناقشتها فوراً' : 'Upload contract PDF to instantly extract terms, obligations, and risks, then chat about them' }}</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="clearChat()" class="btn btn-secondary clear-btn" [title]="i18n.currentLang() === 'ar' ? 'مسح المحادثة' : 'Clear Chat'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/></svg>
+        <span>{{ i18n.currentLang() === 'ar' ? 'مسح المحادثة' : 'Clear Chat' }}</span>
+      </button>
+      <div class="ai-model-badge glow-border-animate">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="url(#ai-h)" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/><defs><linearGradient id="ai-h" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#06b6d4"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs></svg>
+        <span>grok-2-1212</span>
+        <span class="model-dot animate-pulse"></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="ai-layout animate-reveal" [class.analyzed]="contractData()">
+    @if (contractData()) {
+      <!-- Compact Upload Panel at the top when analyzed -->
+      <div class="card upload-card compact-upload-card animate-fade-in">
+        <input type="file" id="contractFileInput" (change)="onFileSelected($event)" accept=".pdf" style="display: none;" />
+        <div class="file-info-box">
+          <div class="file-icon animate-pulse">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="file-details">
+            <span class="file-name" [title]="uploadedFileName()">{{ uploadedFileName() }}</span>
+            <span class="file-status-badge">{{ isUploading() ? (i18n.isRtl() ? 'جاري التحليل...' : 'Analyzing...') : (i18n.isRtl() ? 'تم التحليل بنجاح' : 'Analyzed successfully') }}</span>
+          </div>
+          <button class="btn-change-file" (click)="triggerFileInput()" [disabled]="isUploading()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Chat Window -->
+    <div class="chat-window card animate-slide-up" [class.full-width]="contractData()">
+      <div #chatScrollContainer class="chat-messages">
+        @for (msg of messages(); track $index) {
+          <div class="chat-message" [ngClass]="msg.role">
+            @if (msg.role === 'assistant') {
+              <div class="msg-avatar assistant-avatar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+              </div>
+            }
+            <div class="msg-bubble" [ngClass]="msg.role" [class.summary-bubble]="msg.isSummary" [class.clauses-bubble]="msg.isClauses">
+              <div class="msg-text" [innerHTML]="msg.safeText || msg.text"></div>
+              @if (msg.time) { <span class="msg-time">{{ msg.time }}</span> }
+            </div>
+            @if (msg.role === 'user') {
+              <div class="msg-avatar user-avatar">
+                {{ currentUser()?.avatarInitials || (i18n.isRtl() ? 'ز' : 'U') }}
+              </div>
+            }
+          </div>
+        }
+        <!-- Typing/Uploading indicator -->
+        @if (isTyping() || isUploading()) {
+          <div class="chat-message assistant">
+            <div class="msg-avatar assistant-avatar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+            </div>
+            <div class="typing-indicator" style="display: flex; gap: 8px; align-items: center; background: var(--border-light); padding: 10px 14px; border-radius: var(--radius-sm); width: fit-content;">
+              <span style="font-size: 0.78rem; color: var(--text-muted);">{{ isUploading() ? (i18n.isRtl() ? 'جاري تحليل وفحص العقد...' : 'Analyzing and scanning contract...') : '' }}</span>
+              <div style="display: flex; gap: 4px;">
+                <div class="typing-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: pulse-glow 1s infinite alternate;"></div>
+                <div class="typing-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: pulse-glow 1s infinite alternate 0.2s;"></div>
+                <div class="typing-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: pulse-glow 1s infinite alternate 0.4s;"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+      
+      <div class="chat-input-area">
+        <input class="chat-input" type="text" [(ngModel)]="inputText" (keyup.enter)="sendMessage()" [placeholder]="i18n.currentLang() === 'ar' ? 'اسألني عن شروط العقد، الغرامات، التواريخ...' : 'Ask about terms, penalties, dates...'" [disabled]="!contractData()" />
+        
+        <button (click)="sendMessage()" class="send-btn btn btn-primary" [disabled]="!contractData()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar / Upload Area -->
+    @if (!contractData()) {
+      <div class="ai-sidebar animate-fade-in">
+        <!-- Upload Panel -->
+        <div class="card upload-card animate-pulse-border">
+          <input type="file" id="contractFileInput" (change)="onFileSelected($event)" accept=".pdf" style="display: none;" />
+          
+          <div class="upload-dropzone" (click)="triggerFileInput()">
+            <div class="upload-icon-wrapper animate-bounce">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <h4>{{ i18n.currentLang() === 'ar' ? 'تحميل عقد جديد' : 'Upload New Contract' }}</h4>
+            <p>{{ i18n.currentLang() === 'ar' ? 'اضغط لاختيار ملف PDF أو اسحبه هنا' : 'Click to select PDF or drag it here' }}</p>
+          </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="card suggestions-card animate-reveal">
+          <div class="card-header-s">
+            <h3>{{ i18n.t('ai.suggestions') }}</h3>
+            <p>{{ i18n.currentLang() === 'ar' ? 'مواضيع يمكنك الاستفسار عنها بعد تحميل العقد' : 'Topics you can query after uploading contract' }}</p>
+          </div>
+          <div class="suggestions-list">
+            @for (s of suggestions(); track s) {
+              <button class="suggestion-btn" style="cursor: not-allowed; opacity: 0.7;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ s }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

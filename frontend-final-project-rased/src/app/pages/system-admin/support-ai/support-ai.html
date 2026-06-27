@@ -1,0 +1,76 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        {{ i18n.currentLang() === 'ar' ? 'المشرف العام / الدعم الذكي' : 'System Admin / Smart Support' }}
+      </div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'مراقبة الدعم بالذكاء الاصطناعي (Support AI)' : 'AI-Powered Support Center' }}</h1>
+      <p class="subtitle">
+        {{ i18n.currentLang() === 'ar' ? 'يتم اكتشاف المشاكل في خوادم الشركات تلقائياً ويقوم الـ AI باقتراح حلول مناسبة في انتظار موافقتك لتطبيقها.' : 'Issues are automatically detected in tenant servers, and AI generates instant resolutions waiting your review.' }}
+      </p>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>{{ i18n.currentLang() === 'ar' ? 'جاري تحميل طلبات الدعم...' : 'Loading support issues...' }}</p>
+    </div>
+  } @else if (issues().length === 0) {
+    <div class="card empty-card animate-reveal">
+      <div class="empty-icon">✓</div>
+      <h3>{{ i18n.currentLang() === 'ar' ? 'كل الأنظمة تعمل بكفاءة تامة!' : 'All systems operating normally!' }}</h3>
+      <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد أي مشكلات أو تنبيهات معلقة من خوادم الشركات حالياً.' : 'No warnings or support requests are currently flagged by system monitors.' }}</p>
+    </div>
+  } @else {
+    <div class="issues-list animate-reveal">
+      @for (issue of issues(); track issue.id) {
+        <div class="card issue-card" [class.border-pending]="issue.status === 'Pending'" [class.border-approved]="issue.status === 'Approved'" [class.border-rejected]="issue.status === 'Rejected'">
+          <div class="issue-header">
+            <div class="company-meta">
+              <span class="company-badge">{{ issue.tenantName }}</span>
+              <span class="issue-date">{{ issue.createdAt | date:'short' }}</span>
+            </div>
+            
+            <div class="status-badge-wrapper">
+              @if (issue.status === 'Pending') {
+                <span class="badge badge-warning">{{ i18n.currentLang() === 'ar' ? 'بانتظار المراجعة' : 'Pending Review' }}</span>
+              } @else if (issue.status === 'Approved') {
+                <span class="badge badge-success">{{ i18n.currentLang() === 'ar' ? 'تم القبول والتطبيق' : 'Approved & Executed' }}</span>
+              } @else {
+                <span class="badge badge-danger">{{ i18n.currentLang() === 'ar' ? 'تم الرفض' : 'Rejected' }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="issue-body">
+            <h4 class="issue-desc-title">{{ i18n.currentLang() === 'ar' ? 'وصف المشكلة المكتشفة:' : 'Detected Issue Description:' }}</h4>
+            <p class="issue-desc">{{ issue.issueDescription }}</p>
+
+            <!-- AI Action Details Highlight Card -->
+            <div class="ai-action-card">
+              <div class="ai-badge">
+                <span class="sparkle">✦</span>
+                <span>{{ i18n.currentLang() === 'ar' ? 'إجراء الذكاء الاصطناعي المقترح (AI Recommendation)' : 'AI Recommendation' }}</span>
+              </div>
+              <p class="ai-details">{{ issue.aiActionDetails }}</p>
+            </div>
+          </div>
+
+          @if (issue.status === 'Pending') {
+            <div class="issue-footer">
+              <button class="btn btn-success" (click)="takeAction(issue.id, 'Approved')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>{{ i18n.currentLang() === 'ar' ? 'موافقة وتطبيق الحل تلقائياً' : 'Approve & Apply Solution' }}</span>
+              </button>
+              <button class="btn btn-secondary-danger" (click)="takeAction(issue.id, 'Rejected')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>{{ i18n.currentLang() === 'ar' ? 'رفض الإجراء' : 'Reject Action' }}</span>
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

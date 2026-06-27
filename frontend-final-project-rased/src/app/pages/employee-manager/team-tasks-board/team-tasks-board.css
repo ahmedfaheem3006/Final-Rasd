@@ -1,0 +1,206 @@
+.pipeline-container {
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.header-info h1 { font-size: 1.85rem; font-weight: 800; color: var(--text-title); margin: 4px 0; }
+.breadcrumbs { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+.header-info .subtitle { font-size: 0.9rem; color: var(--text-body); }
+.header-actions { display: flex; gap: 12px; }
+
+/* Kanban Board */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.kanban-column {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.kanban-column.col-primary { border-top: 3px solid var(--primary); }
+.kanban-column.col-warning { border-top: 3px solid var(--warning); }
+.kanban-column.col-info { border-top: 3px solid #0ea5e9; }
+.kanban-column.col-success { border-top: 3px solid var(--success); }
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.col-title { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 700; color: var(--text-title); }
+.col-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.col-dot.primary { background: var(--primary); }
+.col-dot.warning { background: var(--warning); }
+.col-dot.info { background: #0ea5e9; }
+.col-dot.success { background: var(--success); }
+.col-count { font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-full); background: var(--border-light); color: var(--text-muted); }
+
+/* Cards list */
+.deals-list { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+
+.deal-card {
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  transition: var(--transition-normal);
+  cursor: default;
+}
+.deal-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); border-color: var(--border); }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; border-radius: var(--radius-full); font-weight: 700; }
+.badge-danger { background: var(--danger-light); color: var(--danger); }
+.badge-warning { background: var(--warning-light); color: var(--warning); }
+.badge-info { background: #e0f2fe; color: #0369a1; }
+
+.user-avatar-sm {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Kanban nav buttons */
+.kanban-actions { display: flex; gap: 4px; }
+.k-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.k-btn:hover { background: var(--primary); border-color: var(--primary); color: white; }
+
+/* Add task button */
+.add-deal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  margin-top: 4px;
+}
+.add-deal-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+.empty-column-state {
+  text-align: center;
+  padding: 24px 12px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-sm);
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 560px;
+  overflow: hidden;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+.modal-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-title); }
+.close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: var(--radius-xs); transition: var(--transition-fast); }
+.close-btn:hover { background: var(--border-light); color: var(--text-title); }
+.modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 18px 24px; border-top: 1px solid var(--border-light); }
+
+.form-row { display: flex; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.form-group label { font-size: 0.82rem; font-weight: 600; color: var(--text-body); }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-input, var(--bg));
+  color: var(--text-title);
+  font-size: 0.875rem;
+  width: 100%;
+  font-family: inherit;
+  transition: var(--transition-fast);
+  resize: vertical;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+@media (max-width: 1100px) { .kanban-board { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) {
+  .kanban-board { grid-template-columns: 1fr; }
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .form-row { flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+  .pipeline-container { gap: 20px; }
+  .header-info h1 { font-size: 1.2rem; }
+}
+
+@media (max-width: 375px) {
+  .header-info h1 { font-size: 1.1rem; }
+}
+
+@media (max-width: 320px) {
+  .header-info h1 { font-size: 1rem; }
+}

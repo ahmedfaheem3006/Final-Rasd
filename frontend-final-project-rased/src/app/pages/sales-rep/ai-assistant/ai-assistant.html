@@ -1,0 +1,98 @@
+<div class="ai-container animate-fade-in">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <div class="breadcrumbs">الأدوات الذكية / مساعد المبيعات</div>
+      <h1 class="animate-gradient-text">مساعد المبيعات الذكي RASD AI</h1>
+      <p class="subtitle">شات بوت ذكي لمساعدتك في توليد محتوى المبيعات، ومراجعة صفقاتك وعملائك</p>
+    </div>
+    <div class="ai-model-badge glow-border-animate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="url(#ai-h)" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/><defs><linearGradient id="ai-h" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#06b6d4"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs></svg>
+      <span>RASD Sales AI</span>
+      <span class="model-dot"></span>
+    </div>
+  </header>
+
+  <div class="ai-layout animate-reveal" style="margin-top: 24px;">
+    <!-- Chat Window -->
+    <div class="chat-window card">
+      <div class="chat-messages">
+        @for (msg of messages(); track $index) {
+          <div class="chat-message" [ngClass]="msg.role">
+            @if (msg.role === 'assistant') {
+              <div class="msg-avatar assistant-avatar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+              </div>
+            }
+            <div class="msg-bubble" [ngClass]="msg.role">
+              <p class="msg-text" style="white-space: pre-line;">{{ msg.text }}</p>
+              @if (msg.time) { <span class="msg-time">{{ msg.time }}</span> }
+            </div>
+            @if (msg.role === 'user') {
+              <div class="msg-avatar user-avatar">رع</div>
+            }
+          </div>
+        }
+        <!-- Typing indicator -->
+        @if (isTyping()) {
+          <div class="chat-message assistant">
+            <div class="msg-avatar assistant-avatar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+            </div>
+            <div class="typing-indicator" style="display: flex; gap: 4px; padding: 12px 18px; background: var(--border-light); border-radius: var(--radius-sm); width: fit-content;">
+              <div class="typing-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: pulse-glow 1s infinite alternate;"></div>
+              <div class="typing-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: pulse-glow 1s infinite alternate 0.2s;"></div>
+              <div class="typing-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: pulse-glow 1s infinite alternate 0.4s;"></div>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="chat-input-area">
+        <input class="chat-input" type="text" [(ngModel)]="inputText" (keyup.enter)="sendMessage()" placeholder="اكتب سؤالك أو طلبك هنا..." />
+        <button (click)="sendMessage()" class="send-btn btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="ai-sidebar">
+      <!-- Suggestions -->
+      <div class="card suggestions-card">
+        <div class="card-header-s">
+          <h3>اقتراحات سريعة للمبيعات</h3>
+          <p class="subtitle" style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">اضغط لإرسال السؤال مباشرة</p>
+        </div>
+        <div class="suggestions-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
+          @for (s of suggestions(); track s) {
+            <button (click)="selectSuggestion(s)" class="suggestion-btn" style="text-align: right; font-size: 0.825rem; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); transition: var(--transition-normal); display: flex; align-items: center; gap: 8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>{{ s }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Capabilities Card -->
+      <div class="card capabilities-card" style="margin-top: 20px;">
+        <div class="card-header-s">
+          <h3>قدرات مساعد المبيعات</h3>
+        </div>
+        <div class="cap-list" style="display: flex; flex-direction: column; gap: 14px; margin-top: 16px;">
+          <div class="cap-item" style="display: flex; align-items: center; gap: 10px;">
+            <span class="cap-icon primary" style="background: var(--primary-light); color: var(--primary); width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+            <span style="font-size: 0.85rem; font-weight: 600;">صياغة رسائل البريد والمتابعة</span>
+          </div>
+          <div class="cap-item" style="display: flex; align-items: center; gap: 10px;">
+            <span class="cap-icon success" style="background: var(--success-light); color: var(--success); width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+            <span style="font-size: 0.85rem; font-weight: 600;">تحليل العقود وصيغ التفاوض</span>
+          </div>
+          <div class="cap-item" style="display: flex; align-items: center; gap: 10px;">
+            <span class="cap-icon warning" style="background: var(--warning-light); color: var(--warning); width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+            <span style="font-size: 0.85rem; font-weight: 600;">تلخيص الصفقات ومؤشرات النجاح</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,109 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        {{ i18n.currentLang() === 'ar' ? 'المشرف العام / إضافة شركة' : 'System Admin / Add Company' }}
+      </div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'إضافة شركة جديدة للنظام' : 'Register New Company' }}</h1>
+      <p class="subtitle">
+        {{ i18n.currentLang() === 'ar' ? 'أدخل تفاصيل الشركة المشتركة الجديدة وعين المالك المباشر لها لتسجيل الحساب والوصول.' : 'Enter details of the new subscribing tenant and assign its default owner credentials.' }}
+      </p>
+    </div>
+  </header>
+
+  <div class="card form-card animate-reveal">
+    <form (ngSubmit)="onSubmit()">
+      <!-- Group 1: Company Profile -->
+      <h3 class="section-title">{{ i18n.currentLang() === 'ar' ? 'بيانات المنشأة والفوترة' : 'Company Info & Subscription' }}</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'اسم الشركة' : 'Company Name' }} <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="companyName" name="companyName" required [placeholder]="i18n.currentLang() === 'ar' ? 'مثال: شركة الحلول المبتكرة' : 'e.g. Innovative Solutions Co.'" />
+        </div>
+      </div>
+
+      <div class="form-row col-2">
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'قيمة الاشتراك الشهري ($)' : 'Monthly Subscription ($)' }}</label>
+          <input type="number" [(ngModel)]="price" name="price" min="0" />
+        </div>
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'حد استهلاك الذكاء الاصطناعي (عدد العمليات)' : 'AI Capacity Limit (Requests/mo)' }}</label>
+          <input type="number" [(ngModel)]="aiLimit" name="aiLimit" min="0" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Group 2: Owner account -->
+      <h3 class="section-title">{{ i18n.currentLang() === 'ar' ? 'بيانات مالك الشركة (المدير العام للشركة)' : 'Owner Credentials (General Manager)' }}</h3>
+      
+      <div class="form-row col-2">
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'اسم المالك الكامل' : 'Owner Full Name' }} <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="ownerFullName" name="ownerFullName" required [placeholder]="i18n.currentLang() === 'ar' ? 'مثال: فهد عبد الرحمن' : 'e.g. Fahad Abdulrahman'" />
+        </div>
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني للمالك' : 'Owner Email Address' }} <span class="required">*</span></label>
+          <input type="email" [(ngModel)]="ownerEmail" name="ownerEmail" required placeholder="owner@company.com" style="text-align: left; direction: ltr;" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'كلمة المرور الافتراضية' : 'Default Login Password' }} <span class="required">*</span></label>
+          <input type="password" [(ngModel)]="ownerPassword" name="ownerPassword" required placeholder="••••••••" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Group 3: Features Access -->
+      <h3 class="section-title">{{ i18n.currentLang() === 'ar' ? 'تحديد الخدمات المفعلة للشركة' : 'Initial Module Access Settings' }}</h3>
+      <p class="section-subtitle">
+        {{ i18n.currentLang() === 'ar' ? 'اختر الأقسام والميزات التي سيتم تفعيلها فوراً لهذه الشركة عند تشغيل حسابها.' : 'Configure which features are active instantly on account initialization.' }}
+      </p>
+
+      <div class="checkbox-grid">
+        <label class="checkbox-card">
+          <input type="checkbox" [(ngModel)]="isCrmEnabled" name="isCrmEnabled" />
+          <span class="custom-checkbox"></span>
+          <span class="label-text">{{ i18n.currentLang() === 'ar' ? 'إدارة العملاء والمبيعات (CRM)' : 'CRM & Deal Management' }}</span>
+        </label>
+
+        <label class="checkbox-card">
+          <input type="checkbox" [(ngModel)]="isInvoicesEnabled" name="isInvoicesEnabled" />
+          <span class="custom-checkbox"></span>
+          <span class="label-text">{{ i18n.currentLang() === 'ar' ? 'إدارة الفواتير والفوترة المالية' : 'Invoices & Tax Billing' }}</span>
+        </label>
+
+        <label class="checkbox-card">
+          <input type="checkbox" [(ngModel)]="isTasksEnabled" name="isTasksEnabled" />
+          <span class="custom-checkbox"></span>
+          <span class="label-text">{{ i18n.currentLang() === 'ar' ? 'لوحات مهام الموظفين (Tasks)' : 'Employee Tasks Board' }}</span>
+        </label>
+
+        <label class="checkbox-card">
+          <input type="checkbox" [(ngModel)]="isMeetingsEnabled" name="isMeetingsEnabled" />
+          <span class="custom-checkbox"></span>
+          <span class="label-text">{{ i18n.currentLang() === 'ar' ? 'تفريغ الاجتماعات بالـ AI' : 'AI Meeting Transcriptions' }}</span>
+        </label>
+
+        <label class="checkbox-card">
+          <input type="checkbox" [(ngModel)]="isAiEnabled" name="isAiEnabled" />
+          <span class="custom-checkbox"></span>
+          <span class="label-text">{{ i18n.currentLang() === 'ar' ? 'المساعد الذكي رصد AI' : 'Smart AI Chat Assistant' }}</span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-submit" [disabled]="isSubmitting()">
+          <span *ngIf="!isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'تسجيل الشركة وإنشاء حساب المالك' : 'Register Tenant & Setup Owner' }}</span>
+          <span *ngIf="isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'جاري التسجيل...' : 'Registering...' }}</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

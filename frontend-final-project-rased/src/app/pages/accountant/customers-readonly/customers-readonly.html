@@ -1,0 +1,20 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info"><div class="breadcrumbs">المحاسبة / العملاء</div><h1>سجل العملاء</h1><p class="subtitle">عرض بيانات العملاء وسجلاتهم المالية (للقراءة فقط)</p></div>
+  </header>
+  <div class="card table-card animate-reveal">
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>اسم العميل</th><th>المسؤول</th><th>البريد الإلكتروني</th><th>إجمالي الفواتير</th><th>آخر سداد</th><th>الحالة</th></tr></thead>
+        <tbody>
+          @for (c of customers(); track c.email) {
+            <tr>
+              <td class="fw-bold">{{ c.name }}</td><td>{{ c.contact }}</td><td class="text-muted">{{ c.email }}</td><td class="fw-bold text-primary">{{ c.totalInvoices }}</td><td class="text-muted">{{ c.lastPayment }}</td>
+              <td>@if(c.status==='active'){<span class="badge badge-success">منتظم</span>}@else{<span class="badge badge-danger">متأخر</span>}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

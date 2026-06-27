@@ -1,0 +1,145 @@
+<div #modalOverlay class="premium-modal-overlay" [class.active]="showModal()" [class.light]="isLightTheme" (click)="onOverlayClick($event)">
+  <div #premiumModal class="premium-modal" [class.active]="showModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="تقديم طلب إجازة للموظف">
+
+    <!-- Header -->
+    <div class="premium-header">
+      <div class="premium-header-left">
+        <div class="premium-header-icon">
+          <i class="fa-solid fa-file-signature"></i>
+        </div>
+        <div class="premium-header-text">
+          <h2 class="premium-title">تقديم طلب إجازة للموظف</h2>
+          <p class="premium-subtitle">تسجيل وتوثيق طلب إجازة جديد في النظام</p>
+        </div>
+      </div>
+      <button class="premium-close-btn" (click)="closeModal()" type="button">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="premium-header-divider"></div>
+
+    <form (ngSubmit)="onSubmit()">
+      <!-- Scrollable Body -->
+      <div class="premium-body">
+
+        <!-- Employee Autocomplete -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-user"></i> اسم الموظف</label>
+          <div class="autocomplete-wrapper">
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user-tag input-icon"></i>
+              <input type="text" class="autocomplete-input"
+                [ngModel]="searchTerm()"
+                (ngModelChange)="onSearchInput($event)"
+                name="employeeSearch" required
+                placeholder="ابحث باسم الموظف..."
+                autocomplete="off"
+                (focus)="onSearchFocus()" (blur)="onSearchBlur()"
+                (keydown)="onDropdownKeydown($event)">
+              @if (loadingEmployees()) {
+                <i class="fa-solid fa-spinner fa-spin autocomplete-spinner"></i>
+              }
+            </div>
+            @if (showDropdown() && !loadingEmployees()) {
+              <div class="autocomplete-dropdown">
+                @if (filteredEmployees().length > 0) {
+                  @for (emp of filteredEmployees(); track emp.id; let i = $index) {
+                    <div class="autocomplete-item"
+                      [class.highlighted]="filteredIndex() === i"
+                      (mousedown)="selectEmployee(emp)">
+                      <div class="autocomplete-item-info">
+                        <span class="autocomplete-item-name">{{ emp.fullName }}</span>
+                        <span class="autocomplete-item-email">{{ emp.email }}</span>
+                      </div>
+                      <span class="autocomplete-item-role">{{ emp.roleLabel }}</span>
+                    </div>
+                  }
+                } @else {
+                  <div class="autocomplete-empty">
+                    <i class="fa-solid fa-user-slash"></i>
+                    <span>لا يوجد موظف بهذا الاسم في النظام</span>
+                  </div>
+                }
+              </div>
+            }
+            @if (employeeError()) {
+              <div class="autocomplete-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ employeeError() }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Role (read-only) -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-briefcase"></i> الدور الوظيفي</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-id-card input-icon"></i>
+            <input type="text" [ngModel]="newRole" name="newRole" readonly class="role-readonly" placeholder="اختر موظفاً أولاً">
+          </div>
+        </div>
+
+        <!-- Leave Type -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-business-time"></i> نوع الإجازة</label>
+          <div class="input-wrapper select-wrapper">
+            <i class="fa-solid fa-clock-rotate-left input-icon"></i>
+            <select [(ngModel)]="newType" name="newType">
+              <option>إجازة سنوية</option>
+              <option>إجازة مرضية</option>
+              <option>إجازة طارئة</option>
+              <option>إجازة شخصية</option>
+              <option>إجازة غير مدفوعة</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Start Date -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-calendar-days"></i> تاريخ البدء (من)</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-calendar-plus input-icon"></i>
+            <input type="date" [(ngModel)]="newStartDate" name="newStartDate" required>
+          </div>
+        </div>
+
+        <!-- End Date -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-calendar-days"></i> تاريخ الانتهاء (إلى)</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-calendar-minus input-icon"></i>
+            <input type="date" [(ngModel)]="newEndDate" name="newEndDate" required>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-pen"></i> سبب الإجازة</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-align-left input-icon"></i>
+            <input type="text" [(ngModel)]="newReason" name="newReason" placeholder="سبب الإجازة (اختياري)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sticky Footer -->
+      <div class="premium-footer">
+        <button type="button" class="premium-btn premium-btn-ghost" (click)="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+          إلغاء
+        </button>
+        <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="premium-btn-loader"></span>
+            جاري التقديم...
+          } @else {
+            <i class="fa-solid fa-paper-plane"></i>
+            تقديم الطلب
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

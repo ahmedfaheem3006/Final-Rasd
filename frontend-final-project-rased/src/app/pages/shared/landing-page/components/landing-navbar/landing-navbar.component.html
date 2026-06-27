@@ -1,0 +1,72 @@
+<header class="landing-header" [class.scrolled]="isScrolled()">
+  <div class="header-content">
+    <div class="brand">
+      <img src="/logos/logo-light.jpeg" alt="Rasd Logo" class="logo-light" />
+      <img src="/logos/logo-dark.jpeg" alt="Rasd Logo" class="logo-dark" />
+    </div>
+
+    <!-- Desktop Navigation -->
+    <nav class="nav-links desktop-nav">
+      <a href="#hero">{{ i18n.currentLang() === 'ar' ? 'الرئيسية' : 'Platform' }}</a>
+      <a href="#features">{{ i18n.currentLang() === 'ar' ? 'المميزات' : 'Solutions' }}</a>
+      <a href="#pricing">{{ i18n.currentLang() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
+      <a href="#contact">{{ i18n.currentLang() === 'ar' ? 'تواصل معنا' : 'Contact Us' }}</a>
+      <a href="#faq">{{ i18n.currentLang() === 'ar' ? 'الأسئلة الشائعة' : 'FAQs' }}</a>
+    </nav>
+
+    <!-- Desktop Actions -->
+    <div class="header-actions desktop-actions">
+      <!-- Theme Toggle Button -->
+      <button class="header-toggle-btn theme-btn" (click)="toggleTheme()" title="Toggle Theme" aria-label="Toggle Theme">
+        @if (themeService.isDark()) {
+          <!-- Sun Icon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        } @else {
+          <!-- Moon Icon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        }
+      </button>
+      
+      <!-- Language Switcher Button -->
+      <button class="header-toggle-btn lang-btn" (click)="toggleLang()" title="Toggle Language" aria-label="Toggle Language">
+        {{ i18n.currentLang() === 'ar' ? 'EN' : 'AR' }}
+      </button>
+      <a routerLink="/login" class="btn-login-header">{{ i18n.currentLang() === 'ar' ? 'تسجيل الدخول' : 'Log In' }}</a>
+      <a routerLink="/register" class="btn btn-primary btn-cta-header">{{ i18n.currentLang() === 'ar' ? 'سجل شركتك' : 'Get Started' }}</a>
+    </div>
+
+    <!-- Mobile Hamburger Button -->
+    <button class="hamburger-btn" (click)="toggleMobileMenu()" [attr.aria-expanded]="isMobileMenuOpen()" aria-label="Toggle mobile menu">
+      @if (isMobileMenuOpen()) {
+        <!-- Close icon -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      } @else {
+        <!-- Menu icon -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      }
+    </button>
+  </div>
+
+  <!-- Mobile Menu Dropdown -->
+  <div class="mobile-menu" [class.open]="isMobileMenuOpen()">
+    <nav class="mobile-nav-links">
+      <a href="#hero" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'الرئيسية' : 'Platform' }}</a>
+      <a href="#features" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'المميزات' : 'Solutions' }}</a>
+      <a href="#pricing" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
+      <a href="#contact" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'تواصل معنا' : 'Contact Us' }}</a>
+      <a href="#faq" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'الأسئلة الشائعة' : 'FAQs' }}</a>
+    </nav>
+    <div class="mobile-actions">
+      <div class="mobile-toggles">
+        <button class="header-toggle-btn theme-btn" (click)="toggleTheme(); closeMobileMenu()">
+          @if (themeService.isDark()) { Light Mode } @else { Dark Mode }
+        </button>
+        <button class="header-toggle-btn lang-btn" (click)="toggleLang(); closeMobileMenu()">
+          {{ i18n.currentLang() === 'ar' ? 'English' : 'العربية' }}
+        </button>
+      </div>
+      <a routerLink="/login" class="btn btn-outline" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'تسجيل الدخول' : 'Log In' }}</a>
+      <a routerLink="/register" class="btn btn-primary" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'سجل شركتك' : 'Get Started' }}</a>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,142 @@
+<div class="register-wrapper">
+  <!-- Background Blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Left Side: Form Container -->
+  <div class="form-container">
+    <div class="form-header">
+      <div class="header-actions" style="display: flex; align-items: center; gap: 16px;">
+        <div class="brand-badge">
+          <img
+            [src]="themeService.isDark() 
+            ? (i18n.currentLang() === 'ar' ? 'assets/images/Rasd Ar black Rmove bg.png' : 'assets/images/Rasd En black Rmove bg.png')
+            : (i18n.currentLang() === 'ar' ? 'assets/images/rasd Ar remove bg.png' : 'assets/images/Rasd En White Rmove bg.png')"
+            alt="Rasd Logo" class="brand-logo-img" />
+        </div>
+
+        <button type="button" class="header-toggle-btn lang-btn" (click)="i18n.toggleLang()" style="background: none; border: none; color: var(--text-muted-custom); font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='var(--text-muted-custom)'">
+          {{ i18n.currentLang() === 'ar' ? 'EN' : 'AR' }}
+        </button>
+
+        <button type="button" class="header-toggle-btn theme-btn" (click)="themeService.toggleTheme()" style="background: none; border: none; color: var(--text-muted-custom); cursor: pointer; transition: color 0.2s; display: flex; align-items: center;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='var(--text-muted-custom)'">
+          @if (themeService.isDark()) {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          } @else {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          }
+        </button>
+      </div>
+
+      <a routerLink="/" class="back-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <span>{{ i18n.t('common.back') }}</span>
+      </a>
+    </div>
+
+    <div class="form-body animate-fade-in">
+      <h2>{{ i18n.t('auth.register.title') }}</h2>
+      <p class="subtitle">{{ i18n.t('auth.register.subtitle') }}</p>
+
+      <form class="register-form" (ngSubmit)="onSubmit()">
+        <div class="input-grid">
+          <div class="input-group">
+            <label for="owner-name">{{ i18n.t('auth.register.name') }}</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <input type="text" id="owner-name" name="ownerFullName" [(ngModel)]="ownerFullName" [placeholder]="i18n.currentLang() === 'ar' ? 'أدخل اسمك الكامل' : 'Enter full name'" required>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="company-name">{{ i18n.t('auth.register.company') }}</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              <input type="text" id="company-name" name="companyName" [(ngModel)]="companyName" [placeholder]="i18n.currentLang() === 'ar' ? 'مؤسسة رصد لتقنية المعلومات' : 'e.g. RASD IT Corp'" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="email">{{ i18n.t('auth.register.email') }}</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <input type="email" id="email" name="ownerEmail" [(ngModel)]="ownerEmail" [placeholder]="i18n.t('auth.login.email.placeholder')" required>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="password">{{ i18n.t('auth.register.password') }}</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <input type="password" id="password" name="ownerPassword" [(ngModel)]="ownerPassword" [placeholder]="i18n.t('auth.login.password.placeholder')" required>
+          </div>
+        </div>
+
+        @if (errorMessage) {
+          <div class="error-banner" style="color: var(--danger); font-size: 0.85rem; font-weight: 600; padding: 8px 12px; background-color: var(--danger-light); border-radius: var(--radius-xs); margin-bottom: 15px;">
+            {{ errorMessage }}
+          </div>
+        }
+
+        @if (successMessage) {
+          <div class="success-banner" style="color: var(--success); font-size: 0.85rem; font-weight: 600; padding: 8px 12px; background-color: var(--success-light); border-radius: var(--radius-xs); margin-bottom: 15px;">
+            {{ successMessage }}
+          </div>
+        }
+
+        <div class="terms-agree">
+          <label class="checkbox-container">
+            <input type="checkbox" required checked>
+            <span class="checkmark"></span>
+            <span class="checkbox-label">
+              {{ i18n.currentLang() === 'ar' ? 'أوافق على' : 'I agree to the' }} 
+              <a href="#" class="terms-link">{{ i18n.currentLang() === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</a> 
+              {{ i18n.currentLang() === 'ar' ? 'و' : 'and' }} 
+              <a href="#" class="terms-link">{{ i18n.currentLang() === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</a>
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-submit">{{ i18n.t('auth.register.submit') }}</button>
+      </form>
+
+      <div class="form-footer">
+        <span>{{ i18n.t('auth.register.login') }}</span>
+        <a routerLink="/login" class="register-link">{{ i18n.t('auth.register.login.link') }}</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Decorative/Feature Container -->
+  <div class="decor-container">
+    <div class="decor-overlay"></div>
+    <div class="decor-content">
+      <div class="decor-tag">{{ i18n.currentLang() === 'ar' ? 'إدارة حية متكاملة' : 'Integrated Operations' }}</div>
+      <h3>{{ i18n.currentLang() === 'ar' ? 'أنشئ بيئة عملك في دقائق' : 'Build Your Workspace in Minutes' }}</h3>
+      <p>{{ i18n.currentLang() === 'ar' ? 'نظام رصد يسهل عليك هيكلة أدوار الموظفين، إدارة الفواتير، ومتابعة التقدم البيعي لشركتك من شاشة واحدة فقط.' : 'RASD facilitates team structuring, billing management, and pipeline tracking all from a single unified control center.' }}</p>
+      
+      <!-- Mini dashboard card floating inside decor -->
+      <div class="floating-card">
+        <div class="card-title">{{ i18n.currentLang() === 'ar' ? 'إحصاء العملاء المتوقعين' : 'Incoming Leads Tracker' }}</div>
+        <div class="card-value">+150</div>
+        <div class="card-footer-text">{{ i18n.currentLang() === 'ar' ? 'تمت إضافتها بنجاح هذا الشهر' : 'added successfully this month' }}</div>
+      </div>
+    </div>
+  </div>
+</div>

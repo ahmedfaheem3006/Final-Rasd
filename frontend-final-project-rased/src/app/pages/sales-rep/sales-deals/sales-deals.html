@@ -1,0 +1,158 @@
+<div class="pipeline-container animate-fade-in">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.t('sales_deals.breadcrumbs') }}</div>
+      <h1>{{ i18n.t('sales_deals.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('sales_deals.subtitle') }}</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="openModal()" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>{{ i18n.t('sales_deals.btn.new') }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Pipeline Stats Summary -->
+  <div class="pipeline-stats animate-reveal" style="margin-top: 24px;">
+    @for (stage of stages; track stage.key) {
+      <div class="pipeline-stat-card" [ngClass]="'border-' + stage.color">
+        <div class="pstat-label">{{ i18n.t(stage.name) }}</div>
+        <div class="pstat-value">{{ getStageSum(stage.key) }}</div>
+        <div class="pstat-count">
+          <span class="badge" [ngClass]="'badge-' + stage.color">{{ getDealsByStage(stage.key).length }} {{ i18n.t('sales_deals.count') }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-board animate-reveal" style="margin-top: 30px;">
+    @for (stage of stages; track stage.key) {
+      <div class="kanban-column" [ngClass]="'col-' + stage.color">
+        <div class="column-header">
+          <div class="col-title">
+            <span class="col-dot" [ngClass]="stage.color"></span>
+            <span>{{ i18n.t(stage.name) }}</span>
+          </div>
+          <span class="col-count">{{ getDealsByStage(stage.key).length }}</span>
+        </div>
+        
+        <div class="deals-list">
+          @for (deal of getDealsByStage(stage.key); track deal.id) {
+            <div class="deal-card">
+              <div class="deal-client">{{ deal.client }}</div>
+              <div class="deal-value">{{ formatCurrency(deal.value) }}</div>
+              <div class="deal-footer">
+                <span class="deal-date">{{ getDateLabel(deal.date) }}</span>
+                <div class="kanban-actions">
+                  <!-- Backward button -->
+                  @if (stage.key !== 'prospects') {
+                    <button class="k-btn" (click)="moveDeal(deal.id, 'backward')" [title]="i18n.t('sales_deals.move_back')">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                  }
+                  <!-- Forward button -->
+                  @if (stage.key !== 'closed') {
+                    <button class="k-btn" (click)="moveDeal(deal.id, 'forward')" [title]="i18n.t('sales_deals.move_forward')">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-column-state">{{ i18n.t('sales_deals.no_deals') }}</div>
+          }
+          <button (click)="openModal($any(stage.key))" class="add-deal-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            {{ i18n.t('sales_deals.btn.add') }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ADD DEAL MODAL — Premium Enterprise Design
+     ═══════════════════════════════════════════════ -->
+<div #premiumModalOverlay class="premium-modal-overlay" [class.active]="isModalOpen()" [class.light]="isLightTheme" (click)="closeModal()">
+  <div #premiumModal class="premium-modal" [class.active]="isModalOpen()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="i18n.t('sales_deals.add_aria')">
+
+    <!-- Header -->
+    <div class="premium-header">
+      <div class="premium-header-left">
+        <div class="premium-header-icon">
+          <i class="fa-solid fa-folder-plus"></i>
+        </div>
+        <div class="premium-header-text">
+          <h2 class="premium-title">{{ i18n.t('sales_deals.modal.title') }}</h2>
+          <p class="premium-subtitle">{{ i18n.t('sales_deals.modal.subtitle') }}</p>
+        </div>
+      </div>
+      <button class="premium-close-btn" (click)="closeModal()" type="button">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="premium-header-divider"></div>
+
+    <form (ngSubmit)="addDeal()">
+      <div class="premium-body">
+
+        <!-- Client Name -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-user-tie"></i> {{ i18n.t('sales_deals.form.client') }}</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-building input-icon"></i>
+            <input type="text" [(ngModel)]="newClient" name="newClient" required [placeholder]="i18n.t('sales_deals.form.client_placeholder')" />
+          </div>
+        </div>
+
+        <!-- Deal Value -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-sack-dollar"></i> {{ i18n.t('sales_deals.form.value') }}</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-dollar-sign input-icon"></i>
+            <input type="number" lang="en" [(ngModel)]="newValue" name="newValue" required [placeholder]="i18n.t('sales_deals.form.value_placeholder')" />
+          </div>
+        </div>
+
+        <!-- Stage -->
+        <div class="form-group-modal">
+          <label><i class="fa-solid fa-chart-line"></i> {{ i18n.t('sales_deals.form.stage') }}</label>
+          <div class="input-wrapper select-wrapper">
+            <i class="fa-solid fa-magnifying-glass-chart input-icon"></i>
+            <select [(ngModel)]="newStage" name="newStage">
+              <option value="prospects">{{ i18n.t('sales_deals.stage.prospects') }}</option>
+              <option value="negotiation">{{ i18n.t('sales_deals.stage.negotiation') }}</option>
+              <option value="proposal">{{ i18n.t('sales_deals.stage.proposal') }}</option>
+              <option value="closed">{{ i18n.t('sales_deals.stage.closed') }}</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sticky Footer -->
+      <div class="premium-footer">
+        <button type="button" class="premium-btn premium-btn-ghost" (click)="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+          {{ i18n.t('sales_deals.btn.cancel') }}
+        </button>
+        <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="premium-btn-loader"></span>
+            {{ i18n.t('sales_deals.btn.creating') }}
+          } @else {
+            <i class="fa-solid fa-circle-plus"></i>
+            {{ i18n.t('sales_deals.btn.create') }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

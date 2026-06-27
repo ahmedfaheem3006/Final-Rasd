@@ -1,0 +1,99 @@
+<div class="page-container">
+  <!-- Page Header -->
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">الموظف / المهام</div>
+      <h1>مهامي المسندة</h1>
+      <p class="subtitle">تتبع جميع المهام المسندة إليك وحالة تقدمها</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <span>تصفية</span>
+      </button>
+      <button class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>طلب مهمة جديدة</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid animate-reveal">
+    @for (s of stats(); track s.title) {
+      <div class="stat-card">
+        <div class="stat-icon" [ngClass]="s.color">
+          @if (s.icon === 'tasks') {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          } @else if (s.icon === 'progress') {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          } @else if (s.icon === 'done') {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          }
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ s.value }}</div>
+          <div class="stat-title">{{ s.title }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs animate-reveal">
+    <button class="filter-tab" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">الكل</button>
+    <button class="filter-tab" [class.active]="activeFilter() === 'in-progress'" (click)="setFilter('in-progress')">قيد التنفيذ</button>
+    <button class="filter-tab" [class.active]="activeFilter() === 'pending'" (click)="setFilter('pending')">معلقة</button>
+    <button class="filter-tab" [class.active]="activeFilter() === 'completed'" (click)="setFilter('completed')">مكتملة</button>
+    <button class="filter-tab" [class.active]="activeFilter() === 'overdue'" (click)="setFilter('overdue')">متأخرة</button>
+  </div>
+
+  <!-- Tasks List -->
+  <div class="tasks-list animate-reveal">
+    @for (task of filteredTasks(); track task.id) {
+      <div class="task-card" [ngClass]="'priority-' + task.priority">
+        <div class="task-top-row">
+          <div class="task-main-info">
+            <div class="priority-dot" [ngClass]="task.priority"></div>
+            <div>
+              <a [routerLink]="'/app/employee/tasks/' + task.id" class="task-title-link">{{ task.title }}</a>
+              <div class="task-meta">
+                <span class="task-project">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  {{ task.project }}
+                </span>
+                <span class="task-assignee">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  {{ task.assignedBy }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="task-actions-area">
+            @if (task.status === 'completed') {
+              <span class="badge badge-success">مكتملة</span>
+            } @else if (task.status === 'in-progress') {
+              <span class="badge badge-info">قيد التنفيذ</span>
+            } @else if (task.status === 'overdue') {
+              <span class="badge badge-danger">متأخرة</span>
+            } @else {
+              <span class="badge badge-warning">معلقة</span>
+            }
+            <span class="task-due">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              {{ task.dueDate }}
+            </span>
+          </div>
+        </div>
+        <div class="task-progress-row">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" [style.width.%]="task.progress" [ngClass]="{'overdue-bar': task.status === 'overdue'}"></div>
+          </div>
+          <span class="progress-pct">{{ task.progress }}%</span>
+        </div>
+      </div>
+    }
+  </div>
+</div>

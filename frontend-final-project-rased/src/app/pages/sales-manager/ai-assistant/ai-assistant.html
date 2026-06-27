@@ -1,0 +1,102 @@
+<div class="ai-container">
+  <!-- Header -->
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">مدير المبيعات / AI</div>
+      <h1 class="animate-gradient-text">المساعد البيعي الذكي RASD AI</h1>
+      <p class="subtitle">مساعدك الذكي لتحليل أداء فريق المبيعات، ومراقبة الصفقات، وتقديم توقعات دقيقة</p>
+    </div>
+    <div class="ai-model-badge glow-border-animate">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="url(#ai-h)" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/><defs><linearGradient id="ai-h" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#06b6d4"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs></svg>
+      <span>RASD AI · GPT-4</span>
+      <span class="model-dot"></span>
+    </div>
+  </header>
+
+  <div class="ai-layout animate-reveal">
+    <!-- Chat Window -->
+    <div class="chat-window card">
+      <div class="chat-messages">
+        @for (msg of messages(); track $index) {
+          <div class="chat-message" [ngClass]="msg.role">
+            @if (msg.role === 'assistant') {
+              <div class="msg-avatar assistant-avatar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+              </div>
+            }
+            <div class="msg-bubble" [ngClass]="msg.role">
+              <p class="msg-text" style="white-space: pre-line;">{{ msg.text }}</p>
+              @if (msg.time) { <span class="msg-time">{{ msg.time }}</span> }
+            </div>
+            @if (msg.role === 'user') {
+              <div class="msg-avatar user-avatar">MM</div>
+            }
+          </div>
+        }
+        <!-- Typing indicator -->
+        @if (isTyping()) {
+          <div class="chat-message assistant">
+            <div class="msg-avatar assistant-avatar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+            </div>
+            <div class="typing-indicator" style="display: flex; gap: 4px; padding: 12px 18px; background: var(--border-light); border-radius: var(--radius-sm); width: fit-content;">
+              <div class="typing-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: pulse-glow 1s infinite alternate;"></div>
+              <div class="typing-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: pulse-glow 1s infinite alternate 0.2s;"></div>
+              <div class="typing-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: pulse-glow 1s infinite alternate 0.4s;"></div>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="chat-input-area">
+        <input class="chat-input" type="text" [(ngModel)]="inputText" (keyup.enter)="sendMessage()" placeholder="اكتب سؤالك حول المبيعات والأداء هنا..." />
+        <button (click)="sendMessage()" class="send-btn btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="ai-sidebar">
+      <!-- Suggestions -->
+      <div class="card suggestions-card">
+        <div class="card-header-s">
+          <h3>اقتراحات سريعة</h3>
+          <p>اضغط لإرسال السؤال مباشرة</p>
+        </div>
+        <div class="suggestions-list">
+          @for (s of suggestions(); track s) {
+            <button (click)="selectSuggestion(s)" class="suggestion-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              {{ s }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Capabilities Card -->
+      <div class="card capabilities-card">
+        <div class="card-header-s">
+          <h3>قدرات المساعد</h3>
+        </div>
+        <div class="cap-list">
+          <div class="cap-item">
+            <span class="cap-icon primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+            <span>تحليل أداء فريق المبيعات</span>
+          </div>
+          <div class="cap-item">
+            <span class="cap-icon success"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+            <span>تقارير الصفقات وتحليل القمع</span>
+          </div>
+          <div class="cap-item">
+            <span class="cap-icon warning"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+            <span>توصيات تحسين معدلات التحويل</span>
+          </div>
+          <div class="cap-item">
+            <span class="cap-icon info"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+            <span>التنبؤ بإيرادات المبيعات القادمة</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

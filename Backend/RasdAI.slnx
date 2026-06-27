@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="RasdAI.API/RasdAI.API.csproj" />
+  <Project Path="RasdAI.BLL/RasdAI.BLL.csproj" />
+  <Project Path="RasdAI.DAL/RasdAI.DAL.csproj" />
+</Solution>

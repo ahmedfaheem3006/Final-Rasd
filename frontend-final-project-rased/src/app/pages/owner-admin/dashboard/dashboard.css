@@ -1,0 +1,477 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.header-info h1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-title);
+  margin: 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.breadcrumbs {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.header-info .subtitle {
+  font-size: 0.9rem;
+  color: var(--text-body);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-actions .btn {
+  padding: 10px 18px;
+  font-size: 0.85rem;
+}
+
+/* Stats Cards Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Summary Cards Grid inherits global styles.css .stat-card classes */
+
+/* Two Column Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.main-column, .side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.card-header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-title);
+}
+
+.card-header .subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Chart Styles */
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-body);
+}
+
+.legend-item .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-item .dot.primary { background-color: var(--primary); }
+.legend-item .dot.secondary { background-color: var(--secondary); }
+
+.chart-content {
+  width: 100%;
+  position: relative;
+}
+
+/* Empty State */
+.chart-empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+  z-index: 1;
+}
+
+.chart-empty-state p {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.chart-hidden {
+  visibility: hidden;
+}
+
+/* Growth Badge */
+.growth-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.growth-badge.positive {
+  background: rgba(1, 181, 116, 0.1);
+  color: #01b574;
+}
+
+.growth-badge.negative {
+  background: rgba(227, 26, 26, 0.1);
+  color: #e31a1a;
+}
+
+.growth-badge.positive::before {
+  content: '▲';
+  font-size: 0.65rem;
+}
+
+.growth-badge.negative::before {
+  content: '▼';
+  font-size: 0.65rem;
+}
+
+/* Chart Dot Hover */
+.chart-dot {
+  transition: r 0.2s ease;
+}
+
+.chart-dot:hover {
+  r: 7;
+}
+
+/* Chart Line Animation */
+.chart-line {
+  transition: d 0.5s ease;
+}
+
+.svg-dashboard-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Table Styles */
+.table-card {
+  padding: 24px 0; /* Remove horizontal padding so tables go full-bleed internally if needed */
+}
+
+.table-card .card-header {
+  padding: 0 24px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dashboard-table th {
+  padding: 12px 24px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  background-color: var(--border-light);
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-table td {
+  padding: 16px 24px;
+  font-size: 0.85rem;
+  color: var(--text-body);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.dashboard-table tr:last-child td {
+  border-bottom: none;
+}
+
+.dashboard-table .client-name {
+  font-weight: 700;
+  color: var(--text-title);
+}
+
+.dashboard-table .deal-amount {
+  font-weight: 600;
+}
+
+.dashboard-table .deal-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Performance list */
+.employees-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.employee-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.employee-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.emp-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.emp-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emp-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.emp-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-title);
+}
+
+.emp-role {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.emp-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar-bg {
+  flex: 1;
+  height: 6px;
+  background-color: var(--border-light);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+  border-radius: 3px;
+}
+
+.progress-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-title);
+  min-width: 30px;
+}
+
+.target-val {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Quick Actions Panel */
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.action-grid-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background-color: var(--border-light);
+  transition: var(--transition-normal);
+}
+
+.action-grid-btn:hover {
+  background-color: var(--bg-card);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.action-grid-btn .icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-grid-btn .icon-box.primary { background-color: var(--primary-light); color: var(--primary); }
+.action-grid-btn .icon-box.warning { background-color: var(--warning-light); color: var(--warning); }
+.action-grid-btn .icon-box.success { background-color: var(--success-light); color: var(--success); }
+.action-grid-btn .icon-box.info { background-color: var(--info-light); color: var(--info); }
+
+.action-title {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--text-title);
+  text-align: center;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .header-actions {
+    width: 100%;
+  }
+  
+  .header-actions .btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    gap: 20px;
+  }
+  .main-column, .side-column {
+    gap: 20px;
+  }
+  .quick-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .action-grid-btn {
+    padding: 14px 8px;
+    gap: 8px;
+  }
+  .action-grid-btn .icon-box {
+    width: 36px;
+    height: 36px;
+  }
+  .action-title {
+    font-size: 0.75rem;
+  }
+  .card-header h3 {
+    font-size: 0.95rem;
+  }
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 10px 14px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+  .header-info h1 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .header-info h1 {
+    font-size: 1rem;
+  }
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 8px 10px;
+    font-size: 0.7rem;
+  }
+  .employee-item {
+    gap: 8px;
+  }
+  .emp-meta {
+    gap: 8px;
+  }
+}

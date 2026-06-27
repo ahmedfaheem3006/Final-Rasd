@@ -1,0 +1,39 @@
+.page-container { direction: rtl; display: flex; flex-direction: column; gap: 30px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; }
+.header-info h1 { font-size: 1.85rem; font-weight: 800; color: var(--text-title); margin: 4px 0; }
+.breadcrumbs { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
+.header-info .subtitle { font-size: 0.9rem; color: var(--text-body); }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+/* Summary Cards Grid inherits global styles.css .stat-card classes */
+.card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-md); box-shadow: var(--shadow-md); }
+.card-title { font-size: 1.05rem; font-weight: 700; color: var(--text-title); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border-light); }
+.team-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border-light); gap: 16px; }
+.team-row:last-child { border-bottom: none; }
+.team-info { display: flex; align-items: center; gap: 12px; }
+.team-avatar { width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.team-name { font-weight: 700; color: var(--text-title); font-size: 0.9rem; }
+.team-meta { font-size: 0.78rem; color: var(--text-muted); }
+.team-progress { display: flex; align-items: center; gap: 10px; width: 200px; }
+.progress-bar-bg { flex: 1; height: 7px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary)); border-radius: 4px; }
+.progress-pct { font-size: 0.82rem; font-weight: 700; color: var(--text-title); min-width: 35px; }
+@media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } .page-header { flex-direction: column; align-items: flex-start; gap: 16px; } }
+
+@media (max-width: 480px) {
+  .page-container { gap: 20px; }
+  .team-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .team-progress { width: 100%; }
+  .header-info h1 { font-size: 1.2rem; }
+  .card-title { font-size: 0.9rem; }
+  .card { padding: 16px; }
+}
+
+@media (max-width: 375px) {
+  .header-info h1 { font-size: 1.1rem; }
+  .team-row { padding: 10px 0; }
+}
+
+@media (max-width: 320px) {
+  .header-info h1 { font-size: 1rem; }
+}

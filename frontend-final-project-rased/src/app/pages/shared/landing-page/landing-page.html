@@ -1,0 +1,998 @@
+<div class="landing-container" [class.rtl]="i18n.isRtl()">
+  <!-- ═══════════════ NAVBAR ═══════════════ -->
+  <header class="landing-header" [class.scrolled]="isHeaderScrolled()">
+    <div class="header-content">
+      <div class="brand">
+        <img
+          [src]="themeService.isDark() 
+          ? (i18n.currentLang() === 'ar' ? 'assets/images/Rasd Ar black Rmove bg.png' : 'assets/images/Rasd En black Rmove bg.png')
+          : (i18n.currentLang() === 'ar' ? 'assets/images/rasd Ar remove bg.png' : 'assets/images/Rasd En White Rmove bg.png')"
+          alt="Rasd Logo" class="brand-logo-img" />
+      </div>
+
+      <nav class="nav-links">
+        <a href="#hero">{{ i18n.currentLang() === 'ar' ? 'الرئيسية' : 'Platform' }}</a>
+        <a href="#features">{{ i18n.currentLang() === 'ar' ? 'المميزات' : 'Solutions' }}</a>
+        <a href="#pricing">{{ i18n.currentLang() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
+        <a href="#faq">{{ i18n.currentLang() === 'ar' ? 'الأسئلة الشائعة' : 'FAQs' }}</a>
+        <a href="#contact">{{ i18n.currentLang() === 'ar' ? 'تواصل معنا' : 'Contact Us' }}</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Theme Toggle Button -->
+        <button class="header-toggle-btn theme-btn" (click)="toggleTheme()" title="Toggle Theme">
+          @if (themeService.isDark()) {
+          <!-- Sun Icon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          } @else {
+          <!-- Moon Icon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          }
+        </button>
+
+        <!-- Language Switcher Button -->
+        <button class="header-toggle-btn lang-btn" (click)="toggleLang()" title="Toggle Language">
+          {{ i18n.currentLang() === 'ar' ? 'EN' : 'AR' }}
+        </button>
+        <a routerLink="/login" class="btn-login-header">{{ i18n.currentLang() === 'ar' ? 'تسجيل الدخول' : 'Log In'
+          }}</a>
+        <a routerLink="/register" class="btn btn-primary btn-cta-header">{{ i18n.currentLang() === 'ar' ? 'سجل شركتك' :
+          'Get Started' }}</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ HERO SECTION ═══════════════ -->
+  <section id="hero" class="hero-section">
+    <!-- Glowing background blobs -->
+    <div class="hero-bg-glow">
+      <div class="glow-blob blob-blue"></div>
+      <div class="glow-blob blob-indigo"></div>
+    </div>
+
+    <div class="hero-container">
+      <div class="hero-text-content">
+        <div class="hero-badge animate-fade-in">
+          <span class="badge-dot"></span>
+          <span>{{ i18n.currentLang() === 'ar' ? 'دع الذكاء الاصطناعي يقود نجاح مؤسستك اليوم' : 'Let AI lead your
+            organization\'s success today' }}</span>
+        </div>
+        <h1 class="animate-fade-in">
+          @if (i18n.currentLang() === 'ar') {
+          راقب وحلل<br>
+          <span class="text-glow-blue">تدفقات أعمالك</span><br>
+          بالذكاء الاصطناعي.
+          } @else {
+          Control and audit<br>
+          <span class="text-glow-blue">your business flow</span><br>
+          with smart AI.
+          }
+        </h1>
+        <p class="hero-subtitle animate-fade-in">
+          {{ i18n.currentLang() === 'ar'
+          ? 'المنصة الذكية الموحدة لإدارة الصفقات، تتبع مهام الموظفين، مراقبة الجداول الزمنية، أتمتة التدقيق المالي،
+          وتنمية عمليات شركتك بكفاءة.'
+          : 'The unified AI intelligence platform to manage deals, track employee tasks, monitor schedules, automate
+          audits, and scale your business operations seamlessly.'
+          }}
+        </p>
+        <div class="hero-buttons animate-fade-in">
+          <a routerLink="/register" class="btn btn-primary btn-lg">
+            <span>{{ i18n.currentLang() === 'ar' ? 'ابدأ الفترة التجريبية' : 'Start Free Trial' }}</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round" class="btn-arrow">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+          <a href="#preview" class="btn btn-outline btn-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="10 8 16 12 10 16 10 8"></polygon>
+            </svg>
+            <span>{{ i18n.currentLang() === 'ar' ? 'شاهد الديمو' : 'Watch Demo' }}</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Hero Dashboard Graphic Preview -->
+      <div class="hero-visual-preview animate-fade-in">
+        <div class="window-mockup">
+          <div class="window-header">
+            <span class="window-dot dot-red"></span>
+            <span class="window-dot dot-yellow"></span>
+            <span class="window-dot dot-green"></span>
+            <span class="window-title">rasd.ai/metrics</span>
+          </div>
+          <div class="window-body">
+            <!-- 2 Column Widgets -->
+            <div class="widget-row">
+              <div class="widget-card card-half">
+                <span class="widget-label">{{ i18n.currentLang() === 'ar' ? 'مجرى التدقيق الذكي' : 'Smart AI Audit
+                  Stream' }}</span>
+                <div class="widget-main-value">1.2k/s</div>
+                <!-- Animated Mini Bar Chart -->
+                <div class="mini-bar-chart">
+                  <div class="bar animate-bar" style="height: 40%;"></div>
+                  <div class="bar animate-bar" style="height: 60%;"></div>
+                  <div class="bar animate-bar" style="height: 35%;"></div>
+                  <div class="bar animate-bar" style="height: 80%;"></div>
+                  <div class="bar animate-bar" style="height: 95%;"></div>
+                </div>
+                <!-- Mini floating popover (INSIGHTS) -->
+                <div class="mini-popover-insights">
+                  <div class="insight-icon-circle">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"
+                      stroke-width="1">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                  </div>
+                  <div class="insight-text-wrapper">
+                    <span class="insight-tag">INSIGHTS</span>
+                    <span class="insight-val">Growth up 24%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="widget-card card-half flex-center">
+                <div class="status-gauge">
+                  <span class="widget-label">{{ i18n.currentLang() === 'ar' ? 'سلامة المنصة' : 'Platform Health'
+                    }}</span>
+                  <div class="system-health-val-row">
+                    <div class="gauge-value text-green">99.9%</div>
+                    <div class="gauge-check">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="4">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Big Line Chart widget -->
+            <div class="widget-card card-full">
+              <div class="widget-header-row">
+                <span class="widget-label">{{ i18n.currentLang() === 'ar' ? 'تحليلات الاستخدام' : 'Usage Analytics'
+                  }}</span>
+                <div class="widget-dots">
+                  <span class="widget-dot-blue"></span>
+                  <span class="widget-dot-blue"></span>
+                </div>
+              </div>
+              <div class="graph-svg-container">
+                <svg viewBox="0 0 400 120" fill="none" class="smooth-line-chart">
+                  <!-- Grid Lines -->
+                  <line x1="0" y1="30" x2="400" y2="30" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+                  <line x1="0" y1="70" x2="400" y2="70" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+                  <line x1="0" y1="100" x2="400" y2="100" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+                  <!-- Curved wave -->
+                  <path d="M0 100 Q80 20 160 80 T320 40 T400 60" fill="none" stroke="#0066ff" stroke-width="3" />
+                  <path d="M0 100 Q80 20 160 80 T320 40 T400 60 L400 120 L0 120 Z" fill="url(#chart-area-grad)"
+                    opacity="0.15" />
+                  <defs>
+                    <linearGradient id="chart-area-grad" x1="0" y1="0" x2="0" y2="120">
+                      <stop offset="0%" stop-color="#0066ff" />
+                      <stop offset="100%" stop-color="#0066ff" stop-opacity="0" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ═══════════════ PLATFORM STATS ═══════════════ -->
+  <section class="platform-stats-section">
+    <div class="section-container">
+      <div class="hero-stats-grid" [class.visible]="statsVisible()">
+        <!-- Card 1: Uptime Guarantee -->
+        <div class="stat-box">
+          <span class="stat-desc">{{ i18n.currentLang() === 'ar' ? 'ضمان وقت تشغيل الخدمة' : 'Uptime Guarantee'
+            }}</span>
+          <span class="stat-number">
+            <span class="num-val">{{ uptimeStat() }}</span><span class="text-blue">%</span>
+          </span>
+        </div>
+        <!-- Card 2: AI Operations -->
+        <div class="stat-box">
+          <span class="stat-desc">{{ i18n.currentLang() === 'ar' ? 'عمليات ذكاء اصطناعي منجزة' : 'AI Operations
+            Completed' }}</span>
+          <span class="stat-number">
+            <span class="text-blue">+</span><span class="num-val">{{ operationsStat() }}</span><span
+              class="text-blue">M</span>
+          </span>
+        </div>
+        <!-- Card 3: Active Users -->
+        <div class="stat-box">
+          <span class="stat-desc">{{ i18n.currentLang() === 'ar' ? 'مستخدم نشط يومياً' : 'Active Daily Users' }}</span>
+          <span class="stat-number">
+            <span class="text-blue">+</span><span class="num-val">{{ usersStat() }}</span><span
+              class="text-blue">k</span>
+          </span>
+        </div>
+        <!-- Card 4: Registered Companies -->
+        <div class="stat-box">
+          <span class="stat-desc">{{ i18n.currentLang() === 'ar' ? 'شركات موثوقة ومسجلة' : 'Registered Companies'
+            }}</span>
+          <span class="stat-number">
+            <span class="text-blue">+</span><span class="num-val">{{ companiesStat() }}</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PROBLEM STATEMENT ═══════════════ -->
+  <section class="problem-section">
+    <div class="section-container text-center">
+      <h2 class="section-title">
+        {{ i18n.currentLang() === 'ar' ? 'تحديات الإدارة والرقابة التقليدية' : 'The Chaos of Traditional Management' }}
+      </h2>
+      <p class="section-subtitle">
+        {{ i18n.currentLang() === 'ar'
+        ? 'تشتت الأدوات، وتأخر التقارير المباشرة، وغياب الرؤى الفورية للذكاء الاصطناعي يؤدي إلى خسارة الصفقات وضعف
+        الإنتاجية والأخطاء المالية.'
+        : 'Scattered tools, delayed reports, and lack of real-time AI insights lead to lost sales deals, low employee
+        productivity, and critical audit errors.'
+        }}
+      </p>
+
+      <!-- problem-grid: 'is-visible' class added via IntersectionObserver in TS -->
+      <div class="problem-grid" id="problem-grid-anim">
+
+        <!-- ── Card 1 ── -->
+        <div class="problem-card">
+          <!-- Icon: animates first (delay 0ms) -->
+          <div class="prob-icon red-icon cascade-item" style="--cascade-delay: 0ms">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <!-- Title: animates second (delay 150ms) -->
+          <h3 [appTypewriter]="i18n.currentLang() === 'ar' ? 'تأخر التقارير والقرارات' : 'Delayed Decision Making'"
+            [typeDelay]="150" [typeSpeed]="25" class="cascade-item">
+          </h3>
+          <!-- Description: animates third (delay 350ms) -->
+          <p [appTypewriter]="i18n.currentLang() === 'ar' ? 'يستغرق تجميع البيانات من المبيعات والمحاسبة أياماً، مما يعيق اتخاذ القرارات السريعة.' : 'Manual report aggregation takes days, blocking executives from making critical strategic decisions.'"
+            [typeDelay]="350" [typeSpeed]="10" class="cascade-item">
+          </p>
+        </div>
+
+        <!-- ── Card 2 (staggered +350ms from Card 1 start) ── -->
+        <div class="problem-card">
+          <!-- Icon: delay 350ms -->
+          <div class="prob-icon yellow-icon cascade-item" style="--cascade-delay: 350ms">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <!-- Title: delay 500ms -->
+          <h3 [appTypewriter]="i18n.currentLang() === 'ar' ? 'تشتت الموظفين والمهام' : 'Disconnected Team Operations'"
+            [typeDelay]="500" [typeSpeed]="25" class="cascade-item">
+          </h3>
+          <!-- Description: delay 700ms -->
+          <p [appTypewriter]="i18n.currentLang() === 'ar' ? 'إسناد المهام عشوائياً يؤدي إلى نسيان المواعيد النهائية وضياع الفرص البيعية المهمة.' : 'Siloed tasks and unmonitored assignments lead to missed deadlines and dropped customer sales.'"
+            [typeDelay]="700" [typeSpeed]="10" class="cascade-item">
+          </p>
+        </div>
+
+        <!-- ── Card 3 (staggered +700ms from Card 1 start) ── -->
+        <div class="problem-card">
+          <!-- Icon: delay 700ms -->
+          <div class="prob-icon blue-icon cascade-item" style="--cascade-delay: 700ms">
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+          </div>
+          <!-- Title: delay 850ms -->
+          <h3 [appTypewriter]="i18n.currentLang() === 'ar' ? 'صعوبة الرقابة والتدقيق' : 'Complex Manual Auditing'"
+            [typeDelay]="850" [typeSpeed]="25" class="cascade-item">
+          </h3>
+          <!-- Description: delay 1050ms -->
+          <p [appTypewriter]="i18n.currentLang() === 'ar' ? 'غياب سجلات واضحة للمبيعات والمهام والتدفق المالي يعرض الشركة للمخاطر التشغيلية.' : 'Lack of absolute audit trails makes tracking user edits, tasks, and budgets highly vulnerable to leaks.'"
+            [typeDelay]="1050" [typeSpeed]="10" class="cascade-item">
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FEATURES ═══════════════ -->
+  <section id="features" class="features-section">
+    <div class="section-container">
+      <div class="text-center">
+        <h2 class="section-title">{{ i18n.currentLang() === 'ar' ? 'إدارة ذكية شاملة ومترابطة' : 'Premium Management
+          Features' }}</h2>
+      </div>
+
+      <!-- features-grid-anim: .is-visible added by IntersectionObserver in TS -->
+      <div class="features-grid" id="features-grid-anim">
+
+        <!-- ── Feature Card 1 ── -->
+        <div class="feature-card">
+          <!-- 1. Icon -->
+          <div class="feat-icon-wrapper cascade-item" style="--cascade-delay: 0ms">
+            <i class="fa-solid fa-chart-line feat-fa-icon feat-icon-blue"></i>
+          </div>
+          <!-- 2. Title -->
+          <h3 class="cascade-item" style="--cascade-delay: 150ms"
+            [appTypewriter]="i18n.currentLang() === 'ar' ? 'متابعة الصفقات والمبيعات' : 'Smart Deals Pipeline'"
+            [typeDelay]="200" [typeSpeed]="25">
+          </h3>
+          <!-- 3. Description -->
+          <p class="cascade-item" style="--cascade-delay: 300ms"
+            [appTypewriter]="i18n.currentLang() === 'ar' ? 'تتبع الفرص البيعية، عين مندوبي المبيعات، وراجع تفاصيل المحادثات والتدفق المالي لحظياً.' : 'Track leads dynamically, assign managers, and forecast closures with analytical AI metrics.'"
+            [typeDelay]="450" [typeSpeed]="10">
+          </p>
+        </div>
+
+        <!-- ── Feature Card 2 ── -->
+        <div class="feature-card">
+          <!-- 1. Icon -->
+          <div class="feat-icon-wrapper cascade-item" style="--cascade-delay: 200ms">
+            <i class="fa-solid fa-robot feat-fa-icon feat-icon-cyan"></i>
+          </div>
+          <!-- 2. Title -->
+          <h3 class="cascade-item" style="--cascade-delay: 350ms"
+            [appTypewriter]="i18n.currentLang() === 'ar' ? 'مساعد ذكي توليدي' : 'Interactive AI Assistant'"
+            [typeDelay]="400" [typeSpeed]="25">
+          </h3>
+          <!-- 3. Description -->
+          <p class="cascade-item" style="--cascade-delay: 500ms"
+            [appTypewriter]="i18n.currentLang() === 'ar' ? 'استعلم باللغة الطبيعية عن أداء شركتك، معدلات المبيعات، وتفاصيل المهام واحصل على تدقيق فوري.' : 'Query statistics, analyze sales reports, and get smart warnings using pure natural text.'"
+            [typeDelay]="650" [typeSpeed]="10">
+          </p>
+        </div>
+
+        <!-- ── Feature Card 3 ── -->
+        <div class="feature-card">
+          <!-- 1. Icon -->
+          <div class="feat-icon-wrapper cascade-item" style="--cascade-delay: 400ms">
+            <i class="fa-solid fa-calendar-check feat-fa-icon feat-icon-purple"></i>
+          </div>
+          <!-- 2. Title -->
+          <h3 class="cascade-item" style="--cascade-delay: 550ms"
+            [appTypewriter]="i18n.currentLang() === 'ar' ? 'إدارة المهام والجدولة' : 'Task & Meeting Control'"
+            [typeDelay]="600" [typeSpeed]="25">
+          </h3>
+          <!-- 3. Description -->
+          <p class="cascade-item" style="--cascade-delay: 700ms"
+            [appTypewriter]="i18n.currentLang() === 'ar' ? 'نظام متكامل لإسناد المهام، الموافقة على الإجازات، وجدولة الاجتماعات مع تقارير الإنجاز.' : 'Delegate project work, approve employee leave, and keep a shared schedule without scheduling conflicts.'"
+            [typeDelay]="850" [typeSpeed]="10">
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ AI ASSISTANT SIMULATOR ═══════════════ -->
+  <section class="ai-assistant-section">
+    <div class="section-container">
+      <div class="ai-grid">
+        <div class="ai-text-side">
+          <h2>{{ i18n.currentLang() === 'ar' ? 'مساعد الذكاء الاصطناعي التفاعلي' : 'Conversational AI CoPilot' }}</h2>
+          <p>
+            {{ i18n.currentLang() === 'ar'
+            ? 'تفاعل مع بيانات شركتك بصيغة محادثة طبيعية بالكامل. استخرج تقارير المبيعات، راقب أداء المهام، أو اطلب
+            تدقيقاً مالياً في ثوانٍ.'
+            : 'Interacting with raw operational data has never been simpler. Query statistics, review employee tasks,
+            and inspect audits using clean conversational text.'
+            }}
+          </p>
+
+          <!-- Selectable prompts -->
+          <div class="prompts-list">
+            @for (prompt of (i18n.currentLang() === 'ar' ? promptsAr : promptsEn); track prompt; let idx = $index) {
+            <button class="prompt-chip" [class.active]="selectedPromptIndex() === idx" (click)="runAiSimulation(idx)">
+              {{ prompt }}
+            </button>
+            }
+          </div>
+        </div>
+
+        <div class="ai-simulation-side">
+          <!-- Chat Box mockup -->
+          <div class="chat-mockup">
+            <div class="chat-body">
+              <!-- Query message -->
+              <div class="chat-message query" [style.display]="aiInput() ? 'flex' : 'none'">
+                <div class="msg-avatar">U</div>
+                <div class="msg-bubble">
+                  {{ aiInput() }}
+                </div>
+              </div>
+
+              <!-- Response message -->
+              <div class="chat-message response" [style.display]="aiResponse() ? 'flex' : 'none'">
+                <div class="msg-avatar ai">AI</div>
+                <div class="msg-bubble">
+                  {{ aiResponse() }}
+                  <span class="typing-cursor" *ngIf="isTyping()">|</span>
+                </div>
+              </div>
+
+              <!-- Empty state -->
+              <div class="chat-empty" *ngIf="!aiInput() && !aiResponse()">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                  style="opacity: 0.3; margin-bottom: 12px;">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <p>{{ i18n.currentLang() === 'ar' ? 'اضغط على أي استفسار على اليمين للبدء...' : 'Click any query on the
+                  left to start the simulation...' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ DASHBOARD PREVIEW ═══════════════ -->
+  <section id="preview" class="dashboard-preview-section">
+    <div class="section-container text-center">
+      <h2>{{ i18n.currentLang() === 'ar' ? 'لوحة تحكم ذكية لإدارية شاملة' : 'Real-time Analytical Management Control' }}
+      </h2>
+      <p class="section-subtitle">
+        {{ i18n.currentLang() === 'ar'
+        ? 'راقب صفقاتك ومبيعاتك، أدر موظفيك وجدول اجتماعاتك، وتابع التدفق المالي والفواتير من واجهة موحدة مدعومة بالذكاء
+        الاصطناعي.'
+        : 'Unified business command center. Review deals, manage employee profiles, approve leave requests, schedule
+        calendar tasks, and generate AI smart audits.'
+        }}
+      </p>
+
+      <div class="preview-img-container">
+        <!-- Modern dashboard mockup display -->
+        <div class="dashboard-big-mockup">
+          <div class="mockup-header-top">
+            <div class="window-nav">
+              <span class="nav-dot dot-red"></span>
+              <span class="nav-dot dot-yellow"></span>
+              <span class="nav-dot dot-green"></span>
+            </div>
+            <div class="address-bar">rasd.ai/dashboard/overview</div>
+          </div>
+          <div class="mockup-screen-content">
+            <img
+              [src]="themeService.isDark() ? 'assets/images/Dashboard-image-dark.jpeg' : 'assets/images/Dashboard image.jpeg'"
+              alt="Rasd AI Dashboard Preview" class="dashboard-preview-img" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ WORKFLOW ═══════════════ -->
+  <section class="workflow-section">
+    <div class="section-container">
+      <div class="text-center">
+        <h2>{{ i18n.currentLang() === 'ar' ? 'كيف تمكّن منصة رصد شركتك؟' : 'How RasdAI Empowers Your Business' }}</h2>
+        <p class="section-subtitle">
+          {{ i18n.currentLang() === 'ar'
+          ? 'بثلاث خطوات بسيطة: قم بدعوة فريقك وتوزيع الأدوار، أدر العمليات والصفقات اليومية، ثم راقب وتدقق بالذكاء
+          الاصطناعي.'
+          : 'Three simple steps connect your team operations, track daily sales transactions, and leverage smart
+          auditing.'
+          }}
+        </p>
+      </div>
+
+      <div class="workflow-grid" id="workflow-grid-anim">
+        <div class="workflow-step">
+          <div class="step-header">
+            <div class="step-num">01</div>
+            <div class="step-icon-wrap icon-blue">
+              <i class="fa-solid fa-users-gear"></i>
+            </div>
+          </div>
+          <h4>{{ i18n.currentLang() === 'ar' ? 'الربط ودعوة الفريق' : 'Connect & Invite Team' }}</h4>
+          <p>{{ i18n.currentLang() === 'ar' ? 'أضف موظفيك بسهولة وحدد الأدوار والصلاحيات (محاسب، مبيعات، موظف).' :
+            'Easily invite employees and configure system roles (Owner, Accountant, Sales, Employee).' }}</p>
+        </div>
+        <div class="workflow-arrow">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </div>
+        <div class="workflow-step">
+          <div class="step-header">
+            <div class="step-num highlight">02</div>
+            <div class="step-icon-wrap icon-cyan">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+          </div>
+          <h4>{{ i18n.currentLang() === 'ar' ? 'تتبع الصفقات والعمليات' : 'Track Sales & Tasks' }}</h4>
+          <p>{{ i18n.currentLang() === 'ar' ? 'سجل الصفقات وعين المهام وقم بالموافقة على الطلبات من واجهة واحدة.' : 'Log
+            active business deals, assign client tickets, and approve leave requests.' }}</p>
+        </div>
+        <div class="workflow-arrow">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </div>
+        <div class="workflow-step">
+          <div class="step-header">
+            <div class="step-num">03</div>
+            <div class="step-icon-wrap icon-purple">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+          </div>
+          <h4>{{ i18n.currentLang() === 'ar' ? 'التدقيق والتحليل الذكي' : 'Audit & Grow with AI' }}</h4>
+          <p>{{ i18n.currentLang() === 'ar' ? 'استعلم بالذكاء الاصطناعي لتحليل الإنتاجية والحصول على تقارير مالية
+            دقيقة.' : 'Query the AI Copilot for audit reviews, efficiency stats, and strategic suggestions.' }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PRICING ═══════════════ -->
+  <section id="pricing" class="pricing-section">
+    <div class="section-container">
+
+      <!-- Section Header -->
+      <div class="text-center">
+        <h2 class="section-title">{{ i18n.currentLang() === 'ar' ? 'باقات مرنة تناسب حجم أعمالك' : 'Transparent Pricing
+          Built for Scale' }}</h2>
+        <p class="section-subtitle">{{ i18n.currentLang() === 'ar' ? 'بدون رسوم خفية — ابدأ اليوم وارقِّ متى تشاء.' :
+          'No hidden fees. Start free and upgrade anytime.' }}</p>
+      </div>
+
+      <!-- Pricing Cards Grid -->
+      <div class="pricing-grid">
+
+        <!-- ── Starter Plan ── -->
+        <div class="pricing-card">
+          <div class="plan-icon-wrap plan-icon-green">
+            <i class="fa-solid fa-seedling"></i>
+          </div>
+          <span class="plan-name">{{ i18n.currentLang() === 'ar' ? 'المبتدئ' : 'Starter' }}</span>
+          <div class="plan-price-row">
+            <span class="plan-currency">$</span>
+            <span class="plan-amount">49</span>
+            <span class="plan-period">/{{ i18n.currentLang() === 'ar' ? 'شهر' : 'mo' }}</span>
+          </div>
+          <p class="plan-tagline">{{ i18n.currentLang() === 'ar' ? 'مثالية للشركات الناشئة والمشروعات الصغيرة.' :
+            'Perfect for freelancers and small teams.' }}</p>
+
+          <div class="plan-divider"></div>
+
+          <ul class="plan-features">
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? '3 مستخدمين' : '3
+              Team Members' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? '200 طلب ذكاء
+              اصطناعي / شهر' : '200 AI Queries / mo' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'إدارة الصفقات
+              الأساسية' : 'Basic Deals Pipeline' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'تقارير شهرية' :
+              'Monthly Reports' }}</li>
+            <li><i class="fa-solid fa-circle-xmark feat-cross"></i> {{ i18n.currentLang() === 'ar' ? 'مساعد ذكي متقدم' :
+              'Advanced AI CoPilot' }}</li>
+            <li><i class="fa-solid fa-circle-xmark feat-cross"></i> {{ i18n.currentLang() === 'ar' ? 'دعم فني أولوي' :
+              'Priority Support' }}</li>
+          </ul>
+
+          <a routerLink="/register" class="btn-pricing btn-pricing-starter">
+            {{ i18n.currentLang() === 'ar' ? 'ابدأ الآن' : 'Get Started' }}
+            <i class="fa-solid fa-arrow-left" style="margin-right: 6px;" *ngIf="i18n.currentLang() === 'ar'"></i>
+            <i class="fa-solid fa-arrow-right" style="margin-left: 6px;" *ngIf="i18n.currentLang() !== 'ar'"></i>
+          </a>
+        </div>
+
+        <!-- ── Professional Plan (Popular) ── -->
+        <div class="pricing-card pricing-card-popular">
+          <div class="popular-ribbon">
+            <i class="fa-solid fa-fire-flame-curved" style="margin-left:5px;margin-right:5px;"></i>
+            {{ i18n.currentLang() === 'ar' ? 'الأكثر طلباً' : 'Most Popular' }}
+          </div>
+          <div class="plan-icon-wrap plan-icon-blue">
+            <i class="fa-solid fa-rocket"></i>
+          </div>
+          <span class="plan-name">{{ i18n.currentLang() === 'ar' ? 'الاحترافية' : 'Professional' }}</span>
+          <div class="plan-price-row">
+            <span class="plan-currency">$</span>
+            <span class="plan-amount">199</span>
+            <span class="plan-period">/{{ i18n.currentLang() === 'ar' ? 'شهر' : 'mo' }}</span>
+          </div>
+          <p class="plan-tagline">{{ i18n.currentLang() === 'ar' ? 'الباقة الأكثر طلباً للشركات المتوسطة والمتنامية.' :
+            'Ideal for growing companies scaling fast.' }}</p>
+
+          <div class="plan-divider plan-divider-blue"></div>
+
+          <ul class="plan-features">
+            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ? '15
+              مستخدماً' : '15 Team Members' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
+              '5,000 طلب ذكاء اصطناعي / شهر' : '5,000 AI Queries / mo' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
+              'إدارة صفقات ومهام متقدمة' : 'Advanced Pipeline & Tasks' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
+              'مساعد ذكي CoPilot كامل' : 'Full AI CoPilot Access' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
+              'تقارير تدقيق متقدمة' : 'Advanced Audit Reports' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
+              'دعم فني أولوي 24/7' : 'Priority 24/7 Support' }}</li>
+          </ul>
+
+          <a routerLink="/register" class="btn-pricing btn-pricing-primary">
+            {{ i18n.currentLang() === 'ar' ? 'ابدأ الآن' : 'Get Started' }}
+            <i class="fa-solid fa-arrow-left" style="margin-right: 6px;" *ngIf="i18n.currentLang() === 'ar'"></i>
+            <i class="fa-solid fa-arrow-right" style="margin-left: 6px;" *ngIf="i18n.currentLang() !== 'ar'"></i>
+          </a>
+        </div>
+
+        <!-- ── Enterprise Plan ── -->
+        <div class="pricing-card">
+          <div class="plan-icon-wrap plan-icon-purple">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <span class="plan-name">{{ i18n.currentLang() === 'ar' ? 'المؤسسات' : 'Enterprise' }}</span>
+          <div class="plan-price-row">
+            <span class="plan-currency">$</span>
+            <span class="plan-amount">499</span>
+            <span class="plan-period">/{{ i18n.currentLang() === 'ar' ? 'شهر' : 'mo' }}</span>
+          </div>
+          <p class="plan-tagline">{{ i18n.currentLang() === 'ar' ? 'مخصصة للشركات الكبرى والمنشآت الضخمة.' : 'Built for
+            large enterprises with custom needs.' }}</p>
+
+          <div class="plan-divider"></div>
+
+          <ul class="plan-features">
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'مستخدمون غير
+              محدودون' : 'Unlimited Team Members' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'طلبات ذكاء اصطناعي
+              غير محدودة' : 'Unlimited AI Queries' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'خوادم مخصصة (SLA
+              99.9%)' : 'Dedicated Servers (SLA 99.9%)' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'تدقيق مالي مخصص' :
+              'Custom Financial Audit' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'مدير حساب مخصص' :
+              'Dedicated Account Manager' }}</li>
+            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'تكامل API مخصص' :
+              'Custom API Integration' }}</li>
+          </ul>
+
+          <a routerLink="/register" class="btn-pricing btn-pricing-enterprise">
+            {{ i18n.currentLang() === 'ar' ? 'ابدأ الآن' : 'Get Started' }}
+            <i class="fa-solid fa-arrow-left" style="margin-right: 6px;" *ngIf="i18n.currentLang() === 'ar'"></i>
+            <i class="fa-solid fa-arrow-right" style="margin-left: 6px;" *ngIf="i18n.currentLang() !== 'ar'"></i>
+          </a>
+        </div>
+
+      </div><!-- /pricing-grid -->
+
+      <!-- Bottom guarantee row -->
+      <div class="pricing-guarantee-row">
+        <span><i class="fa-solid fa-shield-halved"></i> {{ i18n.currentLang() === 'ar' ? 'ضمان استرداد 14 يوم' : '14-Day
+          Money Back Guarantee' }}</span>
+        <span><i class="fa-solid fa-lock"></i> {{ i18n.currentLang() === 'ar' ? 'بيانات آمنة ومشفرة' : 'SSL Encrypted &
+          Secure' }}</span>
+        <span><i class="fa-solid fa-headset"></i> {{ i18n.currentLang() === 'ar' ? 'دعم فني متاح دائماً' : 'Always-on
+          Support' }}</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════ TESTIMONIALS ═══════════════ -->
+  <section class="testimonials-section">
+    <div class="section-container">
+      <div class="text-center">
+        <span class="sub-label">{{ i18n.currentLang() === 'ar' ? 'آراء العملاء' : 'TESTIMONIALS' }}</span>
+        <h2>{{ i18n.currentLang() === 'ar' ? 'ماذا يقول أصحاب الأعمال عن رصد AI؟' : 'Trusted by Founders and Owners' }}
+        </h2>
+      </div>
+
+      <div class="testimonials-carousel" (mouseenter)="stopTestimonialAutoPlay()"
+        (mouseleave)="startTestimonialAutoPlay()">
+
+        <div class="carousel-track-container">
+          <div class="carousel-track" [style.--idx]="currentTestimonialIndex()">
+
+            <div class="testimonial-card" *ngFor="let t of testimonials; let i = index">
+              <div class="quote-icon"><i class="fa-solid fa-quote-right"></i></div>
+              <div class="stars-row">{{ t.stars }}</div>
+              <p class="testimonial-text">{{ i18n.currentLang() === 'ar' ? t.textAr : t.textEn }}</p>
+
+              <div class="user-info">
+                <div class="user-avatar">{{ t.avatar }}</div>
+                <div class="user-details">
+                  <h5>{{ i18n.currentLang() === 'ar' ? t.nameAr : t.nameEn }}</h5>
+                  <span>{{ i18n.currentLang() === 'ar' ? t.titleAr : t.titleEn }}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Carousel Navigation Controls -->
+        <div class="carousel-controls">
+          <button class="nav-arrow prev-arrow" (click)="prevTestimonial()">
+            <i class="fa-solid" [ngClass]="i18n.currentLang() === 'ar' ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+          </button>
+
+          <div class="carousel-indicators">
+            <span class="dot" *ngFor="let t of testimonials; let i = index"
+              [class.active]="i === currentTestimonialIndex()" (click)="goToTestimonial(i)">
+            </span>
+          </div>
+
+          <button class="nav-arrow next-arrow" (click)="nextTestimonial()">
+            <i class="fa-solid" [ngClass]="i18n.currentLang() === 'ar' ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq-section">
+    <!-- Background Effects -->
+    <div class="faq-section-bg">
+      <div class="faq-grid-pattern"></div>
+    </div>
+
+    <!-- Two-column inner grid -->
+    <div class="faq-inner">
+
+      <!-- Left: sticky header -->
+      <div class="faq-header">
+        <span class="faq-badge">{{ i18n.currentLang() === 'ar' ? 'الأسئلة الشائعة' : 'FAQ' }}</span>
+        <h2 class="faq-title">{{ i18n.currentLang() === 'ar' ? 'أجوبة على أسئلتك الشائعة' : 'Answers to your common
+          questions' }}</h2>
+        <p class="faq-subtitle">
+          {{ i18n.currentLang() === 'ar' ? 'كل ما تحتاج معرفته عن منصة Rasd وكيف تساعدك في إدارة أعمالك.' : 'Everything
+          you need to know about Rasd and how it helps you manage your business.' }}
+        </p>
+      </div>
+
+      <!-- Right: accordion list -->
+      <div class="faq-cards">
+        <div class="faq-card" *ngFor="let item of faqs; let i = index" [class.active]="activeFaqIndex() === i"
+          (click)="toggleFaq(i)">
+          <div class="faq-header-card">
+            <div class="faq-question-wrapper">
+              <div class="faq-icon">{{ i + 1 }}</div>
+              <div class="faq-question">{{ i18n.currentLang() === 'ar' ? item.qAr : item.qEn }}</div>
+            </div>
+            <i class="faq-chevron fas fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            <div class="faq-answer">
+              <p>{{ i18n.currentLang() === 'ar' ? item.aAr : item.aEn }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /faq-inner -->
+
+    <!-- CTA Support Card -->
+    <div class="faq-cta-card">
+      <div class="faq-cta-inner">
+        <div class="cta-left">
+          <div class="cta-icon"><i class="fas fa-life-ring"></i></div>
+          <div class="cta-content">
+            <h3 class="cta-title">{{ i18n.currentLang() === 'ar' ? 'لم تجد إجابتك؟' : 'Didn\'t find your answer?' }}
+            </h3>
+            <p class="cta-description">{{ i18n.currentLang() === 'ar' ? 'فريق الدعم لدينا جاهز لمساعدتك والإجابة على
+              جميع استفساراتك.' : 'Our support team is ready to help and answer all your inquiries.' }}</p>
+          </div>
+        </div>
+        <a href="#contact" class="cta-button flex-center" style="text-decoration: none;">
+          {{ i18n.currentLang() === 'ar' ? 'تواصل معنا' : 'Contact Us' }}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CONTACT US SECTION ═══════════════ -->
+  <section id="contact" class="contact-section">
+    <div class="contact-inner">
+      <!-- Info Column -->
+      <div class="contact-info-column">
+        <h2>
+          {{ i18n.currentLang() === 'ar' ? 'نود السماع منك!' : 'We\'d Love to Hear From You!' }}
+        </h2>
+        <p>
+          {{ i18n.currentLang() === 'ar'
+          ? 'هل لديك أي استفسار أو ترغب في معرفة كيف يمكن لمنصة رصد دعم شركتك؟ املأ النموذج وسيتواصل معك أحد خبرائنا في أقرب وقت.'
+          : 'Have questions or want to see how Rasd can empower your company? Fill out the form and our team will get in touch shortly.'
+          }}
+        </p>
+
+        <div class="contact-details">
+          <div class="contact-detail-item">
+            <div class="contact-detail-icon">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div class="contact-detail-text">
+              <span>{{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email Us' }}</span>
+              <span>info@rasd.ai</span>
+            </div>
+          </div>
+
+          <div class="contact-detail-item">
+            <div class="contact-detail-icon">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div class="contact-detail-text">
+              <span>{{ i18n.currentLang() === 'ar' ? 'الموقع' : 'Location' }}</span>
+              <span>{{ i18n.currentLang() === 'ar' ? ' الأسماعيليه , مصر ' : 'Ismailia, Egypt' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Column -->
+      <div class="contact-form-card">
+        <form (submit)="onSubmitContactForm($event)">
+          <div class="contact-form-grid">
+            <div class="form-group">
+              <label for="firstName">{{ i18n.currentLang() === 'ar' ? 'الاسم الأول' : 'First Name' }}</label>
+              <input type="text" id="firstName" name="firstName" class="form-control" 
+                     [placeholder]="i18n.currentLang() === 'ar' ? 'أدخل الاسم الأول' : 'First name'" 
+                     [(ngModel)]="contactData.firstName" required />
+            </div>
+
+            <div class="form-group">
+              <label for="lastName">{{ i18n.currentLang() === 'ar' ? 'الاسم الأخير' : 'Last Name' }}</label>
+              <input type="text" id="lastName" name="lastName" class="form-control" 
+                     [placeholder]="i18n.currentLang() === 'ar' ? 'أدخل الاسم الأخير' : 'Last name'" 
+                     [(ngModel)]="contactData.lastName" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="contactEmail">{{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email Address' }}</label>
+            <input type="email" id="contactEmail" name="email" class="form-control" 
+                   [placeholder]="i18n.currentLang() === 'ar' ? 'name@example.com' : 'name@example.com'" 
+                   [(ngModel)]="contactData.email" required />
+          </div>
+
+          <div class="form-group">
+            <label for="contactMessage">{{ i18n.currentLang() === 'ar' ? 'وصف الرسالة' : 'Message Description' }}</label>
+            <textarea id="contactMessage" name="message" class="form-control" rows="4"
+                      [placeholder]="i18n.currentLang() === 'ar' ? 'اكتب تفاصيل رسالتك هنا...' : 'Write your message details here...'" 
+                      [(ngModel)]="contactData.message" required></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit-contact" [disabled]="isSubmittingContact()">
+            <span>{{ i18n.currentLang() === 'ar' ? 'إرسال الرسالة' : 'Submit Message' }}</span>
+            <i class="fa-solid fa-paper-plane" *ngIf="!isSubmittingContact()"></i>
+            <i class="fa-solid fa-spinner fa-spin" *ngIf="isSubmittingContact()"></i>
+          </button>
+
+          <!-- Alert Feedback -->
+          <div *ngIf="contactFeedbackMessage()" class="alert-message" 
+               [class.alert-success]="contactFeedbackSuccess()" 
+               [class.alert-error]="!contactFeedbackSuccess()">
+            <i class="fa-solid" [class.fa-circle-check]="contactFeedbackSuccess()" [class.fa-circle-exclamation]="!contactFeedbackSuccess()"></i>
+            <span>{{ contactFeedbackMessage() }}</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="landing-footer">
+
+    <!-- Main footer grid -->
+    <div class="footer-main">
+
+      <!-- Brand column -->
+      <div class="footer-brand-col footer-anim" style="--footer-delay:0.05s">
+        <div class="footer-logo-wrap">
+          <img
+            [src]="themeService.isDark()
+            ? (i18n.currentLang() === 'ar' ? 'assets/images/Rasd Ar black Rmove bg.png' : 'assets/images/Rasd En black Rmove bg.png')
+            : (i18n.currentLang() === 'ar' ? 'assets/images/rasd Ar remove bg.png' : 'assets/images/Rasd En White Rmove bg.png')"
+            alt="Rasd Logo" class="footer-logo-img" />
+        </div>
+        <p class="footer-tagline">
+          {{ i18n.currentLang() === 'ar'
+          ? 'منصة ذكية مدعومة بالذكاء الاصطناعي لإدارة المبيعات والموظفين والتحليلات.'
+          : 'AI-powered platform for managing sales, employees, and analytics seamlessly.' }}
+        </p>
+        <!-- Social links -->
+        <div class="footer-socials">
+          <a href="#" class="social-link" aria-label="Twitter / X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </a>
+          <a href="#" class="social-link" aria-label="LinkedIn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+            </svg>
+          </a>
+          <a href="#" class="social-link" aria-label="GitHub">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Link columns group -->
+      <div class="footer-cols-group">
+
+        <!-- Platform column -->
+        <div class="footer-col footer-anim" style="--footer-delay:0.15s">
+          <h5 class="footer-col-title">{{ i18n.currentLang() === 'ar' ? 'المنصة' : 'Platform' }}</h5>
+          <a href="#features">{{ i18n.currentLang() === 'ar' ? 'المميزات' : 'Features' }}</a>
+          <a href="#pricing">{{ i18n.currentLang() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
+          <a href="#preview">{{ i18n.currentLang() === 'ar' ? 'لوحة التحكم' : 'Dashboard' }}</a>
+          <a href="#faq">{{ i18n.currentLang() === 'ar' ? 'الأسئلة الشائعة' : 'FAQ' }}</a>
+        </div>
+
+        <!-- Company column -->
+        <div class="footer-col footer-anim" style="--footer-delay:0.22s">
+          <h5 class="footer-col-title">{{ i18n.currentLang() === 'ar' ? 'الشركة' : 'Company' }}</h5>
+          <a href="#features">{{ i18n.currentLang() === 'ar' ? 'من نحن' : 'About Us' }}</a>
+          <a href="#contact">{{ i18n.currentLang() === 'ar' ? 'تواصل معنا' : 'Contact' }}</a>
+          <a href="#hero">{{ i18n.currentLang() === 'ar' ? 'الوظائف' : 'Careers' }}</a>
+          <a href="#pricing">{{ i18n.currentLang() === 'ar' ? 'المدونة' : 'Blog' }}</a>
+        </div>
+
+        <!-- Legal column -->
+        <div class="footer-col footer-anim" style="--footer-delay:0.30s">
+          <h5 class="footer-col-title">{{ i18n.currentLang() === 'ar' ? 'قانوني' : 'Legal' }}</h5>
+          <a href="#">{{ i18n.currentLang() === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</a>
+          <a href="#">{{ i18n.currentLang() === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</a>
+          <a href="#">{{ i18n.currentLang() === 'ar' ? 'سياسة ملفات تعريف الارتباط' : 'Cookie Policy' }}</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="footer-bottom-bar footer-anim" style="--footer-delay:0.38s">
+      <div class="footer-bottom-inner">
+        <span class="footer-bottom-badge">
+          <span class="footer-badge-dot"></span>
+          {{ i18n.currentLang() === 'ar' ? 'مدعوم بالذكاء الاصطناعي' : 'Powered by AI' }}
+        </span>
+        <span class="footer-bottom-copy">
+          {{ i18n.currentLang() === 'ar' ? 'رصد AI · جميع الحقوق محفوظة © 2026' : '© 2026 Rasd AI · All rights reserved'
+          }}
+        </span>
+        <span class="footer-bottom-made">
+          <svg class="egypt-flag-icon" width="22" height="16" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+            <rect width="900" height="200" fill="#CE1126"/>
+            <rect y="200" width="900" height="200" fill="#FFFFFF"/>
+            <rect y="400" width="900" height="200" fill="#000000"/>
+            <g transform="translate(450,300)" fill="#C09300" stroke="#C09300" stroke-width="1">
+              <path d="M-45,-55 L-45,25 C-45,50 -25,65 0,65 C25,65 45,50 45,25 L45,-55 Z" fill="none" stroke="#C09300" stroke-width="6"/>
+              <line x1="0" y1="-55" x2="0" y2="65" stroke-width="4"/>
+              <line x1="-22" y1="-55" x2="-22" y2="55" stroke-width="3"/>
+              <line x1="22" y1="-55" x2="22" y2="55" stroke-width="3"/>
+              <line x1="-45" y1="-20" x2="45" y2="-20" stroke-width="3"/>
+              <line x1="-45" y1="10" x2="45" y2="10" stroke-width="3"/>
+            </g>
+          </svg>
+          {{ i18n.currentLang() === 'ar' ? 'صُنع في مصر' : 'Made in Egypt' }}
+        </span>
+      </div>
+    </div>
+
+  </footer>
+  <div class="back-to-top" *ngIf="showBackToTop()" (click)="scrollToTop()"><i class="fa-solid fa-arrow-up"></i></div>
+</div>

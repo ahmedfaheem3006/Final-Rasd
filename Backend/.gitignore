@@ -1,0 +1,58 @@
+
+## Ignore Visual Studio temporary files, build results, and user settings
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Log]/
+[Logs]/
+
+# Visual Studio 2015/2017/2019/2022 cache and settings
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.ltx
+*.tmp
+*.desktop
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Publish output
+*publish/
+
+# Local user secrets and dev settings
+appsettings.local.json
+secrets.json
+.microsoft.dotnet.usersecrets/

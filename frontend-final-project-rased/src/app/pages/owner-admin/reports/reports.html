@@ -1,0 +1,158 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.t('reports.breadcrumbs') }}</div>
+      <h1>{{ i18n.t('reports.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('reports.subtitle') }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="onExportAll()">
+        <i class="fa-solid fa-file-export"></i>
+        <span>{{ i18n.t('reports.btn.export') }}</span>
+      </button>
+      <button class="btn btn-primary" (click)="openModal()">
+        <i class="fa-solid fa-plus-circle"></i>
+        <span>{{ i18n.t('reports.btn.create') }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Report Categories Grid -->
+  <div class="reports-grid animate-reveal">
+    @for (cat of reportCategories(); track cat.title; let idx = $index) {
+      <div class="report-category-card" [style.animation-delay]="(idx * 0.15) + 's'">
+        <div class="cat-header" [ngClass]="'color-' + cat.color">
+          <div class="cat-icon">
+            <i class="fa-solid" [ngClass]="cat.icon"></i>
+          </div>
+          <h3>{{ i18n.t('reports.cat.' + cat.id) }}</h3>
+        </div>
+        <div class="reports-list">
+          @for (report of cat.reports; track report.key) {
+            <div class="report-item">
+              <div class="report-info">
+                <i class="fa-regular fa-file-pdf pdf-icon"></i>
+                <div>
+                  <div class="report-name">{{ i18n.t(report.key) }}</div>
+                  <div class="report-meta">{{ report.date }} · {{ report.size }}</div>
+                </div>
+              </div>
+              <button class="download-btn" [title]="i18n.t('common.download')" (click)="onDownloadReport(report.key)">
+                <i class="fa-solid fa-download"></i>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create Report Modal -->
+<div class="modal-overlay" [class.active]="showModal()" (click)="closeModal()">
+  <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+        <div>
+          <h3>{{ i18n.t('reports.modal.title') }}</h3>
+          <p class="modal-subtitle">{{ i18n.t('reports.modal.subtitle') }}</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeModal()" type="button">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Period Selection (first = has space below → dropdown opens downward) -->
+      <div class="form-group-modal">
+        <label>
+          <i class="fa-solid fa-calendar-days"></i>
+          {{ i18n.t('reports.form.period') }}
+        </label>
+        <div class="period-selectors-grid">
+          <div class="select-wrapper">
+            <label class="select-label">{{ i18n.t('reports.form.from_month') }}</label>
+            <select [(ngModel)]="fromMonth">
+              @for (m of months; track m.value) {
+                <option [value]="m.value">{{ i18n.isRtl() ? m.nameAr : m.nameEn }}</option>
+              }
+            </select>
+          </div>
+          <div class="select-wrapper">
+            <label class="select-label">{{ i18n.t('reports.form.to_month') }}</label>
+            <select [(ngModel)]="toMonth">
+              @for (m of months; track m.value) {
+                <option [value]="m.value">{{ i18n.isRtl() ? m.nameAr : m.nameEn }}</option>
+              }
+            </select>
+          </div>
+          <div class="select-wrapper">
+            <label class="select-label">{{ i18n.t('reports.form.year') }}</label>
+            <select [(ngModel)]="selectedYear">
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Selection -->
+      <div class="form-group-modal" style="margin-top: 15px;">
+        <label>
+          <i class="fa-solid fa-layer-group"></i>
+          {{ i18n.t('reports.form.type') }}
+        </label>
+        <div class="category-tabs">
+          <button type="button" class="category-tab" [class.active]="selectedCategory() === 'sales'" (click)="selectCategory('sales')">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>{{ i18n.t('reports.type.sales') }}</span>
+          </button>
+          <button type="button" class="category-tab" [class.active]="selectedCategory() === 'financial'" (click)="selectCategory('financial')">
+            <i class="fa-solid fa-wallet"></i>
+            <span>{{ i18n.t('reports.type.financial') }}</span>
+          </button>
+          <button type="button" class="category-tab" [class.active]="selectedCategory() === 'hr'" (click)="selectCategory('hr')">
+            <i class="fa-solid fa-users-gear"></i>
+            <span>{{ i18n.t('reports.type.hr') }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Checkbox Options -->
+      <div class="form-group-modal" style="margin-top: 10px;">
+        <label>
+          <i class="fa-solid fa-list-check"></i>
+          {{ i18n.t('reports.form.sections') }}
+        </label>
+        <div class="checkbox-list-grid">
+          @for (opt of currentOptions; track opt.key) {
+            <label class="premium-checkbox-label">
+              <input type="checkbox" [(ngModel)]="opt.selected" />
+              <span class="custom-checkbox">
+                <i class="fa-solid fa-check check-icon"></i>
+              </span>
+              <span class="checkbox-text">{{ i18n.t(opt.key) }}</span>
+            </label>
+          }
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" (click)="closeModal()">
+        <i class="fa-solid fa-arrow-right"></i>
+        {{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}
+      </button>
+      <button type="button" class="btn btn-primary" (click)="generateReport()">
+        <i class="fa-solid fa-circle-plus"></i>
+        {{ i18n.t('reports.btn.generate') }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,179 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        {{ i18n.currentLang() === 'ar' ? 'المشرف العام / إدارة الشركات' : 'System Admin / Company Management' }}
+      </div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'إدارة صلاحيات الشركات' : 'Manage Company Permissions' }}</h1>
+      <p class="subtitle">
+        {{ i18n.currentLang() === 'ar' ? 'إدارة الخدمات والأقسام المتاحة لكل شركة مشتركة في النظام وتخصيص الصلاحيات.' : 'Manage features and accessible modules for each registered company in the system.' }}
+      </p>
+    </div>
+  </header>
+
+  <div class="management-grid animate-reveal">
+    <!-- Companies List Pane -->
+    <div class="card list-pane">
+      <div class="pane-header">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" [placeholder]="i18n.currentLang() === 'ar' ? 'ابحث عن شركة...' : 'Search company...'" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+        </div>
+      </div>
+      
+      <div class="pane-list">
+        @if (filteredTenants().length === 0) {
+          <div class="empty-list">
+            <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد شركات مطابقة' : 'No companies found' }}</p>
+          </div>
+        } @else {
+          @for (t of filteredTenants(); track t.id) {
+            <div class="list-item" [class.active]="selectedTenant()?.id === t.id" (click)="selectTenant(t)">
+              <div class="item-info">
+                <div class="item-name">{{ t.name }}</div>
+                <div class="item-owner">{{ t.owner }}</div>
+              </div>
+              <div class="item-status">
+                <span class="status-indicator" [class.online]="t.status === 'active'"></span>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Permissions Toggle Pane -->
+    <div class="card detail-pane">
+      @if (!selectedTenant()) {
+        <div class="empty-state">
+          <p>{{ i18n.currentLang() === 'ar' ? 'الرجاء اختيار شركة من القائمة لإدارة صلاحياتها.' : 'Please select a company from the list to manage permissions.' }}</p>
+        </div>
+      } @else {
+        <div class="detail-header">
+          <h3>{{ selectedTenant()?.name }}</h3>
+          <p class="owner-meta">
+            <span><strong>{{ i18n.currentLang() === 'ar' ? 'المالك:' : 'Owner:' }}</strong> {{ selectedTenant()?.owner }}</span>
+            <span class="separator">|</span>
+            <span><strong>{{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني:' : 'Email:' }}</strong> {{ selectedTenant()?.email }}</span>
+          </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="permissions-section">
+          <h4>{{ i18n.currentLang() === 'ar' ? 'تخصيص صلاحيات الخدمات والموديولات' : 'Feature Access & Modules Control' }}</h4>
+          <p class="section-desc">
+            {{ i18n.currentLang() === 'ar' ? 'قم بتفعيل أو إلغاء تفعيل الخدمات. سيقوم النظام تلقائياً بإخفاء الخدمات الملغاة عن الموظفين والمالك لهذه الشركة.' : 'Enable or disable application modules. Disabled modules will be automatically hidden from all company employees.' }}
+          </p>
+
+          <div class="modules-list">
+            <!-- 1. CRM -->
+            <div class="module-card">
+              <div class="module-meta">
+                <div class="module-icon bg-primary">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                </div>
+                <div class="module-details">
+                  <h5>{{ i18n.currentLang() === 'ar' ? 'نظام المبيعات والعملاء (CRM)' : 'CRM & Clients Management' }}</h5>
+                  <p>{{ i18n.currentLang() === 'ar' ? 'يتيح للشركة إدارة عملائهم، الصفقات الجارية، والملاحظات والمتابعات.' : 'Allows managing clients, deals pipelines, notes, and CRM records.' }}</p>
+                </div>
+              </div>
+              <div class="module-action">
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="selectedTenant().isCrmEnabled" (change)="onTogglePermission('CRM')" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 2. Invoices -->
+            <div class="module-card">
+              <div class="module-meta">
+                <div class="module-icon bg-success">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <div class="module-details">
+                  <h5>{{ i18n.currentLang() === 'ar' ? 'إدارة الفواتير والحسابات' : 'Invoices & Billing System' }}</h5>
+                  <p>{{ i18n.currentLang() === 'ar' ? 'يتيح للمحاسب إعداد الفواتير الضريبية وتتبع المدفوعات والتقارير المالية للشركة.' : 'Enables generating tax invoices, tracking payments, and billing reports.' }}</p>
+                </div>
+              </div>
+              <div class="module-action">
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="selectedTenant().isInvoicesEnabled" (change)="onTogglePermission('Invoices')" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 3. Tasks -->
+            <div class="module-card">
+              <div class="module-meta">
+                <div class="module-icon bg-info">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                </div>
+                <div class="module-details">
+                  <h5>{{ i18n.currentLang() === 'ar' ? 'جدولة ومراقبة المهام' : 'Tasks & Progress Boards' }}</h5>
+                  <p>{{ i18n.currentLang() === 'ar' ? 'إسناد المهام للموظفين، وتتبع نسبة الإنجاز والإنتاجية عبر لوحات Kanban.' : 'Assign tasks to employees, monitor progress and board execution.' }}</p>
+                </div>
+              </div>
+              <div class="module-action">
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="selectedTenant().isTasksEnabled" (change)="onTogglePermission('Tasks')" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 4. Meetings -->
+            <div class="module-card">
+              <div class="module-meta">
+                <div class="module-icon bg-warning">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <div class="module-details">
+                  <h5>{{ i18n.currentLang() === 'ar' ? 'تفريغ وتوثيق الاجتماعات' : 'Meeting Transcription & Logs' }}</h5>
+                  <p>{{ i18n.currentLang() === 'ar' ? 'رفع تسجيلات الاجتماعات وتوليد وتفريغ المهام التلقائية منها بالذكاء الاصطناعي.' : 'Upload meetings and transcribe logs into tasks using AI.' }}</p>
+                </div>
+              </div>
+              <div class="module-action">
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="selectedTenant().isMeetingsEnabled" (change)="onTogglePermission('Meetings')" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 5. AI Assistant -->
+            <div class="module-card">
+              <div class="module-meta">
+                <div class="module-icon bg-purple">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="url(#ai-grad-mgmt)" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
+                </div>
+                <div class="module-details">
+                  <h5>{{ i18n.currentLang() === 'ar' ? 'المساعد الذكي (رصد AI)' : 'Smart AI Assistant (RASD AI)' }}</h5>
+                  <p>{{ i18n.currentLang() === 'ar' ? 'المساعد الذكي القائم على الـ LLM لتحليل بيانات الشركة والدردشة التفاعلية مع المالك.' : 'LLM-powered assistant to analyze business stats and chat with the owner.' }}</p>
+                </div>
+              </div>
+              <div class="module-action">
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="selectedTenant().isAiEnabled" (change)="onTogglePermission('AI')" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<svg width="0" height="0" style="position: absolute;">
+  <defs>
+    <linearGradient id="ai-grad-mgmt" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#21d4fd" />
+      <stop offset="1" stop-color="#868cff" />
+    </linearGradient>
+  </defs>
+</svg>

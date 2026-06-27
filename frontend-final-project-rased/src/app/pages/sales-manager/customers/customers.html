@@ -1,0 +1,109 @@
+<div class="page-container">
+  <!-- Header -->
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">مدير المبيعات / العملاء</div>
+      <h1>إدارة العملاء</h1>
+      <p class="subtitle">عرض وإدارة قاعدة بيانات العملاء والشركات</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>تصدير</span>
+      </button>
+      <button class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>إضافة عميل</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-grid animate-reveal">
+    <div class="stat-card accent-primary">
+      <div class="stat-icon primary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="stat-body"><div class="stat-value">7</div><div class="stat-label">إجمالي العملاء</div></div>
+    </div>
+    <div class="stat-card accent-success">
+      <div class="stat-icon success"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="stat-body"><div class="stat-value">5</div><div class="stat-label">عملاء نشطون</div></div>
+    </div>
+    <div class="stat-card accent-warning">
+      <div class="stat-icon warning"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div class="stat-body"><div class="stat-value">2</div><div class="stat-label">بانتظار المتابعة</div></div>
+    </div>
+    <div class="stat-card accent-info">
+      <div class="stat-icon info"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div class="stat-body"><div class="stat-value">$110,000</div><div class="stat-label">إجمالي قيمة الصفقات</div></div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card table-card animate-reveal">
+    <div class="card-header">
+      <div>
+        <h3>قائمة العملاء والشركات</h3>
+        <p class="subtitle">جميع عملاء فريق المبيعات وآخر تواصل</p>
+      </div>
+      <div class="filter-tabs">
+        <button class="filter-tab" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">الكل</button>
+        <button class="filter-tab" [class.active]="activeFilter() === 'active'" (click)="setFilter('active')">نشط</button>
+        <button class="filter-tab" [class.active]="activeFilter() === 'pending'" (click)="setFilter('pending')">يحتاج متابعة</button>
+        <button class="filter-tab" [class.active]="activeFilter() === 'inactive'" (click)="setFilter('inactive')">غير نشط</button>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>الشركة</th>
+            <th>جهة التواصل</th>
+            <th>البريد الإلكتروني</th>
+            <th>قيمة آخر صفقة</th>
+            <th>المندوب المسؤول</th>
+            <th>آخر تواصل</th>
+            <th>الحالة</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filteredCustomers(); track c.email) {
+            <tr>
+              <td>
+                <div class="company-cell">
+                  <span class="company-icon">{{ c.company[0] }}</span>
+                  <span class="fw-bold">{{ c.company }}</span>
+                </div>
+              </td>
+              <td class="fw-bold">{{ c.contact }}</td>
+              <td class="text-muted">{{ c.email }}</td>
+              <td class="fw-bold text-primary">{{ c.lastDeal }}</td>
+              <td>
+                <div class="user-cell">
+                  <span class="user-avatar-sm">{{ c.repAvatar }}</span>
+                  <span>{{ c.rep }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ c.lastContact }}</td>
+              <td>
+                @if (c.status === 'active') { <span class="badge badge-success">نشط</span> }
+                @else if (c.status === 'pending') { <span class="badge badge-warning">يحتاج متابعة</span> }
+                @else { <span class="badge badge-danger">غير نشط</span> }
+              </td>
+              <td>
+                <div class="action-btns">
+                  <button class="action-btn view" title="عرض">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                  <button class="action-btn edit" title="تعديل">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

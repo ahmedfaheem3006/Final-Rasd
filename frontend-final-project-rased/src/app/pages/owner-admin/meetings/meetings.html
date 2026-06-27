@@ -1,0 +1,370 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.t('meetings.breadcrumbs') }}</div>
+      <h1>{{ i18n.t('meetings.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('meetings.subtitle') }}</p>
+    </div>
+    <div class="header-actions">
+      @if (canSchedule()) {
+        <button class="btn btn-primary" (click)="openModal()">
+          <i class="fa-solid fa-calendar-plus"></i>
+          <span>{{ i18n.t('meetings.btn.schedule') }}</span>
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- Upcoming Meetings -->
+  <div class="section-header animate-fade-in">
+    <h2>
+      <i class="fa-solid fa-calendar-check section-icon"></i>
+      {{ i18n.t('meetings.upcoming') }}
+    </h2>
+  </div>
+
+  <div class="meetings-grid animate-reveal">
+    @for (meeting of upcomingMeetings(); track meeting.id; let idx = $index) {
+      <div class="meeting-card-premium" [ngClass]="'type-' + meeting.type" [style.animation-delay]="(idx * 0.15) + 's'">
+        <div class="meeting-type-bar"></div>
+        <div class="meeting-card-content">
+          <div class="meeting-meta-top">
+            <span class="meeting-type-badge-premium" [ngClass]="meeting.type">
+              @if (meeting.type === 'internal') {
+                <i class="fa-solid fa-building-user"></i> {{ i18n.t('meetings.type.internal') }}
+              } @else if (meeting.type === 'client') {
+                <i class="fa-solid fa-handshake"></i> {{ i18n.t('meetings.type.client') }}
+              } @else {
+                <i class="fa-solid fa-chess-knight"></i> {{ i18n.t('meetings.type.strategic') }}
+              }
+            </span>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div class="meeting-duration-pill">
+                <i class="fa-regular fa-clock"></i>
+                <span>{{ meeting.duration }}</span>
+              </div>
+              @if (canSchedule()) {
+                <button class="btn-edit" (click)="openEditModal(meeting)" [title]="i18n.isRtl() ? 'تعديل' : 'Edit'">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button class="btn-delete" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 6px; padding: 4px 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; height: 26px; transition: all 0.2s;" (click)="deleteMeeting(meeting.id, $event)">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              }
+            </div>
+          </div>
+
+          <h3 class="meeting-title-premium">{{ meeting.title }}</h3>
+
+          <div class="meeting-details-grid">
+            <div class="meeting-detail-item">
+              <i class="fa-regular fa-calendar detail-icon"></i>
+              <span>{{ meeting.date }}</span>
+            </div>
+            <div class="meeting-detail-item">
+              <i class="fa-solid fa-stopwatch detail-icon"></i>
+              <span>{{ formatTimeOption(meeting.time) }}</span>
+            </div>
+            <div class="meeting-detail-item full-width">
+              <i class="fa-solid fa-location-dot detail-icon"></i>
+              <span>{{ meeting.location }}</span>
+            </div>
+          </div>
+
+          <div class="meeting-footer-premium">
+            <div class="attendees-avatars">
+              @for (att of meeting.attendees; track att) {
+                <div class="attendee-avatar-circle" [attr.data-initials]="att">
+                  {{ att }}
+                </div>
+              }
+            </div>
+            <button class="btn btn-join-premium" (click)="onJoinMeeting(meeting.link)">
+              <span>{{ i18n.t('meetings.btn.join') }}</span>
+              <i class="fa-solid fa-video"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state-card" style="grid-column: 1 / -1; padding: 40px; text-align: center; background: var(--bg-card); border: 1px dashed var(--border-light); border-radius: var(--radius-lg);">
+        <i class="fa-solid fa-calendar-xmark" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 12px;"></i>
+        <p style="color: var(--text-body); font-size: 0.95rem; margin: 0;">
+          {{ i18n.isRtl() ? 'لا توجد اجتماعات مجدولة حالياً.' : 'No meetings scheduled at this time.' }}
+        </p>
+      </div>
+    }
+  </div>
+
+  <!-- Past Meetings -->
+  <div class="section-header animate-fade-in" style="margin-top: 25px;">
+    <h2>
+      <i class="fa-solid fa-clock-rotate-left section-icon"></i>
+      {{ i18n.t('meetings.past') }}
+    </h2>
+  </div>
+
+  <div class="timeline-container animate-reveal">
+    <div class="timeline-line"></div>
+    
+    @for (m of pastMeetings(); track m.id; let idx = $index) {
+      <div class="timeline-item-premium" [style.animation-delay]="(idx * 0.15) + 's'">
+        <div class="timeline-badge-completed">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        
+        <div class="timeline-content-card">
+          <div class="timeline-meta-row">
+            <span class="timeline-date-tag">
+              <i class="fa-regular fa-calendar-check"></i>
+              {{ m.date }}
+            </span>
+            <span class="badge-completed-status">
+              <i class="fa-solid fa-circle-check"></i> {{ i18n.t('meetings.past.completed') }}
+            </span>
+          </div>
+          
+          <h4 class="timeline-title">{{ m.title }}</h4>
+          
+          <div class="timeline-outcome-box">
+            <div class="outcome-icon-wrapper">
+              <i class="fa-solid fa-square-poll-horizontal"></i>
+            </div>
+            <div class="outcome-text-content">
+              <strong>{{ i18n.t('meetings.past.outcome') }}</strong>
+              <p>{{ m.outcome }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state-card" style="padding: 30px; text-align: center; background: var(--bg-card); border: 1px dashed var(--border-light); border-radius: var(--radius-lg); margin-inline-start: 20px;">
+        <p style="color: var(--text-body); font-size: 0.9rem; margin: 0;">
+          {{ i18n.isRtl() ? 'لا توجد اجتماعات سابقة.' : 'No past meetings.' }}
+        </p>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Schedule Meeting Modal -->
+<div class="modal-overlay" [class.active]="showModal()" (click)="closeModal()">
+  <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge">
+          <i class="fa-solid" [ngClass]="isEditMode() ? 'fa-pen-to-square' : 'fa-calendar-plus'"></i>
+        </div>
+        <div>
+          <h3>{{ isEditMode() ? (i18n.isRtl() ? 'تعديل الاجتماع' : 'Edit Meeting') : i18n.t('meetings.modal.title') }}</h3>
+          <p class="modal-subtitle">{{ isEditMode() ? (i18n.isRtl() ? 'قم بتعديل تفاصيل الاجتماع وحفظ التغييرات' : 'Modify meeting details and save changes') : i18n.t('meetings.modal.subtitle') }}</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeModal()" type="button">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form (ngSubmit)="saveMeeting()">
+      <div class="modal-body">
+        
+        <!-- Meeting Title -->
+        <div class="form-group-modal">
+          <label>
+            <i class="fa-solid fa-heading"></i>
+            {{ i18n.t('meetings.form.title') }}
+          </label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-font input-icon"></i>
+            <input type="text" [(ngModel)]="newMeetingTitle" name="newMeetingTitle" required [placeholder]="i18n.isRtl() ? 'مثال: مراجعة المبيعات الأسبوعية' : 'e.g. Weekly Sales Review'" />
+          </div>
+        </div>
+
+        <div class="form-grid-row">
+          <!-- Meeting Date -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-calendar-days"></i>
+              {{ i18n.t('meetings.form.date') }}
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar-day input-icon"></i>
+              <input type="date" [(ngModel)]="newMeetingDate" name="newMeetingDate" required (change)="autoGenerateLink()" />
+            </div>
+          </div>
+
+          <!-- Meeting Time (Dropdown selection) -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-clock"></i>
+              {{ i18n.t('meetings.form.time') }}
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <i class="fa-solid fa-stopwatch input-icon"></i>
+              <select [(ngModel)]="newMeetingTime" name="newMeetingTime" required (change)="autoGenerateLink()">
+                <option value="" disabled selected>{{ i18n.isRtl() ? 'اختر الوقت' : 'Select Time' }}</option>
+                @for (t of timeOptions; track t) {
+                  <option [value]="t">{{ formatTimeOption(t) }}</option>
+                }
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meeting Type -->
+        <div class="form-group-modal">
+          <label>
+            <i class="fa-solid fa-tags"></i>
+            {{ i18n.t('meetings.form.type') }}
+          </label>
+          <div class="input-wrapper select-wrapper">
+            <i class="fa-solid fa-tag input-icon"></i>
+            <select [(ngModel)]="newMeetingType" name="newMeetingType">
+              <option value="internal">{{ i18n.t('meetings.type.internal') }}</option>
+              <option value="client">{{ i18n.t('meetings.type.client') }}</option>
+              <option value="strategic">{{ i18n.t('meetings.type.strategic') }}</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-arrow"></i>
+          </div>
+        </div>
+
+        <!-- Conditional: Target Client Dropdown -->
+        @if (newMeetingType === 'client') {
+          <div class="form-group-modal animate-reveal">
+            <label>
+              <i class="fa-solid fa-user-tie"></i>
+              {{ i18n.isRtl() ? 'العميل' : 'Client' }}
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <i class="fa-solid fa-address-book input-icon"></i>
+              <select [(ngModel)]="selectedClientId" name="selectedClientId" required>
+                <option value="" disabled selected>{{ i18n.isRtl() ? 'اختر العميل' : 'Select Client' }}</option>
+                @for (client of clientsList(); track client.id) {
+                  <option [value]="client.id">{{ client.name }} ({{ client.companyName || '' }})</option>
+                }
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
+          </div>
+        }
+
+        <!-- Conditional: Strategic Partner Company Dropdown -->
+        @if (newMeetingType === 'strategic') {
+          <div class="form-group-modal animate-reveal">
+            <label>
+              <i class="fa-solid fa-handshake"></i>
+              {{ i18n.isRtl() ? 'الشركة الشريكة' : 'Partner Company' }}
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <i class="fa-solid fa-building input-icon"></i>
+              <select [(ngModel)]="selectedStrategicCompany" name="selectedStrategicCompany" required>
+                <option value="" disabled selected>{{ i18n.isRtl() ? 'اختر الشركة' : 'Select Company' }}</option>
+                @for (company of strategicCompaniesList(); track company) {
+                  <option [value]="company">{{ company }}</option>
+                }
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
+          </div>
+        }
+
+        <div class="form-grid-row">
+          <!-- Meeting Duration -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-hourglass-half"></i>
+              {{ i18n.t('meetings.form.duration') }}
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-hourglass input-icon"></i>
+              <input type="text" [(ngModel)]="newMeetingDuration" name="newMeetingDuration" [placeholder]="i18n.isRtl() ? 'مثال: 60 دقيقة' : 'e.g. 60 minutes'" />
+            </div>
+          </div>
+
+          <!-- Meeting Platform Selection -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-computer"></i>
+              {{ i18n.isRtl() ? 'المنصة / الموقع' : 'Platform / Location' }}
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <i class="fa-solid fa-location-arrow input-icon"></i>
+              <select [(ngModel)]="newMeetingPlatform" name="newMeetingPlatform" (change)="autoGenerateLink()">
+                @for (platform of platformOptions; track platform.key) {
+                  <option [value]="platform.key">{{ platform.label }}</option>
+                }
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditional input for physical office details if Platform is Office -->
+        @if (newMeetingPlatform === 'office') {
+          <div class="form-group-modal animate-reveal">
+            <label>
+              <i class="fa-solid fa-map-location-dot"></i>
+              {{ i18n.isRtl() ? 'تفاصيل الموقع' : 'Location Details' }}
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-location-dot input-icon"></i>
+              <input type="text" [(ngModel)]="newMeetingLocation" name="newMeetingLocation" [placeholder]="i18n.isRtl() ? 'مثال: قاعة الاجتماعات A' : 'e.g. Meeting Room A'" />
+            </div>
+          </div>
+        }
+
+        <!-- Meeting Attendees Multi-Select Container -->
+        <div class="form-group-modal">
+          <label>
+            <i class="fa-solid fa-users"></i>
+            {{ i18n.t('meetings.form.attendees') }}
+          </label>
+          <div class="attendees-multiselect-container">
+            <div class="multiselect-header">
+              <label class="checkbox-wrapper">
+                <input type="checkbox" (change)="selectAllAttendees($event)" [checked]="isAllSelected()" />
+                <span class="checkbox-box"></span>
+                <span class="label-text">{{ i18n.isRtl() ? 'اختيار جميع الموظفين' : 'Select All Employees' }}</span>
+              </label>
+            </div>
+            <div class="multiselect-list-scroll">
+              @for (emp of employeesList(); track emp.email) {
+                <div class="multiselect-item" [class.selected]="emp.selected" (click)="toggleAttendee(emp.email)">
+                  <label class="checkbox-wrapper" (click)="$event.stopPropagation()">
+                    <input type="checkbox" [checked]="emp.selected" (change)="toggleAttendee(emp.email)" />
+                    <span class="checkbox-box"></span>
+                    <span class="emp-name">{{ emp.fullName }}</span>
+                  </label>
+                  <span class="emp-role-badge">{{ translateRole(emp.role) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Auto-Generated Meeting Link (Readonly) -->
+        <div class="form-group-modal">
+          <label>
+            <i class="fa-solid fa-link"></i>
+            {{ i18n.t('meetings.form.link') }} ({{ i18n.isRtl() ? 'تلقائي افتراضي' : 'Auto Generated' }})
+          </label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-globe input-icon"></i>
+            <input type="text" [(ngModel)]="newMeetingLink" name="newMeetingLink" readonly [placeholder]="i18n.isRtl() ? 'سيتم إنشاء الرابط تلقائياً عند تحديد التاريخ والوقت والمنصة' : 'Link will be generated automatically once Platform, Date & Time are set'" />
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" (click)="closeModal()">
+          <i class="fa-solid fa-arrow-right"></i>
+          {{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid" [ngClass]="isEditMode() ? 'fa-floppy-disk' : 'fa-calendar-check'"></i>
+          {{ isEditMode() ? (i18n.isRtl() ? 'حفظ التعديلات' : 'Save Changes') : i18n.t('meetings.btn.schedule') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

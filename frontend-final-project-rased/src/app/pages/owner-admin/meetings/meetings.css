@@ -1,0 +1,700 @@
+/* Page Layout */
+:host { display: block; overflow-x: hidden; }
+.page-container { display: flex; flex-direction: column; gap: 30px; overflow-x: hidden; }
+.page-header { display: flex; align-items: center; justify-content: space-between; }
+.header-info h1 { font-size: 1.85rem; font-weight: 800; color: var(--text-title); margin: 4px 0; }
+.breadcrumbs { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
+.header-info .subtitle { font-size: 0.9rem; color: var(--text-body); }
+.header-actions { display: flex; gap: 12px; }
+
+/* Edit Button Styles */
+.btn-edit {
+  background: rgba(67, 24, 255, 0.08);
+  color: var(--primary);
+  border: 1px solid rgba(67, 24, 255, 0.2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  height: 26px;
+  transition: all 0.2s;
+}
+.btn-edit:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(67, 24, 255, 0.2);
+}
+.btn-delete:hover {
+  background: #ef4444 !important;
+  color: white !important;
+  border-color: #ef4444 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Section Header */
+.section-header h2 { 
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem; 
+  font-weight: 700; 
+  color: var(--text-title); 
+  border-inline-start: 3px solid var(--primary); 
+  padding-inline-start: 12px; 
+}
+.section-icon {
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+/* ── Upcoming Meetings Premium Grid ── */
+.meetings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Premium Meeting Card */
+.meeting-card-premium {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.meeting-card-premium:hover {
+  transform: translateY(-5px) scale(1.01);
+  border-color: var(--border-hover);
+}
+
+/* Color codes on hover */
+.meeting-card-premium.type-internal:hover {
+  box-shadow: 0 12px 30px rgba(67, 24, 255, 0.15);
+}
+.meeting-card-premium.type-client:hover {
+  box-shadow: 0 12px 30px rgba(14, 165, 233, 0.15);
+}
+.meeting-card-premium.type-strategic:hover {
+  box-shadow: 0 12px 30px rgba(255, 181, 71, 0.15);
+}
+
+/* Left colored vertical bar */
+.meeting-type-bar {
+  width: 5px;
+  height: 100%;
+  flex-shrink: 0;
+}
+.meeting-card-premium.type-internal .meeting-type-bar { background: var(--primary); }
+.meeting-card-premium.type-client .meeting-type-bar { background: var(--secondary); }
+.meeting-card-premium.type-strategic .meeting-type-bar { background: var(--warning); }
+
+/* Card Content Container */
+.meeting-card-content {
+  flex: 1;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Meta Top: Badge + Duration */
+.meeting-meta-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.meeting-type-badge-premium {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.meeting-type-badge-premium.internal { background: var(--primary-light); color: var(--primary); }
+.meeting-type-badge-premium.client { background: var(--secondary-light); color: var(--secondary); }
+.meeting-type-badge-premium.strategic { background: var(--warning-light); color: var(--warning); }
+
+.meeting-duration-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+:root.light-theme .meeting-duration-pill {
+  background: #f1f5f9;
+}
+
+/* Title */
+.meeting-title-premium {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-title);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Details Grid */
+.meeting-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.meeting-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-body);
+}
+.meeting-detail-item.full-width {
+  grid-column: span 2;
+}
+.detail-icon {
+  color: var(--primary);
+  font-size: 0.85rem;
+  width: 14px;
+  text-align: center;
+}
+
+/* Footer: Attendees + Join Button */
+.meeting-footer-premium {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Stacked Attendees Avatars */
+.attendees-avatars {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+[dir="ltr"] .attendees-avatars {
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.attendee-avatar-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-card-solid);
+  background: var(--primary-gradient);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: -8px; /* overlapping */
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  cursor: default;
+}
+.attendee-avatar-circle:hover {
+  transform: translateY(-4px) scale(1.1);
+  z-index: 10;
+}
+
+/* Custom background based on initials to make them colorful */
+.attendee-avatar-circle:nth-child(2n) { background: linear-gradient(135deg, #0ea5e9 0%, #0075ff 100%); }
+.attendee-avatar-circle:nth-child(3n) { background: linear-gradient(135deg, #01b574 0%, #0ae78a 100%); }
+.attendee-avatar-circle:nth-child(4n) { background: linear-gradient(135deg, #ffb547 0%, #ff6b35 100%); }
+
+/* Join Virtual Meeting Button */
+.btn-join-premium {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #4318ff 0%, #868cff 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(67, 24, 255, 0.25);
+  transition: all 0.25s ease;
+}
+.btn-join-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(67, 24, 255, 0.4);
+  background: linear-gradient(135deg, #3311db 0%, #767cff 100%);
+}
+.btn-join-premium:active {
+  transform: translateY(0);
+}
+
+/* ── Past Meetings Premium Timeline ── */
+.timeline-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-block: 10px;
+  padding-inline-start: 20px;
+}
+
+/* Running vertical line */
+.timeline-line {
+  position: absolute;
+  inset-inline-start: 8px; /* line up with bullet badges */
+  top: 24px;
+  bottom: 24px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--success) 0%, rgba(1, 181, 116, 0.15) 100%);
+  z-index: 1;
+}
+
+/* Individual Timeline Node */
+.timeline-item-premium {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(15px);
+  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Timeline bullet dot */
+.timeline-badge-completed {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--success);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  box-shadow: 0 0 0 4px rgba(1, 181, 116, 0.2), 0 0 10px var(--success);
+  margin-top: 12px;
+  flex-shrink: 0;
+}
+
+/* Content card representing past meeting details */
+.timeline-content-card {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s ease;
+}
+
+[dir="rtl"] .timeline-content-card:hover {
+  border-color: rgba(1, 181, 116, 0.25);
+  box-shadow: 0 8px 24px rgba(1, 181, 116, 0.06);
+  transform: translateX(-2px);
+}
+
+[dir="ltr"] .timeline-content-card:hover {
+  border-color: rgba(1, 181, 116, 0.25);
+  box-shadow: 0 8px 24px rgba(1, 181, 116, 0.06);
+  transform: translateX(2px);
+}
+
+.timeline-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.timeline-date-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.badge-completed-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--success);
+  background: var(--success-light);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.timeline-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-title);
+  margin: 0 0 12px;
+}
+
+/* Outcome box inside the past meeting card */
+.timeline-outcome-box {
+  display: flex;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+
+:root.light-theme .timeline-outcome-box {
+  background: #f8fafc;
+}
+
+.outcome-icon-wrapper {
+  color: var(--success);
+  font-size: 1rem;
+  margin-top: 2px;
+}
+
+.outcome-text-content {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.outcome-text-content strong {
+  display: block;
+  color: var(--text-title);
+  margin-bottom: 2px;
+  font-size: 0.82rem;
+}
+
+.outcome-text-content p {
+  color: var(--text-body);
+  margin: 0;
+}
+
+/* Grid columns for Modal */
+.form-grid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .meeting-card {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+}
+
+@media (max-width: 500px) {
+  .form-grid-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    gap: 20px;
+  }
+  .meeting-card {
+    padding: 14px;
+    gap: 10px;
+  }
+  .meeting-time-col {
+    min-width: 60px;
+  }
+  .meeting-date {
+    font-size: 0.7rem;
+  }
+  .meeting-hour {
+    font-size: 1rem;
+  }
+  .meeting-duration {
+    font-size: 0.65rem;
+  }
+  .meeting-title {
+    font-size: 0.85rem;
+  }
+  .meeting-location {
+    font-size: 0.72rem;
+  }
+  .attendee-chip {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+  .meeting-type-badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+  .meeting-actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  .past-meeting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .past-title {
+    font-size: 0.82rem;
+  }
+  .past-outcome {
+    font-size: 0.72rem;
+  }
+  .past-meta {
+    align-items: flex-start;
+  }
+  .card {
+    padding: 16px;
+  }
+  .section-header h2 {
+    font-size: 0.95rem;
+  }
+  .header-info h1 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .meeting-card {
+    padding: 10px;
+    gap: 8px;
+  }
+  .meeting-title {
+    font-size: 0.8rem;
+  }
+  .header-info h1 {
+    font-size: 1.1rem;
+  }
+  .meetings-list {
+    gap: 10px;
+  }
+  .past-meeting-item {
+    padding: 12px 0;
+  }
+}
+
+@media (max-width: 320px) {
+  .header-info h1 {
+    font-size: 1rem;
+  }
+  .meeting-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .meeting-actions {
+    width: 100%;
+  }
+}
+
+/* ── Custom Scrollable Checkbox List for Attendees ── */
+.attendees-multiselect-container {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+:root.light-theme .attendees-multiselect-container {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.multiselect-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+:root.light-theme .multiselect-header {
+  border-bottom-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.multiselect-list-scroll {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom Scrollbar for multiselect list */
+.multiselect-list-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.multiselect-list-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.multiselect-list-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+.multiselect-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+:root.light-theme .multiselect-list-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.multiselect-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.multiselect-item:last-child {
+  border-bottom: none;
+}
+
+.multiselect-item:hover {
+  background: rgba(67, 24, 255, 0.08);
+}
+
+.multiselect-item.selected {
+  background: rgba(67, 24, 255, 0.05);
+}
+
+:root.light-theme .multiselect-item:hover {
+  background: rgba(67, 24, 255, 0.06);
+}
+
+/* Custom Checkbox Design */
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.88rem;
+  color: var(--text-body);
+}
+
+.checkbox-wrapper input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-box {
+  height: 18px;
+  width: 18px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+:root.light-theme .checkbox-box {
+  background-color: #fff;
+  border-color: #cbd5e1;
+}
+
+.checkbox-wrapper:hover input ~ .checkbox-box {
+  border-color: #4318ff;
+  box-shadow: 0 0 0 3px rgba(67, 24, 255, 0.15);
+}
+
+.checkbox-wrapper input:checked ~ .checkbox-box {
+  background-color: #4318ff;
+  border-color: #4318ff;
+}
+
+.checkbox-box:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-wrapper input:checked ~ .checkbox-box:after {
+  display: block;
+}
+
+.checkbox-wrapper .checkbox-box:after {
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Employee Roles Badge */
+.emp-role-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+}
+
+:root.light-theme .emp-role-badge {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.multiselect-item.selected .emp-role-badge {
+  background: rgba(67, 24, 255, 0.15);
+  color: #4318ff;
+}
+
+/* Empty State Card */
+.empty-state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.empty-state-card:hover {
+  border-color: rgba(67, 24, 255, 0.25) !important;
+  box-shadow: 0 8px 24px rgba(67, 24, 255, 0.04);
+}
+

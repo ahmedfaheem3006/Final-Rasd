@@ -1,0 +1,182 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">الموارد البشرية / الحضور والغياب</div>
+      <h1>مراقبة الحضور اليومي</h1>
+      <p class="subtitle">متابعة حضور وغياب موظفي القسم بشكل يومي وأسبوعي</p>
+    </div>
+    <div class="header-actions">
+      <input type="date" class="form-control date-picker" [value]="selectedDate()" (change)="selectedDate.set($any($event.target).value)">
+      <button class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        تصدير التقرير
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-grid animate-reveal">
+    @for (s of stats(); track s.label) {
+      <div class="stat-card" [ngClass]="'border-' + s.color" (click)="s.label !== 'نسبة الحضور' && setFilter($any(s.color === 'success' ? 'present' : s.color === 'warning' ? 'late' : s.color === 'danger' ? 'absent' : s.color === 'info' ? 'remote' : 'all'))">
+        <div class="stat-icon" [ngClass]="'icon-' + s.color">
+          @if (s.icon === 'chart') {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          } @else if (s.icon === 'check') {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          } @else if (s.icon === 'clock') {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          } @else if (s.icon === 'x') {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          }
+        </div>
+        <div class="stat-value">{{ s.value }}</div>
+        <div class="stat-label">{{ s.label }}</div>
+      </div>
+    }
+  </div>
+
+  <!-- Weekly Chart + Table Row -->
+  <div class="main-grid animate-reveal">
+
+    <!-- Weekly Bar Chart -->
+    <div class="card weekly-card">
+      <div class="card-header-simple">
+        <h3>ملخص الأسبوع</h3>
+        <span class="subtitle">نسبة الحضور اليومية</span>
+      </div>
+      <div class="bar-chart">
+        @for (d of weeklyData; track d.day) {
+          <div class="bar-col">
+            <div class="bar-label-top">{{ d.rate }}%</div>
+            <div class="bar-track">
+              <div class="bar-fill" [style.height]="getBarHeight(d.rate)" [ngClass]="d.rate >= 90 ? 'bar-success' : d.rate >= 70 ? 'bar-warning' : 'bar-danger'"></div>
+            </div>
+            <div class="bar-day">{{ d.day }}</div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Quick Summary -->
+    <div class="card summary-card">
+      <div class="card-header-simple">
+        <h3>ملاحظات اليوم</h3>
+      </div>
+      <div class="notes-list">
+        <div class="note-item note-warning">
+          <div class="note-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div class="note-text">
+            <div class="note-title">خالد الدوسري غائب</div>
+            <div class="note-sub">لم يتم تسجيل الحضور حتى الآن</div>
+          </div>
+        </div>
+        <div class="note-item note-warning">
+          <div class="note-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="note-text">
+            <div class="note-title">سارة القحطاني متأخرة</div>
+            <div class="note-sub">تسجيل الدخول: 8:55 ص (المقرر: 8:00 ص)</div>
+          </div>
+        </div>
+        <div class="note-item note-warning">
+          <div class="note-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="note-text">
+            <div class="note-title">أحمد البارقي متأخر</div>
+            <div class="note-sub">تسجيل الدخول: 9:32 ص (المقرر: 8:00 ص)</div>
+          </div>
+        </div>
+        <div class="note-item note-success">
+          <div class="note-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="note-text">
+            <div class="note-title">4 موظفين حضروا في الوقت</div>
+            <div class="note-sub">قبل الساعة 8:10 صباحاً</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Table -->
+  <div class="card animate-reveal">
+    <div class="card-header">
+      <div>
+        <h3>سجل الحضور اليومي</h3>
+        <p class="subtitle">{{ selectedDate() }}</p>
+      </div>
+      <div class="filter-tabs">
+        <button class="filter-tab" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">الكل</button>
+        <button class="filter-tab" [class.active]="activeFilter() === 'present'" (click)="setFilter('present')">حاضر</button>
+        <button class="filter-tab" [class.active]="activeFilter() === 'late'" (click)="setFilter('late')">متأخر</button>
+        <button class="filter-tab" [class.active]="activeFilter() === 'absent'" (click)="setFilter('absent')">غائب</button>
+        <button class="filter-tab" [class.active]="activeFilter() === 'remote'" (click)="setFilter('remote')">عن بُعد</button>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>الموظف</th>
+            <th>الحالة</th>
+            <th>وقت الدخول</th>
+            <th>وقت الخروج</th>
+            <th>ساعات العمل</th>
+            <th>ملاحظة</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (rec of filteredRecords(); track rec.id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar-sm" [ngClass]="'avatar-' + rec.status">{{ rec.avatar }}</div>
+                  <div>
+                    <div class="user-name-cell">{{ rec.employee }}</div>
+                    <div class="user-role-cell">{{ rec.role }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="'status-' + rec.status">
+                  {{ getStatusLabel(rec.status) }}
+                </span>
+              </td>
+              <td>
+                <span [class.text-danger]="rec.status === 'late'" [class.text-muted]="rec.status === 'absent'">
+                  {{ rec.checkIn }}
+                </span>
+              </td>
+              <td class="text-muted">{{ rec.checkOut }}</td>
+              <td>
+                @if (rec.hoursWorked !== '0') {
+                  <span class="hours-badge">{{ rec.hoursWorked }} ساعة</span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+              <td>
+                @if (rec.status === 'late') {
+                  <span class="remark remark-warning">تأخير عن الدوام</span>
+                } @else if (rec.status === 'absent') {
+                  <span class="remark remark-danger">بدون إذن مسبق</span>
+                } @else if (rec.status === 'remote') {
+                  <span class="remark remark-info">يعمل من المنزل</span>
+                } @else {
+                  <span class="remark remark-success">في الوقت المحدد</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,739 @@
+{
+	"info": {
+		"_postman_id": "7a9e3d8f-cf48-4c92-bba3-23d902188ff3",
+		"name": "Rasd AI API Collection",
+		"description": "مجموعة طلبات Postman لاختبار كامل خدمات منصة رصد AI (إدارة العملاء، الصفقات، الفواتير، المهام، وتحليلات الذكاء الاصطناعي).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "1. User Login (تسجيل الدخول)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.success && jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set(\"authToken\", jsonData.data.token);",
+									"    pm.collectionVariables.set(\"tenantId\", jsonData.data.tenantId);",
+									"    console.log(\"Saved JWT token and Tenant ID successfully!\");",
+									"}"
+								],
+								"type": "javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"owner@rasd.com\",\n  \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Auth",
+								"login"
+							]
+						},
+						"description": "يقوم بتسجيل دخول المستخدم وإرجاع الـ JWT Token وبيانات المستخدم والشركة. يقوم Postman بحفظ الـ Token تلقائياً في المتغيرات بعد نجاح الطلب."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Register New Employee (تسجيل موظف جديد)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Tenant-Id",
+								"value": "{{tenantId}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"عمر المبيعات الجديد\",\n  \"email\": \"new.sales@rasd.com\",\n  \"password\": \"password123\",\n  \"roleId\": 5,\n  \"managerId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Auth",
+								"register"
+							]
+						},
+						"description": "يسجل موظف جديد داخل نفس الشركة التابع لها المالك. يتطلب صلاحيات المالك (Owner)."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Get User Profile (الملف الشخصي للمستخدم)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/Auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Auth",
+								"profile"
+							]
+						},
+						"description": "يسترجع بيانات الملف الشخصي للمستخدم صاحب التوكن الحالي للتأكد من هويته وصلاحياته."
+					},
+					"response": []
+				},
+				{
+					"name": "4. Get Company Users (قائمة موظفي الشركة)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/Auth/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Auth",
+								"users"
+							]
+						},
+						"description": "يسترجع قائمة بكافة الموظفين والمستخدمين المسجلين في الشركة الحالية (مفلتر بالشركة وتتطلب صلاحية المالك أو مدير النظام)."
+					},
+					"response": []
+				},
+				{
+					"name": "5. Change User Role (تغيير صلاحيات الموظف)",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"roleId\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Auth/users/3/role",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Auth",
+								"users",
+								"3",
+								"role"
+							]
+						},
+						"description": "تعديل صلاحيات ودور مستخدم معين في الشركة (مثال: تعيينه كمحاسب أو بائع) من قبل المالك أو مدير النظام."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tenants & Companies",
+			"item": [
+				{
+					"name": "1. Register New Company (تسجيل شركة جديدة بالمالك)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"companyName\": \"مجموعة الأنصار اللوجستية\",\n  \"ownerFullName\": \"محمود الأنصار\",\n  \"ownerEmail\": \"ansar@owner.com\",\n  \"ownerPassword\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Tenants/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Tenants",
+								"register"
+							]
+						},
+						"description": "تسجيل شركة جديدة (SaaS Tenant) وحساب المالك الأساسي لها."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Get Company Info (خاص بمدير النظام)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/Tenants/{{tenantId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Tenants",
+								"{{tenantId}}"
+							]
+						},
+						"description": "الحصول على بيانات الشركة بناءً على المعرف الخاص بها (متاح فقط لـ SystemAdmin)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customers & Clients",
+			"item": [
+				{
+					"name": "1. Get All Clients (قائمة العملاء)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/Customers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Customers"
+							]
+						},
+						"description": "الحصول على قائمة عملاء الشركة الحالية (مفلتر تلقائياً بالـ Tenant)."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Create Client (إضافة عميل جديد)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"شركة البناء والتنمية الحديثة\",\n  \"email\": \"info@modernbuild.com\",\n  \"phone\": \"01122334455\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Customers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Customers"
+							]
+						},
+						"description": "إضافة عميل جديد إلى قاعدة البيانات الخاصة بالشركة."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Get Client Notes (ملاحظات العميل)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/Customers/1/notes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Customers",
+								"1",
+								"notes"
+							]
+						},
+						"description": "استرجاع كافة الملاحظات والتعليقات الخاصة بالعميل المحدد."
+					},
+					"response": []
+				},
+				{
+					"name": "4. Add Note to Client (إضافة ملاحظة للعميل)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"العميل يفضل التواصل بعد الساعة 4 مساءً، ويرغب في استلام عرض السعر النهائي.\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Customers/1/notes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Customers",
+								"1",
+								"notes"
+							]
+						},
+						"description": "إضافة ملاحظة جديدة للعميل لمتابعة حالته والصفقات الخاصة به."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Deals & Kanban",
+			"item": [
+				{
+					"name": "1. Get All Deals (قائمة الصفقات)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/Deals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Deals"
+							]
+						},
+						"description": "استرجاع جميع الصفقات التابعة للشركة لبناء لوحة الـ Kanban التفاعلية."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Create Deal (إنشاء صفقة جديدة)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clientId\": 1,\n  \"assignedUserId\": 3,\n  \"amount\": 85000.00,\n  \"status\": \"Proposal\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Deals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Deals"
+							]
+						},
+						"description": "تسجيل صفقة بيع جديدة للعميل وتحديد المندوب المسؤول عنها وقيمتها المالية."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Update Deal Stage (تحديث حالة الصفقة - سحب وإفلات)",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Won\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Deals/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Deals",
+								"1",
+								"status"
+							]
+						},
+						"description": "تحديث حالة الصفقة مثل (Proposal -> Won) عند نقلها بسحب وإفلات في واجهة الفرونت."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Invoices",
+			"item": [
+				{
+					"name": "1. Get All Invoices (فواتير الشركة)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/Invoices",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Invoices"
+							]
+						},
+						"description": "استرجاع كافة فواتير المبيعات الخاصة بالشركة."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Create Invoice (إنشاء فاتورة جديدة)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dealId\": 1,\n  \"totalAmount\": 85000.00,\n  \"status\": \"Unpaid\",\n  \"dueDate\": \"2026-07-20T00:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Invoices",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Invoices"
+							]
+						},
+						"description": "إصدار فاتورة مالية لصفقة رابحة وتحديد تاريخ الاستحقاق والمبلغ المستحق."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Update Invoice Status (تحديث حالة الفاتورة)",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"Paid\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Invoices/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Invoices",
+								"1",
+								"status"
+							]
+						},
+						"description": "تحديث حالة السداد للفاتورة المحددة (مثال: Unpaid -> Paid)."
+					},
+					"response": []
+				},
+				{
+					"name": "4. Download Invoice PDF (تحميل ملف الفاتورة PDF المنسق)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/Invoices/1/download",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Invoices",
+								"1",
+								"download"
+							]
+						},
+						"description": "يقوم بتوليد ملف PDF احترافي ومنسق وجاهز للطباعة باستخدام QuestPDF وإرساله كمصنف للتحميل الفوري."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tasks & Activities",
+			"item": [
+				{
+					"name": "1. Get All Tasks (قائمة المهام)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/Tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Tasks"
+							]
+						},
+						"description": "استرجاع كافة مهام الموظفين للشركة الحالية لمتابعة حالة العمل."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Create Task (إنشاء مهمة للموظف)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"مراجعة متطلبات التوريد وتوقيع العقد مع المقاولات العربية\",\n  \"assignedUserId\": 3,\n  \"status\": \"Todo\",\n  \"dueDate\": \"2026-06-25T00:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Tasks"
+							]
+						},
+						"description": "إسناد مهمة جديدة لأحد أعضاء الفريق مع تحديد تاريخ الاستحقاق."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Update Task Status (تعديل حالة المهمة)",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"InProgress\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Tasks/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Tasks",
+								"1",
+								"status"
+							]
+						},
+						"description": "تحديث تقدم المهمة (Todo -> InProgress -> Done)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AI Intelligence Services",
+			"item": [
+				{
+					"name": "1. Analyze Contract Document (تحليل ذكي للعقد المرفوع)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "ملف العقد بصيغة PDF أو Word",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Ai/analyze-contract",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Ai",
+								"analyze-contract"
+							]
+						},
+						"description": "رفع ملف العقد للذكاء الاصطناعي ليقوم بقراءة النص وتحليله واستخراج الأخطار والشروط المالية فوراً كـ JSON."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Transcribe Meeting & Extract Tasks (تفريغ الاجتماع الصوتي والتاسكات)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "ملف الصوت أو الفيديو الخاص بالاجتماع",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Ai/transcribe-meeting",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Ai",
+								"transcribe-meeting"
+							]
+						},
+						"description": "رفع تسجيل الاجتماع ليقوم نموذج Whisper بالخلفية بتفريغ النصوص واستنباط مهام عمل مقترحة لإضافتها للنظام."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Chat Assistant - Context Aware (المساعد الذكي للشركة)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"message\": \"كم إجمالي قيمة الصفقات الجارية وقيد التفاوض للشركة الآن؟\",\n  \"conversationId\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/Ai/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"Ai",
+								"chat"
+							]
+						},
+						"description": "إرسال سؤال للمساعد الذكي ليقوم بإرجاع إجابة مخصصة ومفلترة تقرأ إحصائيات الشركة اللحظية ومبيعاتها بدقة."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://localhost:7080",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "tenantId",
+			"value": "11111111-1111-1111-1111-111111111111",
+			"type": "string"
+		}
+	]
+}

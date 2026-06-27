@@ -1,0 +1,182 @@
+<div class="page-container animate-fade-in">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <div class="breadcrumbs">مدير المبيعات / المهام</div>
+      <h1>تكليفات ومهام الفريق</h1>
+      <p class="subtitle">توزيع المهام، ومتابعة الاتصالات والمقابلات لفرق المبيعات المختلفة</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="openModal()" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>إضافة وتكليف بمهمة</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid animate-reveal" style="margin-top: 24px;">
+    <div class="stat-card accent-primary">
+      <div class="stat-icon primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().total }}</div>
+        <div class="stat-label">إجمالي المهام</div>
+      </div>
+    </div>
+    <div class="stat-card accent-warning">
+      <div class="stat-icon warning">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().pending }}</div>
+        <div class="stat-label">مهام قيد التنفيذ</div>
+      </div>
+    </div>
+    <div class="stat-card accent-danger">
+      <div class="stat-icon danger">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().highPriority }}</div>
+        <div class="stat-label">مهام عاجلة قيد الانتظار</div>
+      </div>
+    </div>
+    <div class="stat-card accent-success">
+      <div class="stat-icon success">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().completed }}</div>
+        <div class="stat-label">المهام المنجزة</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Controls -->
+  <div class="card filters-card animate-reveal" style="margin-top: 24px;">
+    <div class="filters-header">
+      <div class="filter-tabs">
+        <button class="filter-tab" [class.active]="filterTab() === 'all'" (click)="filterTab.set('all')">كل المهام</button>
+        <button class="filter-tab" [class.active]="filterTab() === 'pending'" (click)="filterTab.set('pending')">المهام القائمة</button>
+        <button class="filter-tab" [class.active]="filterTab() === 'completed'" (click)="filterTab.set('completed')">المهام المنجزة</button>
+      </div>
+      <div class="dropdown-filter">
+        <label for="rep-select" style="font-size: 0.85rem; font-weight: 700; margin-left: 8px;">تصفية حسب المندوب:</label>
+        <select id="rep-select" class="filter-select" [ngModel]="selectedRepFilter()" (ngModelChange)="selectedRepFilter.set($event)">
+          <option value="all">جميع المندوبين</option>
+          @for (rep of reps(); track rep.name) {
+            <option [value]="rep.name">{{ rep.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasks List Card -->
+  <div class="card tasks-list-card animate-reveal" style="margin-top: 20px; padding: 10px 24px;">
+    <div class="tasks-items-list">
+      @for (task of filteredTasks(); track task.id) {
+        <div class="task-item-row" [class.completed]="task.completed">
+          <div class="task-right">
+            <input type="checkbox" [checked]="task.completed" (change)="toggleTask(task.id)" class="task-checkbox" />
+            <div class="task-details">
+              <p class="task-text">{{ task.text }}</p>
+              <div class="task-meta-row">
+                <span class="task-client">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                  {{ task.client }}
+                </span>
+                <span class="task-rep">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5-2 4-2 4 2 4 2"/></svg>
+                  المسؤول: {{ task.repName }}
+                </span>
+                <span class="task-date">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  الاستحقاق: {{ task.dueDate }}
+                </span>
+                <span class="task-badge-type" [ngClass]="task.type">
+                  @if (task.type === 'call') { اتصال }
+                  @else if (task.type === 'proposal') { عرض سعر }
+                  @else if (task.type === 'meeting') { اجتماع }
+                  @else { متابعة }
+                </span>
+                <span class="priority-badge" [ngClass]="task.priority">
+                  {{ task.priority === 'high' ? 'عاجل' : task.priority === 'medium' ? 'متوسط' : 'عادي' }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <button (click)="deleteTask(task.id)" class="delete-task-btn" title="حذف المهمة">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+        </div>
+      } @empty {
+        <div class="empty-tasks-state text-center" style="padding: 40px 0;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; color: var(--text-muted);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          <p class="text-muted">لا يوجد أي تكليفات أو مهام بالمعايير الحالية.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Add Task Modal -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>تكليف بمهمة مبيعات جديدة</h3>
+          <button (click)="closeModal()" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>تفاصيل وتوجيهات المهمة المطلوبة *</label>
+            <input type="text" [(ngModel)]="newText" placeholder="مثال: تقديم النسخة الثانية من عرض السعر المالي والتفاوض" required />
+          </div>
+          <div class="form-group">
+            <label>العميل المستهدف *</label>
+            <input type="text" [(ngModel)]="newClient" placeholder="مثال: مجموعة التكامل التقني" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>إسناد المهمة إلى (المندوب) *</label>
+              <select [(ngModel)]="newRepName">
+                @for (rep of reps(); track rep.name) {
+                  <option [value]="rep.name">{{ rep.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>نوع المهمة</label>
+              <select [(ngModel)]="newType">
+                <option value="call">اتصال هاتفي</option>
+                <option value="proposal">تجهيز/إرسال عرض سعر</option>
+                <option value="meeting">اجتماع / مقابلة زوم</option>
+                <option value="followup">بريد متابعة</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>درجة الأهمية / الأولوية</label>
+              <select [(ngModel)]="newPriority">
+                <option value="high">عاجل / مرتفع</option>
+                <option value="medium">متوسط الأهمية</option>
+                <option value="low">عادي / منخفض</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>تاريخ الاستحقاق النهائي</label>
+              <input type="date" [(ngModel)]="newDueDate" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button (click)="closeModal()" class="btn btn-secondary">إلغاء</button>
+          <button (click)="addTask()" class="btn btn-primary">تأكيد التكليف</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

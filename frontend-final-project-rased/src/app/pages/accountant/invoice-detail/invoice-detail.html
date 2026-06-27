@@ -1,0 +1,112 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.currentLang() === 'ar' ? 'المحاسبة / الفواتير' : 'Accounting / Invoices' }} / {{ invoice().id }}</div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'تفاصيل الفاتورة' : 'Invoice Details' }} {{ invoice().id }}</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="onShareWhatsApp()">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>{{ i18n.currentLang() === 'ar' ? 'مشاركة واتساب' : 'Share WhatsApp' }}</span>
+      </button>
+      <button class="btn btn-secondary" (click)="onPrint()">
+        <i class="fa-solid fa-print"></i>
+        <span>{{ i18n.currentLang() === 'ar' ? 'طباعة' : 'Print' }}</span>
+      </button>
+      <button class="btn btn-primary" (click)="onDownloadPDF()">
+        <i class="fa-solid fa-file-pdf"></i>
+        <span>{{ i18n.currentLang() === 'ar' ? 'تحميل PDF' : 'Download PDF' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Theme Selector -->
+  <div class="theme-selector animate-reveal">
+    <span class="theme-label">
+      <i class="fa-solid fa-palette"></i>
+      {{ i18n.currentLang() === 'ar' ? 'اختر قالب الفاتورة:' : 'Choose Invoice Theme:' }}
+    </span>
+    <div class="theme-options">
+      @for (t of themes; track t.key) {
+        <button
+          class="theme-btn"
+          [class.active]="selectedTheme() === t.key"
+          (click)="selectTheme(t.key)"
+        >
+          <i class="fa-solid" [ngClass]="t.icon"></i>
+          <span>{{ t.label }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="invoice-card card animate-reveal">
+    <div class="invoice-top">
+      <div class="inv-company">
+        <h2>{{ i18n.currentLang() === 'ar' ? 'رصد' : 'RASD' }}</h2>
+        <p>{{ i18n.currentLang() === 'ar' ? 'شركة رصد للحلول المتكاملة' : 'RASD Integrated Solutions' }}</p>
+        <p class="text-muted">{{ i18n.currentLang() === 'ar' ? 'الرياض، المملكة العربية السعودية' : 'Riyadh, Saudi Arabia' }}</p>
+      </div>
+      <div class="inv-meta">
+        <div class="meta-row">
+          <span>{{ i18n.currentLang() === 'ar' ? 'الحالة' : 'Status' }}</span>
+          @if (invoice().status === 'paid') {
+            <span class="badge badge-success">{{ i18n.currentLang() === 'ar' ? 'مدفوعة' : 'Paid' }}</span>
+          } @else if (invoice().status === 'overdue') {
+            <span class="badge badge-danger">{{ i18n.currentLang() === 'ar' ? 'متأخرة' : 'Overdue' }}</span>
+          } @else {
+            <span class="badge badge-warning">{{ i18n.currentLang() === 'ar' ? 'معلقة' : 'Pending' }}</span>
+          }
+        </div>
+        <div class="meta-row">
+          <span>{{ i18n.currentLang() === 'ar' ? 'تاريخ الإصدار' : 'Issue Date' }}</span>
+          <span>{{ invoice().date }}</span>
+        </div>
+        <div class="meta-row">
+          <span>{{ i18n.currentLang() === 'ar' ? 'تاريخ الاستحقاق' : 'Due Date' }}</span>
+          <span>{{ invoice().due }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="inv-client-info">
+      <h4>{{ i18n.currentLang() === 'ar' ? 'فاتورة إلى:' : 'Bill To:' }}</h4>
+      <p class="fw-bold">{{ invoice().client }}</p>
+      <p class="text-muted">{{ invoice().email }}</p>
+    </div>
+
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th>{{ i18n.currentLang() === 'ar' ? 'الوصف' : 'Description' }}</th>
+          <th>{{ i18n.currentLang() === 'ar' ? 'الكمية' : 'Qty' }}</th>
+          <th>{{ i18n.currentLang() === 'ar' ? 'السعر' : 'Price' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of invoice().items; track item.name) {
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.qty }}</td>
+            <td class="fw-bold">{{ item.price }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="inv-totals">
+      <div class="total-row">
+        <span>{{ i18n.currentLang() === 'ar' ? 'المجموع الفرعي' : 'Subtotal' }}</span>
+        <span>{{ invoice().subtotal }}</span>
+      </div>
+      <div class="total-row">
+        <span>{{ i18n.currentLang() === 'ar' ? 'ضريبة القيمة المضافة (15%)' : 'VAT (15%)' }}</span>
+        <span>{{ invoice().tax }}</span>
+      </div>
+      <div class="total-row grand">
+        <span>{{ i18n.currentLang() === 'ar' ? 'الإجمالي' : 'Total' }}</span>
+        <span>{{ invoice().total }}</span>
+      </div>
+    </div>
+  </div>
+</div>

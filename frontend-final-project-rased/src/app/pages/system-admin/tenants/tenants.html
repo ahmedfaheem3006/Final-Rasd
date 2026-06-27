@@ -1,0 +1,135 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        {{ i18n.currentLang() === 'ar' ? 'المشرف العام / الشركات' : 'System Admin / Companies' }}
+      </div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'إردارة الشركات المسجلة' : 'Manage Subscribed Companies' }}</h1>
+      <p class="subtitle">
+        {{ i18n.currentLang() === 'ar' ? 'عرض وإدارة جميع حسابات الشركات والمنشآت المشتركة في النظام' : 'View and manage all tenant company accounts registered on the platform.' }}
+      </p>
+    </div>
+    <div class="header-actions">
+      <a class="btn btn-primary" routerLink="/app/sys-admin/add-tenant">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>{{ i18n.currentLang() === 'ar' ? 'تسجيل شركة جديدة' : 'Register New Company' }}</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="stats-grid animate-reveal">
+    @for (s of stats(); track s.label) {
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">{{ s.label }}</span>
+          <div class="stat-icon" [ngClass]="s.color">
+            @if (s.color === 'primary') {
+              <i class="fa-solid fa-building"></i>
+            } @else if (s.color === 'success') {
+              <i class="fa-solid fa-circle-check"></i>
+            } @else if (s.color === 'warning') {
+              <i class="fa-solid fa-circle-xmark"></i>
+            } @else {
+              <i class="fa-solid fa-money-bill-trend-up"></i>
+            }
+          </div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ s.value }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="card table-card animate-reveal">
+    <div class="card-header">
+      <h3>{{ i18n.currentLang() === 'ar' ? 'قائمة الشركات' : 'Companies Directory' }}</h3>
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" [placeholder]="i18n.currentLang() === 'ar' ? 'ابحث عن شركة...' : 'Search company...'" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ i18n.currentLang() === 'ar' ? 'اسم الشركة' : 'Company Name' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'المالك' : 'Owner' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'الباقة' : 'Plan' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'حد الذكاء الاصطناعي' : 'AI Limit' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'قيمة الاشتراك' : 'Subscription Price' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'تاريخ التسجيل' : 'Registration Date' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'الحالة' : 'Status' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'التفاصيل' : 'Details' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'الإجراءات' : 'Actions' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of filteredTenants(); track t.id) {
+            <tr>
+              <td class="fw-bold">{{ t.name }}</td>
+              <td>{{ t.owner }}</td>
+              <td><span class="plan-tag">{{ t.plan }}</span></td>
+              <td>{{ t.aiLimit }} {{ i18n.currentLang() === 'ar' ? 'طلب/شهر' : 'requests/mo' }}</td>
+              <td class="fw-bold text-primary">{{ t.revenue }}</td>
+              <td class="text-muted">{{ t.date }}</td>
+              <td>
+                @if (t.status === 'active') { 
+                  <span class="badge badge-success">{{ i18n.currentLang() === 'ar' ? 'نشط' : 'Active' }}</span> 
+                } @else { 
+                  <span class="badge badge-warning">{{ i18n.currentLang() === 'ar' ? 'معلق' : 'Suspended' }}</span> 
+                }
+              </td>
+              <td><a [routerLink]="'/app/sys-admin/tenants/' + t.id" class="detail-link">{{ i18n.currentLang() === 'ar' ? 'عرض التفاصيل ←' : 'View Details →' }}</a></td>
+              <td>
+                <div class="actions-group" style="display: flex; gap: 8px;">
+                  <button class="btn btn-sm" style="padding: 4px 8px; font-size: 0.75rem; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-title);" (click)="openEditPricingModal(t)" [title]="i18n.currentLang() === 'ar' ? 'تعديل الأسعار والذكاء الاصطناعي' : 'Update Pricing & AI Capacity'">
+                    {{ i18n.currentLang() === 'ar' ? 'تعديل الباقة' : 'Edit Plan' }}
+                  </button>
+                  <button class="btn btn-sm" [ngClass]="t.status === 'active' ? 'btn-danger' : 'btn-success'" (click)="onToggleStatus(t)" style="padding: 4px 8px; font-size: 0.75rem;">
+                    {{ t.status === 'active' ? (i18n.currentLang() === 'ar' ? 'إيقاف' : 'Suspend') : (i18n.currentLang() === 'ar' ? 'تفعيل' : 'Activate') }}
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="onDeleteTenant(t.id, t.name)" style="padding: 4px 8px; font-size: 0.75rem;">
+                    {{ i18n.currentLang() === 'ar' ? 'حذف' : 'Delete' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Pricing Modal -->
+<div class="modal-overlay" [class.active]="showEditPricingModal()">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>{{ i18n.currentLang() === 'ar' ? 'تعديل الباقة والذكاء الاصطناعي' : 'Update Plan & AI Limits' }}</h3>
+      <button class="modal-close-btn" (click)="closeEditPricingModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <form (ngSubmit)="onSavePricing()">
+      <div class="modal-body">
+        <p style="color: var(--text-body); font-size: 0.9rem; margin-bottom: 12px; font-weight: bold;">
+          {{ i18n.currentLang() === 'ar' ? 'تعديل الخطة والأسعار لشركة:' : 'Update plan and pricing for company:' }} 
+          <strong style="color: var(--primary);">{{ selectedTenantName }}</strong>
+        </p>
+        <div class="form-group-modal">
+          <label>{{ i18n.currentLang() === 'ar' ? 'قيمة الاشتراك شهرياً ($)' : 'Monthly Subscription Fee ($)' }}</label>
+          <input type="number" [(ngModel)]="editPrice" name="editPrice" required min="0" />
+        </div>
+        <div class="form-group-modal">
+          <label>{{ i18n.currentLang() === 'ar' ? 'حد استهلاك الذكاء الاصطناعي (عدد العمليات)' : 'AI Capacity Limit (Requests/mo)' }}</label>
+          <input type="number" [(ngModel)]="editAiLimit" name="editAiLimit" required min="0" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditPricingModal()">{{ i18n.currentLang() === 'ar' ? 'إلغاء' : 'Cancel' }}</button>
+        <button type="submit" class="btn btn-primary">{{ i18n.currentLang() === 'ar' ? 'حفظ التغييرات' : 'Save Changes' }}</button>
+      </div>
+    </form>
+  </div>
+</div>

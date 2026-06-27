@@ -1,0 +1,123 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.currentLang() === 'ar' ? 'المحاسبة / الفواتير' : 'Accounting / Invoices' }}</div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'إدارة الفواتير' : 'Invoice Management' }}</h1>
+      <p class="subtitle">{{ i18n.currentLang() === 'ar' ? 'عرض وتتبع جميع الفواتير الصادرة والمستحقة' : 'View and track all issued and pending invoices' }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary">
+        <i class="fa-solid fa-plus"></i>
+        {{ i18n.currentLang() === 'ar' ? 'فاتورة جديدة' : 'New Invoice' }}
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid animate-reveal">
+    @for (s of stats(); track s.label) {
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">{{ s.label }}</span>
+          <div class="stat-icon" [ngClass]="s.color">
+            <i class="fa-solid" [ngClass]="s.icon"></i>
+          </div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ s.value }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Theme + Search Bar -->
+  <div class="toolbar card animate-reveal">
+    <div class="toolbar-left">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input
+          type="text"
+          [placeholder]="i18n.currentLang() === 'ar' ? 'بحث عن فاتورة...' : 'Search invoices...'"
+          [value]="searchQuery()"
+          (input)="onSearch($any($event.target).value)"
+        />
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <span class="theme-label">
+        <i class="fa-solid fa-palette"></i>
+        {{ i18n.currentLang() === 'ar' ? 'قالب PDF:' : 'PDF Theme:' }}
+      </span>
+      <div class="theme-options">
+        @for (t of themes; track t.key) {
+          <button
+            class="theme-btn"
+            [class.active]="selectedTheme() === t.key"
+            (click)="selectTheme(t.key)"
+          >{{ t.label }}</button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoices Table -->
+  <div class="card table-card animate-reveal">
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ i18n.currentLang() === 'ar' ? 'رقم الفاتورة' : 'Invoice #' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'العميل' : 'Client' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'المبلغ' : 'Amount' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'تاريخ الإصدار' : 'Issue Date' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'تاريخ الاستحقاق' : 'Due Date' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'الحالة' : 'Status' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'الإجراءات' : 'Actions' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inv of invoices(); track inv.id) {
+            <tr>
+              <td class="fw-bold text-primary">{{ inv.id }}</td>
+              <td class="fw-bold">{{ inv.client }}</td>
+              <td class="fw-bold">{{ inv.amount }}</td>
+              <td class="text-muted">{{ inv.date }}</td>
+              <td class="text-muted">{{ inv.due }}</td>
+              <td>
+                @if (inv.status === 'paid') {
+                  <span class="badge badge-success">{{ i18n.currentLang() === 'ar' ? 'مدفوعة' : 'Paid' }}</span>
+                } @else if (inv.status === 'pending') {
+                  <span class="badge badge-warning">{{ i18n.currentLang() === 'ar' ? 'معلقة' : 'Pending' }}</span>
+                } @else {
+                  <span class="badge badge-danger">{{ i18n.currentLang() === 'ar' ? 'متأخرة' : 'Overdue' }}</span>
+                }
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button
+                    class="btn-icon-sm pdf-btn"
+                    (click)="downloadInvoicePDF(inv)"
+                    [title]="i18n.currentLang() === 'ar' ? 'تحميل PDF' : 'Download PDF'"
+                  >
+                    <i class="fa-solid fa-file-pdf"></i>
+                  </button>
+                  <a [routerLink]="'/app/accountant/invoices/' + inv.id" class="detail-link">
+                    {{ i18n.currentLang() === 'ar' ? 'عرض ←' : 'View →' }}
+                  </a>
+                </div>
+              </td>
+            </tr>
+          }
+          @empty {
+            <tr>
+              <td colspan="7" class="empty-state">
+                <i class="fa-solid fa-file-invoice"></i>
+                <span>{{ i18n.currentLang() === 'ar' ? 'لا توجد فواتير' : 'No invoices found' }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
