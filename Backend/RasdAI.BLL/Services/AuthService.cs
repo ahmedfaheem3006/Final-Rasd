@@ -167,7 +167,8 @@ public class AuthService : IAuthService
                 Email = u.Email,
                 RoleId = u.RoleId,
                 RoleName = u.Role.Name,
-                ManagerId = u.ManagerId
+                ManagerId = u.ManagerId,
+                Status = u.Status
             })
             .ToListAsync();
     }

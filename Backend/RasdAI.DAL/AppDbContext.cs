@@ -29,6 +29,8 @@ public class AppDbContext : DbContext
     public DbSet<SupportIssue> SupportIssues { get; set; } = null!;
     public DbSet<LeaveRequest> LeaveRequests { get; set; } = null!;
     public DbSet<ContactMessage> ContactMessages { get; set; } = null!;
+    public DbSet<JobVacancy> JobVacancies { get; set; } = null!;
+    public DbSet<Candidate> Candidates { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -307,7 +309,8 @@ public class AppDbContext : DbContext
             new Role { Id = 4, Name = "SalesManager" },
             new Role { Id = 5, Name = "Sales" },
             new Role { Id = 6, Name = "EmployeeManager" },
-            new Role { Id = 7, Name = "Employee" }
+            new Role { Id = 7, Name = "Employee" },
+            new Role { Id = 8, Name = "HR" }
         );
 
         // Seed SystemAdmin Tenant

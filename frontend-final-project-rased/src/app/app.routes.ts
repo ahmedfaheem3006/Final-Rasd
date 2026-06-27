@@ -117,13 +117,13 @@ export const routes: Routes = [
         path: 'owner/analyze-contract',
         loadComponent: () => import('./pages/owner-admin/analyze-contract/analyze-contract').then(m => m.AnalyzeContract),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin'] }
+        data: { roles: ['owner-admin', 'hr'] }
       },
       {
         path: 'owner/transcribe-meeting',
         loadComponent: () => import('./pages/owner-admin/transcribe-meeting/transcribe-meeting').then(m => m.TranscribeMeeting),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin'] }
+        data: { roles: ['owner-admin', 'hr'] }
       },
       {
         path: 'owner/leaves',
@@ -135,7 +135,7 @@ export const routes: Routes = [
         path: 'owner/settings',
         loadComponent: () => import('./pages/owner-admin/settings/settings').then(m => m.Settings),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin'] }
+        data: { roles: ['owner-admin', 'hr'] }
       },
       {
         path: 'meetings',
@@ -238,37 +238,69 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['employee-manager', 'owner-admin'] }
       },
+      {
+        path: 'hr/dashboard',
+        loadComponent: () => import('./pages/hr/dashboard/dashboard').then(m => m.HRDashboard),
+        canActivate: [roleGuard],
+        data: { roles: ['hr', 'owner-admin'] }
+      },
+      {
+        path: 'hr/employees',
+        loadComponent: () => import('./pages/hr/employees/employees').then(m => m.HREmployees),
+        canActivate: [roleGuard],
+        data: { roles: ['hr', 'owner-admin'] }
+      },
+      {
+        path: 'hr/leaves',
+        loadComponent: () => import('./pages/hr/leaves/leaves').then(m => m.HRLeaves),
+        canActivate: [roleGuard],
+        data: { roles: ['hr', 'owner-admin'] }
+      },
+      {
+        path: 'hr/recruitment',
+        loadComponent: () => import('./pages/hr/recruitment/recruitment').then(m => m.HRRecruitment),
+        canActivate: [roleGuard],
+        data: { roles: ['hr', 'owner-admin'] }
+      },
+      {
+        path: 'hr/reports',
+        loadComponent: () => import('./pages/employee-manager/reports/reports').then(m => m.EmployeeManagerReports),
+        canActivate: [roleGuard],
+        data: { roles: ['hr', 'owner-admin'] }
+      },
+
+
 
       // ── Employee ──────────────────────────────────────────────────────────
       {
         path: 'employee/tasks',
         loadComponent: () => import('./pages/employee/my-tasks/my-tasks').then(m => m.MyTasks),
         canActivate: [roleGuard],
-        data: { roles: ['employee', 'employee-manager', 'owner-admin'] }
+        data: { roles: ['employee', 'employee-manager', 'owner-admin', 'hr'] }
       },
       {
         path: 'employee/tasks/:id',
         loadComponent: () => import('./pages/employee/task-detail/task-detail').then(m => m.TaskDetail),
         canActivate: [roleGuard],
-        data: { roles: ['employee', 'employee-manager', 'owner-admin'] }
+        data: { roles: ['employee', 'employee-manager', 'owner-admin', 'hr'] }
       },
       {
         path: 'employee/attendance',
         loadComponent: () => import('./pages/employee/attendance/attendance').then(m => m.EmployeeAttendance),
         canActivate: [roleGuard],
-        data: { roles: ['employee', 'employee-manager', 'owner-admin'] }
+        data: { roles: ['employee', 'employee-manager', 'owner-admin', 'hr'] }
       },
       {
         path: 'employee/leaves',
         loadComponent: () => import('./pages/employee/leave-request/leave-request').then(m => m.EmployeeLeaveRequest),
         canActivate: [roleGuard],
-        data: { roles: ['employee', 'employee-manager', 'owner-admin'] }
+        data: { roles: ['employee', 'employee-manager', 'owner-admin', 'hr'] }
       },
       {
         path: 'employee/profile',
         loadComponent: () => import('./pages/employee/profile/profile').then(m => m.Profile),
         canActivate: [roleGuard],
-        data: { roles: ['employee', 'employee-manager', 'owner-admin'] }
+        data: { roles: ['employee', 'employee-manager', 'owner-admin', 'hr'] }
       },
 
       // ── Sales Representative ──────────────────────────────────────────────

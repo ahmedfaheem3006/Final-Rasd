@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../services/toast.service';
+import { I18nService } from '../../../services/i18n.service';
 
 interface TeamTask {
   id: number;
@@ -19,6 +21,8 @@ interface TeamTask {
   styleUrl: './team-tasks-board.css'
 })
 export class TeamTasksBoard {
+  private toastService = inject(ToastService);
+  public i18n = inject(I18nService);
   tasks = signal<TeamTask[]>([
     { id: 1, title: 'تحديث عقود الموظفين الجدد', desc: 'مراجعة وتعديل عقود العمل بما يتناسب مع نظام العمل لعام 2026.', assignee: 'سارة القحطاني', priority: 'high', stage: 'todo', date: '2026-06-20' },
     { id: 2, title: 'تصميم هيكل الحوافز الجديد', desc: 'إعداد مقترح لهيكل العمولات والحوافز لفريق المبيعات.', assignee: 'فهد المطيري', priority: 'medium', stage: 'inprogress', date: '2026-06-22' },
@@ -42,28 +46,63 @@ export class TeamTasksBoard {
   newPriority: 'high' | 'medium' | 'low' = 'medium';
   newStage: 'todo' | 'inprogress' | 'review' | 'done' = 'todo';
 
+  // Drag and drop states
+  draggedTaskId = signal<number | null>(null);
+  draggedOverColumn = signal<string | null>(null);
+
   getTasksByStage(stageKey: string) {
     return this.tasks().filter(t => t.stage === stageKey);
   }
 
-  moveTask(taskId: number, direction: 'forward' | 'backward') {
-    const stageOrder: ('todo' | 'inprogress' | 'review' | 'done')[] = ['todo', 'inprogress', 'review', 'done'];
+  onDragStart(event: DragEvent, taskId: number) {
+    this.draggedTaskId.set(taskId);
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('text/plain', taskId.toString());
+      event.dataTransfer.effectAllowed = 'move';
+    }
+  }
+
+  onDragEnd() {
+    this.draggedTaskId.set(null);
+    this.draggedOverColumn.set(null);
+  }
+
+  onDragOver(event: DragEvent, stageKey: string) {
+    event.preventDefault();
+    this.draggedOverColumn.set(stageKey);
+  }
+
+  onDragLeave() {
+    this.draggedOverColumn.set(null);
+  }
+
+  onDrop(event: DragEvent, targetStage: 'todo' | 'inprogress' | 'review' | 'done') {
+    event.preventDefault();
+    const taskIdStr = event.dataTransfer?.getData('text/plain') || this.draggedTaskId()?.toString();
+    if (!taskIdStr) return;
+
+    const taskId = Number(taskIdStr);
+    let taskName = '';
 
     this.tasks.update(prev => 
       prev.map(t => {
         if (t.id === taskId) {
-          const currentIndex = stageOrder.indexOf(t.stage);
-          let newIndex = currentIndex;
-          if (direction === 'forward' && currentIndex < stageOrder.length - 1) {
-            newIndex++;
-          } else if (direction === 'backward' && currentIndex > 0) {
-            newIndex--;
-          }
-          return { ...t, stage: stageOrder[newIndex] };
+          taskName = t.title;
+          return { ...t, stage: targetStage };
         }
         return t;
       })
     );
+
+    if (taskName) {
+      const stageName = this.stages.find(s => s.key === targetStage)?.name || '';
+      const successMsg = this.i18n.isRtl()
+        ? `تم نقل المهمة "${taskName}" بنجاح إلى [${stageName}]`
+        : `Task "${taskName}" moved to [${stageName}]`;
+      this.toastService.success(successMsg, this.i18n.isRtl() ? 'تحديث حالة المهمة' : 'Task Board');
+    }
+
+    this.onDragEnd();
   }
 
   openModal(stageKey?: 'todo' | 'inprogress' | 'review' | 'done') {
@@ -80,7 +119,7 @@ export class TeamTasksBoard {
 
   addTask() {
     if (!this.newTitle || !this.newDesc) {
-      alert('يرجى ملء جميع الحقول المطلوبة');
+      this.toastService.warning('يرجى ملء عنوان وتفاصيل المهمة لإتمام الإسناد', 'بيانات غير مكتملة');
       return;
     }
 
@@ -95,6 +134,7 @@ export class TeamTasksBoard {
     };
 
     this.tasks.update(prev => [...prev, newTask]);
+    this.toastService.success(`تم إسناد المهمة "${newTask.title}" بنجاح إلى ${newTask.assignee}`, 'إسناد مهمة جديدة');
     this.closeModal();
   }
 

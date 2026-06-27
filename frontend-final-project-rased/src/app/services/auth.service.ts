@@ -6,7 +6,7 @@ import { Observable, tap } from 'rxjs';
 export interface User {
   name: string;
   email: string;
-  role: 'system-admin' | 'owner-admin' | 'accountant' | 'sales-manager' | 'employee-manager' | 'employee' | 'sales-rep';
+  role: 'system-admin' | 'owner-admin' | 'accountant' | 'sales-manager' | 'employee-manager' | 'employee' | 'sales-rep' | 'hr';
   roleLabel: string;
   workspaceName: string;
   avatarInitials: string;
@@ -83,6 +83,14 @@ export class AuthService {
       roleLabel: 'مندوب المبيعات',
       workspaceName: 'فريق المبيعات الميداني',
       avatarInitials: 'رع'
+    },
+    'hr@rasd.com': {
+      name: 'منى السالم',
+      email: 'hr@rasd.com',
+      role: 'hr',
+      roleLabel: 'مدير الموارد البشرية (HR)',
+      workspaceName: 'إدارة الموارد البشرية - رصد',
+      avatarInitials: 'مس'
     }
   };
 
@@ -207,6 +215,7 @@ export class AuthService {
       case 'accountant': return 'accountant';
       case 'salesmanager': return 'sales-manager';
       case 'employeemanager': return 'employee-manager';
+      case 'hr': return 'hr';
       case 'employee': return 'employee';
       case 'sales': return 'sales-rep';
       default: return 'owner-admin';
@@ -219,7 +228,8 @@ export class AuthService {
       case 'owner-admin': return 'مالك الشركة';
       case 'accountant': return 'المحاسب المالي';
       case 'sales-manager': return 'مدير المبيعات';
-      case 'employee-manager': return 'مدير الموظفين (HR)';
+      case 'employee-manager': return 'مشرف الموظفين بالقسم';
+      case 'hr': return 'مدير الموارد البشرية (HR)';
       case 'employee': return 'موظف العمليات';
       case 'sales-rep': return 'مندوب المبيعات';
       default: return 'زائر';
@@ -251,6 +261,9 @@ export class AuthService {
         break;
       case 'employee-manager':
         this.router.navigate(['/app/emp-manager/team']);
+        break;
+      case 'hr':
+        this.router.navigate(['/app/hr/reports']);
         break;
       case 'employee':
         this.router.navigate(['/app/employee/tasks']);

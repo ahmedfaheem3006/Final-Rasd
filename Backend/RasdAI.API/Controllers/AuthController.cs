@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR")]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
@@ -85,7 +85,7 @@ public class AuthController : ControllerBase
         });
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR")]
     [HttpGet("users")]
     public async Task<IActionResult> GetUsers()
     {
@@ -98,7 +98,7 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, data = users });
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR")]
     [HttpPut("users/{id}/role")]
     public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateUserRoleDto updateDto)
     {
@@ -118,7 +118,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR")]
     [HttpDelete("users/{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
@@ -138,7 +138,7 @@ public class AuthController : ControllerBase
         }
     }
 
-        [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR")]
     [HttpGet("users/dashboard-stats")]
     public async Task<IActionResult> GetDashboardStats()
     {
