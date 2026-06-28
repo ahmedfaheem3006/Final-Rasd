@@ -1,4 +1,4 @@
-import { Component, signal, inject, ViewChild, ElementRef, AfterViewChecked, computed, effect, untracked } from '@angular/core';
+import { Component, signal, inject, ViewChild, ElementRef, AfterViewChecked, computed, effect, untracked, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AiService } from '../../../services/ai.service';
@@ -20,7 +20,7 @@ interface ChatMessage {
   templateUrl: './ai-assistant.html',
   styleUrl: './ai-assistant.css'
 })
-export class AiAssistant implements AfterViewChecked {
+export class AiAssistant implements OnInit, AfterViewChecked {
   private aiService = inject(AiService);
   public i18n = inject(I18nService);
   private authService = inject(AuthService);
@@ -63,6 +63,10 @@ export class AiAssistant implements AfterViewChecked {
   isTyping = signal(false);
   private shouldScroll = false;
 
+  // Chat History state
+  chatHistory = signal<any[]>([]);
+  activeConversationId = signal<string | null>(null);
+
   constructor() {
     // Effect to set or translate welcome message when language changes
     effect(() => {
@@ -94,6 +98,55 @@ export class AiAssistant implements AfterViewChecked {
         }
       });
     });
+  }
+
+  ngOnInit() {
+    this.loadChatHistory();
+  }
+
+  loadChatHistory() {
+    this.aiService.getChatHistory().subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.chatHistory.set(res.data);
+        }
+      }
+    });
+  }
+
+  loadConversation(id: number) {
+    this.aiService.getChatHistoryDetails(id).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.activeConversationId.set(id.toString());
+          const historyMsgs = res.data.messages || [];
+          this.messages.set(historyMsgs.map((m: any) => ({
+            role: m.role,
+            text: m.text,
+            safeText: this.sanitizeMarkdown(m.text),
+            time: m.time
+          })));
+          this.shouldScroll = true;
+        }
+      }
+    });
+  }
+
+  deleteConversation(id: number, event: MouseEvent) {
+    event.stopPropagation();
+    const conf = this.i18n.currentLang() === 'ar' 
+      ? 'هل أنت متأكد من حذف هذه المحادثة؟' 
+      : 'Are you sure you want to delete this conversation?';
+    if (confirm(conf)) {
+      this.aiService.deleteChatHistory(id).subscribe({
+        next: (res) => {
+          this.loadChatHistory();
+          if (this.activeConversationId() === id.toString()) {
+            this.clearChat();
+          }
+        }
+      });
+    }
   }
 
   ngAfterViewChecked() {
@@ -158,13 +211,19 @@ export class AiAssistant implements AfterViewChecked {
     this.isTyping.set(true);
     this.shouldScroll = true;
 
-    this.aiService.chat(messageText).subscribe({
+    this.aiService.chat(messageText, this.activeConversationId() || undefined).subscribe({
       next: (res) => {
         this.isTyping.set(false);
         const errorMsg = this.i18n.currentLang() === 'ar' 
           ? 'عذراً، لم أستطع معالجة طلبك حالياً.' 
           : 'Sorry, I could not process your request at the moment.';
         const reply = res.data?.response || res.response || errorMsg;
+
+        if (res.data?.conversationId) {
+          this.activeConversationId.set(res.data.conversationId);
+          this.loadChatHistory();
+        }
+
         this.messages.update(prev => [
           ...prev,
           {
@@ -198,6 +257,7 @@ export class AiAssistant implements AfterViewChecked {
   }
 
   clearChat() {
+    this.activeConversationId.set(null);
     this.messages.set([
       {
         role: 'assistant',

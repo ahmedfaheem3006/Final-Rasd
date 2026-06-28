@@ -44,7 +44,7 @@ export class Meetings implements OnInit, OnDestroy {
   newMeetingLocation = '';
   newMeetingAttendees = '';
   newMeetingLink = '';
-  newMeetingPlatform = 'zoom';
+  newMeetingPlatform = 'create_link';
 
   // Conditional selects fields
   selectedClientId = '';
@@ -57,20 +57,20 @@ export class Meetings implements OnInit, OnDestroy {
 
   // Options arrays
   timeOptions = [
-    '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM',
-    '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
-    '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
-    '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM',
-    '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
-    '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM',
-    '08:00 PM'
+    '12:00 AM', '12:30 AM', '01:00 AM', '01:30 AM', '02:00 AM', '02:30 AM',
+    '03:00 AM', '03:30 AM', '04:00 AM', '04:30 AM', '05:00 AM', '05:30 AM',
+    '06:00 AM', '06:30 AM', '07:00 AM', '07:30 AM', '08:00 AM', '08:30 AM',
+    '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+    '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
+    '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+    '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM', '08:30 PM',
+    '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM'
   ];
 
   platformOptions = [
-    { key: 'zoom', label: 'Zoom' },
-    { key: 'teams', label: 'Microsoft Teams' },
-    { key: 'meet', label: 'Google Meet' },
-    { key: 'office', label: 'Office / In-person' }
+    { key: 'office', label: 'Office / In-person' },
+    { key: 'enter_link', label: 'Enter Link' },
+    { key: 'create_link', label: 'Create Link' }
   ];
 
   currentUser = this.authService.currentUser;
@@ -255,7 +255,11 @@ export class Meetings implements OnInit, OnDestroy {
                 : 'Meeting completed successfully'
             };
 
-            if (mDate < now) {
+            const mDateStart = new Date(mDate);
+            mDateStart.setHours(0, 0, 0, 0);
+            const isPast = mDateStart < now;
+
+            if (isPast) {
               pastList.push(formattedMeeting);
             } else {
               upcomingList.push(formattedMeeting);
@@ -272,6 +276,25 @@ export class Meetings implements OnInit, OnDestroy {
         this.toastService.error(msg, this.i18n.isRtl() ? 'خطأ' : 'Error');
       }
     });
+  }
+
+  getMeetingDurationInMinutes(durationStr: string): number {
+    if (!durationStr) return 60;
+    const clean = durationStr.toLowerCase();
+    
+    // Check for hour(s) or ساعة
+    const hourMatch = clean.match(/(\d+(\.\d+)?)\s*(hour|ساعة|ساعات)/);
+    if (hourMatch) {
+      return Math.round(parseFloat(hourMatch[1]) * 60);
+    }
+    
+    // Check for minute(s) or دقيقة or raw numbers
+    const minMatch = clean.match(/(\d+)/);
+    if (minMatch) {
+      return parseInt(minMatch[1], 10);
+    }
+    
+    return 60;
   }
 
   getMeetingDateTime(dateStr: string | Date, timeStr: string): Date | null {
@@ -328,25 +351,22 @@ export class Meetings implements OnInit, OnDestroy {
     }
   }
 
-  // Auto generates dummy URL and sets location label based on inputs
   autoGenerateLink() {
     if (!this.newMeetingPlatform || !this.newMeetingDate || !this.newMeetingTime) {
       return;
     }
     
-    if (this.newMeetingPlatform === 'zoom') {
-      this.newMeetingLink = `https://zoom.us/j/${Math.floor(100000000 + Math.random() * 900000000)}`;
-      this.newMeetingLocation = 'Zoom Meeting';
-    } else if (this.newMeetingPlatform === 'teams') {
-      this.newMeetingLink = `https://teams.microsoft.com/l/meetup-join/19%3ameeting_${Math.random().toString(36).substring(2, 15)}%40thread.v2/0`;
-      this.newMeetingLocation = 'Microsoft Teams';
-    } else if (this.newMeetingPlatform === 'meet') {
-      const randomCode = Array.from({length:3}, () => Math.random().toString(36).substring(2,5)).join('-');
-      this.newMeetingLink = `https://meet.google.com/${randomCode}`;
-      this.newMeetingLocation = 'Google Meet';
-    } else {
+    if (this.newMeetingPlatform === 'create_link') {
+      const randomRoomId = Math.floor(100000 + Math.random() * 900000).toString();
+      this.newMeetingLink = `https://meet.jit.si/RasdAI-Meeting-${randomRoomId}`;
+      this.newMeetingLocation = this.i18n.isRtl() ? 'رابط افتراضي' : 'Virtual Link';
+    } else if (this.newMeetingPlatform === 'office') {
       this.newMeetingLink = '';
       this.newMeetingLocation = this.i18n.isRtl() ? 'مقر الشركة' : 'Company Office';
+    } else if (this.newMeetingPlatform === 'enter_link') {
+      // Clear link so they can type it
+      this.newMeetingLink = '';
+      this.newMeetingLocation = this.i18n.isRtl() ? 'رابط افتراضي' : 'Virtual Link';
     }
   }
 
@@ -616,7 +636,11 @@ export class Meetings implements OnInit, OnDestroy {
 
   onJoinMeeting(link: string) {
     if (link) {
-      window.open(link, '_blank');
+      let url = link.trim();
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+      window.open(url, '_blank');
     } else {
       const msg = this.i18n.isRtl() ? 'لا يوجد رابط متاح لهذا الاجتماع.' : 'No link available for this meeting.';
       const title = this.i18n.isRtl() ? 'رابط الاجتماع' : 'Meeting Link';

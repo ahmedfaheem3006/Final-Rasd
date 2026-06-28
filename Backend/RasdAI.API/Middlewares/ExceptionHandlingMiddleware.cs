@@ -27,6 +27,12 @@ public class ExceptionHandlingMiddleware
         catch (Exception ex)
         {
             _logger.LogError(ex, "خطأ غير متوقع في النظام: {Message}", ex.Message);
+            try
+            {
+                var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "unhandled_exceptions.log");
+                File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Unhandled Exception: {ex.Message}\nStack Trace: {ex.StackTrace}\n\n");
+            }
+            catch { }
             await HandleExceptionAsync(context, ex);
         }
     }

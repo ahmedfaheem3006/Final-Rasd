@@ -459,3 +459,24 @@
     padding: 10px 12px;
   }
 }
+
+.history-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.history-item:hover {
+  background-color: rgba(92, 77, 255, 0.08) !important;
+  border-color: rgba(92, 77, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+.history-item.active {
+  background-color: rgba(92, 77, 255, 0.12) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 10px rgba(92, 77, 255, 0.15);
+}
+
+.delete-history-btn:hover {
+  color: #dc2626 !important;
+  transform: scale(1.15);
+}

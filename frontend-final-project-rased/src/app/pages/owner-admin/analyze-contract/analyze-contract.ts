@@ -1,4 +1,4 @@
-import { Component, signal, inject, ViewChild, ElementRef, AfterViewChecked, computed, effect, untracked } from '@angular/core';
+import { Component, signal, inject, ViewChild, ElementRef, AfterViewChecked, computed, effect, untracked, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AiService } from '../../../services/ai.service';
@@ -6,6 +6,7 @@ import { I18nService } from '../../../services/i18n.service';
 import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ToastService } from '../../../services/toast.service';
 import { marked } from 'marked';
 
 interface ChatMessage {
@@ -31,12 +32,13 @@ interface ContractData {
   templateUrl: './analyze-contract.html',
   styleUrl: './analyze-contract.css'
 })
-export class AnalyzeContract implements AfterViewChecked {
+export class AnalyzeContract implements OnInit, AfterViewChecked {
   private aiService = inject(AiService);
   public i18n = inject(I18nService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private sanitizer = inject(DomSanitizer);
+  private toastService = inject(ToastService);
 
   @ViewChild('chatScrollContainer') private chatScrollContainer!: ElementRef;
 
@@ -46,6 +48,10 @@ export class AnalyzeContract implements AfterViewChecked {
   
   contractData = signal<ContractData | null>(null);
   messages = signal<ChatMessage[]>([]);
+
+  // History state
+  contractHistory = signal<any[]>([]);
+  activeContractId = signal<number | null>(null);
 
   private welcomeAr = 'مرحباً! يرجى تحميل ملف العقد (بصيغة PDF) وسأقوم بتحليله بالكامل واستخراج الأطراف والتواريخ والالتزامات والمخاطر المكتشفة، ويمكننا مناقشته هنا.';
   private welcomeEn = 'Hello! Please upload a contract PDF file. I will perform a complete analysis to extract contracting parties, dates, financial commitments, and identified risks. We can then discuss them here.';
@@ -105,6 +111,95 @@ export class AnalyzeContract implements AfterViewChecked {
         }
       });
     });
+  }
+
+  ngOnInit() {
+    this.loadContractHistory();
+  }
+
+  loadContractHistory() {
+    this.aiService.getContractHistory().subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.contractHistory.set(res.data);
+        }
+      }
+    });
+  }
+
+  loadContractDetails(id: number) {
+    this.aiService.getContractHistoryDetails(id).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.activeContractId.set(id);
+          this.uploadedFileName.set(res.data.fileName || 'Contract');
+          const parsedData = {
+            summary: res.data.summary || '',
+            parties: res.data.parties || [],
+            expiryDate: res.data.expiryDate || '',
+            value: res.data.value || '',
+            risks: res.data.risks || []
+          };
+          this.contractData.set(parsedData);
+          
+          const reports = this.generateSummaryAndClausesMessages(parsedData, res.data.fileName || 'Contract');
+          let introReply = this.i18n.currentLang() === 'ar' 
+            ? `📑 **تم استدعاء تحليل العقد المخزن: ${res.data.fileName || 'العقد'}**`
+            : `📑 **Loaded stored contract analysis: ${res.data.fileName || 'Contract'}**`;
+          
+          this.messages.set([
+            {
+              role: 'assistant',
+              text: this.defaultAssistantMessage(),
+              safeText: this.sanitizeMarkdown(this.defaultAssistantMessage()),
+              time: this.getFormattedTime()
+            },
+            {
+              role: 'assistant',
+              text: introReply,
+              safeText: this.sanitizeMarkdown(introReply),
+              time: this.getFormattedTime()
+            },
+            reports[0],
+            reports[1]
+          ]);
+          this.shouldScroll = true;
+        }
+      }
+    });
+  }
+
+  deleteContractFromHistory(id: number, event: MouseEvent) {
+    event.stopPropagation();
+    const conf = this.i18n.currentLang() === 'ar'
+      ? 'هل أنت متأكد من حذف تحليل هذا العقد؟'
+      : 'Are you sure you want to delete this contract analysis?';
+    if (confirm(conf)) {
+      this.aiService.deleteContractHistory(id).subscribe({
+        next: (res) => {
+          this.loadContractHistory();
+          if (this.activeContractId() === id) {
+            this.resetAnalysis();
+          }
+        }
+      });
+    }
+  }
+
+  resetAnalysis() {
+    this.activeContractId.set(null);
+    this.uploadedFileName.set(null);
+    this.uploadedFile.set(null);
+    this.contractData.set(null);
+    this.messages.set([
+      {
+        role: 'assistant',
+        text: this.defaultAssistantMessage(),
+        safeText: this.sanitizeMarkdown(this.defaultAssistantMessage()),
+        time: this.getFormattedTime()
+      }
+    ]);
+    this.shouldScroll = true;
   }
 
   ngAfterViewChecked() {
@@ -254,6 +349,10 @@ export class AnalyzeContract implements AfterViewChecked {
           risks: data.risks || []
         };
         this.contractData.set(parsedData);
+        if (data.id) {
+          this.activeContractId.set(data.id);
+          this.loadContractHistory();
+        }
 
         // Trigger notification if there are critical (Red) issues
         this.checkAndTriggerNotifications(parsedData.risks, file.name);
@@ -281,28 +380,23 @@ export class AnalyzeContract implements AfterViewChecked {
         this.isUploading.set(false);
         this.isTyping.set(false);
         
-        const mockRes = this.getSimulatedContractAnalysis(file.name);
-        this.contractData.set(mockRes.data);
+        let errorReply = isAr 
+          ? `❌ **فشل الاتصال بالخادم لتحليل العقد.**\n\nيرجى التأكد من أن **الباك إند (API) يعمل بنجاح** على المنفذ 5092 (Localhost)، وتأكد من اتصالك بالإنترنت.`
+          : `❌ **Failed to connect to the server for contract analysis.**\n\nPlease make sure the **backend API is running** on port 5092, and check your internet connection.`;
 
-        // Trigger notification for simulated critical issues
-        this.checkAndTriggerNotifications(mockRes.data.risks, file.name);
-
-        let introReply = isAr 
-          ? `📑 **تم تحليل العقد بنجاح (وضع محاكاة): ${file.name}**`
-          : `📑 **Contract analyzed successfully (Simulated): ${file.name}**`;
-
-        const reports = this.generateSummaryAndClausesMessages(mockRes.data, file.name);
+        this.toastService.error(
+          isAr ? 'فشل الاتصال بالخادم' : 'Server Connection Failed',
+          isAr ? 'خطأ' : 'Error'
+        );
 
         this.messages.update(prev => [
           ...prev,
           {
             role: 'assistant',
-            text: introReply,
-            safeText: this.sanitizeMarkdown(introReply),
+            text: errorReply,
+            safeText: this.sanitizeMarkdown(errorReply),
             time: timeStr
-          },
-          reports[0],
-          reports[1]
+          }
         ]);
         this.shouldScroll = true;
       }
