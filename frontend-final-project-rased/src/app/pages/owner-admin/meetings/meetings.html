@@ -104,41 +104,38 @@
     </h2>
   </div>
 
-  <div class="timeline-container animate-reveal">
-    <div class="timeline-line"></div>
-    
+  <div class="past-meetings-grid animate-reveal">
     @for (m of pastMeetings(); track m.id; let idx = $index) {
-      <div class="timeline-item-premium" [style.animation-delay]="(idx * 0.15) + 's'">
-        <div class="timeline-badge-completed">
-          <i class="fa-solid fa-check"></i>
-        </div>
-        
-        <div class="timeline-content-card">
-          <div class="timeline-meta-row">
-            <span class="timeline-date-tag">
-              <i class="fa-regular fa-calendar-check"></i>
+      <div class="past-meeting-card-compact" [style.animation-delay]="(idx * 0.1) + 's'">
+        <div class="past-card-header">
+          <span class="badge-completed-status-compact">
+            <i class="fa-solid fa-circle-check"></i> {{ i18n.t('meetings.past.completed') }}
+          </span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span class="past-date-tag-compact">
               {{ m.date }}
             </span>
-            <span class="badge-completed-status">
-              <i class="fa-solid fa-circle-check"></i> {{ i18n.t('meetings.past.completed') }}
-            </span>
-          </div>
-          
-          <h4 class="timeline-title">{{ m.title }}</h4>
-          
-          <div class="timeline-outcome-box">
-            <div class="outcome-icon-wrapper">
-              <i class="fa-solid fa-square-poll-horizontal"></i>
-            </div>
-            <div class="outcome-text-content">
-              <strong>{{ i18n.t('meetings.past.outcome') }}</strong>
-              <p>{{ m.outcome }}</p>
-            </div>
+            @if (canSchedule()) {
+              <button class="btn-delete-compact" style="background: transparent; color: #ef4444; border: none; cursor: pointer; padding: 2px; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;" (click)="deleteMeeting(m.id, $event)" [title]="i18n.isRtl() ? 'حذف' : 'Delete'">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            }
           </div>
         </div>
+        
+        <h4 class="past-card-title" [title]="m.title">{{ m.title }}</h4>
+        
+        <p class="past-card-outcome">{{ m.outcome }}</p>
+        
+        @if (m.link) {
+          <button class="btn-join-premium-compact" (click)="onJoinMeeting(m.link)">
+            <span>{{ i18n.t('meetings.btn.join') }}</span>
+            <i class="fa-solid fa-video"></i>
+          </button>
+        }
       </div>
     } @empty {
-      <div class="empty-state-card" style="padding: 30px; text-align: center; background: var(--bg-card); border: 1px dashed var(--border-light); border-radius: var(--radius-lg); margin-inline-start: 20px;">
+      <div class="empty-state-card" style="grid-column: 1 / -1; padding: 30px; text-align: center; background: var(--bg-card); border: 1px dashed var(--border-light); border-radius: var(--radius-lg);">
         <p style="color: var(--text-body); font-size: 0.9rem; margin: 0;">
           {{ i18n.isRtl() ? 'لا توجد اجتماعات سابقة.' : 'No past meetings.' }}
         </p>
@@ -291,7 +288,15 @@
               <i class="fa-solid fa-location-arrow input-icon"></i>
               <select [(ngModel)]="newMeetingPlatform" name="newMeetingPlatform" (change)="autoGenerateLink()">
                 @for (platform of platformOptions; track platform.key) {
-                  <option [value]="platform.key">{{ platform.label }}</option>
+                  <option [value]="platform.key">
+                    @if (platform.key === 'office') {
+                      {{ i18n.isRtl() ? 'مقر الشركة / حضورياً' : 'Office / In-person' }}
+                    } @else if (platform.key === 'enter_link') {
+                      {{ i18n.isRtl() ? 'إدخال رابط مخصص' : 'Enter Custom Link' }}
+                    } @else if (platform.key === 'create_link') {
+                      {{ i18n.isRtl() ? 'توليد رابط تلقائياً' : 'Create Link' }}
+                    }
+                  </option>
                 }
               </select>
               <i class="fa-solid fa-chevron-down select-arrow"></i>
@@ -342,15 +347,17 @@
           </div>
         </div>
 
-        <!-- Auto-Generated Meeting Link (Readonly) -->
+        <!-- Meeting Link -->
         <div class="form-group-modal">
           <label>
             <i class="fa-solid fa-link"></i>
-            {{ i18n.t('meetings.form.link') }} ({{ i18n.isRtl() ? 'تلقائي افتراضي' : 'Auto Generated' }})
+            {{ newMeetingPlatform === 'enter_link' 
+               ? (i18n.isRtl() ? 'رابط الاجتماع المخصص' : 'Custom Meeting Link')
+               : (i18n.t('meetings.form.link') + (i18n.isRtl() ? ' (تلقائي)' : ' (Auto)')) }}
           </label>
           <div class="input-wrapper">
             <i class="fa-solid fa-globe input-icon"></i>
-            <input type="text" [(ngModel)]="newMeetingLink" name="newMeetingLink" readonly [placeholder]="i18n.isRtl() ? 'سيتم إنشاء الرابط تلقائياً عند تحديد التاريخ والوقت والمنصة' : 'Link will be generated automatically once Platform, Date & Time are set'" />
+            <input type="text" [(ngModel)]="newMeetingLink" name="newMeetingLink" [readonly]="newMeetingPlatform !== 'enter_link'" [placeholder]="newMeetingPlatform === 'enter_link' ? (i18n.isRtl() ? 'أدخل رابط الاجتماع هنا...' : 'Enter meeting link here...') : (i18n.isRtl() ? 'سيتم إنشاء الرابط تلقائياً عند تحديد التاريخ والوقت والمنصة' : 'Link will be generated automatically once Platform, Date & Time are set')" />
           </div>
         </div>
 
