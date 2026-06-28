@@ -75,6 +75,12 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['system-admin'] }
       },
+      {
+        path: 'sys-admin/pricing',
+        loadComponent: () => import('./pages/system-admin/pricing/pricing').then(m => m.PricingMgmt),
+        canActivate: [roleGuard],
+        data: { roles: ['system-admin'] }
+      },
 
       // ── Owner / Admin ─────────────────────────────────────────────────────
       {

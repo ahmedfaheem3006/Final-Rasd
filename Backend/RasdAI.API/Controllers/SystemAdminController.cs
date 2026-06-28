@@ -1,4 +1,8 @@
 using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -134,6 +138,183 @@ public class SystemAdminController : ControllerBase
             await _context.SaveChangesAsync();
             
             return Ok(new { success = true, message = $"تم إرسال قرار {actionDto.Action} بنجاح لصاحب النظام" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet("dashboard-stats")]
+    public async Task<IActionResult> GetDashboardStats()
+    {
+        try
+        {
+            var totalCompanies = await _context.Tenants.CountAsync();
+            var chatAiRequests = await _context.AIConversations.CountAsync();
+            var contractAiRequests = await _context.Contracts.CountAsync();
+            var meetingAiRequests = await _context.Meetings.CountAsync();
+            var totalAiRequests = chatAiRequests + contractAiRequests + meetingAiRequests;
+
+            // Simulated dynamic diagnostics
+            var rand = new Random();
+            var cpu = Math.Round(20.0 + rand.NextDouble() * 25.0, 2); // 20% to 45%
+            var ram = Math.Round(7.5 + rand.NextDouble() * 1.5, 2);  // 7.5 GB to 9.0 GB
+
+            var recentTenants = await _context.Tenants
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(5)
+                .ToListAsync();
+
+            var logs = new List<SystemLogDto>();
+            foreach (var t in recentTenants)
+            {
+                logs.Add(new SystemLogDto
+                {
+                    Event = $"تسجيل شركة جديدة: {t.Name}",
+                    Time = t.CreatedAt.ToString("o"),
+                    Type = "info"
+                });
+            }
+
+            // Also check issues for error logs
+            var pendingIssues = await _context.SupportIssues
+                .Where(i => i.Status == "Pending")
+                .Take(3)
+                .ToListAsync();
+
+            foreach (var issue in pendingIssues)
+            {
+                logs.Add(new SystemLogDto
+                {
+                    Event = $"خطأ تم رصده في شركة {issue.TenantName}: {issue.IssueDescription}",
+                    Time = issue.CreatedAt.ToString("o"),
+                    Type = "warning"
+                });
+            }
+
+            if (logs.Count == 0)
+            {
+                logs.Add(new SystemLogDto
+                {
+                    Event = "النظام يعمل بشكل مستقر، لا توجد تنبيهات حديثة.",
+                    Time = DateTime.UtcNow.ToString("o"),
+                    Type = "info"
+                });
+            }
+
+            // Sort logs by time descending
+            logs = logs.OrderByDescending(l => l.Time).ToList();
+
+            var dto = new SystemAdminStatsDto
+            {
+                CpuUsage = cpu,
+                RamUsageGb = ram,
+                RamTotalGb = 16.0,
+                CpuStatus = cpu > 80 ? "High" : "Normal",
+                RamStatus = ram > 14 ? "Critical" : "Stable",
+                HealthStatus = (cpu > 80 || ram > 14) ? "Warning" : "Excellent",
+                UptimePercent = "99.98% Uptime",
+                TotalCompanies = totalCompanies,
+                TotalAiRequests = totalAiRequests,
+                ChatAiRequests = chatAiRequests,
+                ContractAiRequests = contractAiRequests,
+                MeetingAiRequests = meetingAiRequests,
+                RecentLogs = logs
+            };
+
+            return Ok(new { success = true, data = dto });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet("pricing-plans")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPricingPlans()
+    {
+        try
+        {
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pricing_plans.json");
+            if (!System.IO.File.Exists(path))
+            {
+                var srcPath = Path.Combine(Directory.GetCurrentDirectory(), "pricing_plans.json");
+                if (System.IO.File.Exists(srcPath)) path = srcPath;
+                else return NotFound(new { success = false, message = "ملف الأسعار غير موجود" });
+            }
+            var json = await System.IO.File.ReadAllTextAsync(path);
+            var plans = JsonSerializer.Deserialize<object>(json);
+            return Ok(new { success = true, data = plans });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("pricing-plans")]
+    public async Task<IActionResult> UpdatePricingPlans([FromBody] object plans)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(plans, new JsonSerializerOptions { WriteIndented = true });
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pricing_plans.json");
+            await System.IO.File.WriteAllTextAsync(path, json);
+
+            var srcPath = Path.Combine(Directory.GetCurrentDirectory(), "pricing_plans.json");
+            if (Directory.Exists(Path.GetDirectoryName(srcPath)!))
+            {
+                await System.IO.File.WriteAllTextAsync(srcPath, json);
+            }
+
+            return Ok(new { success = true, message = "تم تحديث خطط الأسعار بنجاح" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet("settings-config")]
+    public async Task<IActionResult> GetSettingsConfig()
+    {
+        try
+        {
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "system_settings.json");
+            if (!System.IO.File.Exists(path))
+            {
+                var srcPath = Path.Combine(Directory.GetCurrentDirectory(), "system_settings.json");
+                if (System.IO.File.Exists(srcPath)) path = srcPath;
+                else return Ok(new { success = true, data = new { enableGlobalNotifications = true, enableAiSupport = true } });
+            }
+            var json = await System.IO.File.ReadAllTextAsync(path);
+            var config = JsonSerializer.Deserialize<object>(json);
+            return Ok(new { success = true, data = config });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("settings-config")]
+    public async Task<IActionResult> UpdateSettingsConfig([FromBody] object config)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "system_settings.json");
+            await System.IO.File.WriteAllTextAsync(path, json);
+
+            var srcPath = Path.Combine(Directory.GetCurrentDirectory(), "system_settings.json");
+            if (Directory.Exists(Path.GetDirectoryName(srcPath)!))
+            {
+                await System.IO.File.WriteAllTextAsync(srcPath, json);
+            }
+
+            return Ok(new { success = true, message = "تم تحديث إعدادات النظام بنجاح" });
         }
         catch (Exception ex)
         {

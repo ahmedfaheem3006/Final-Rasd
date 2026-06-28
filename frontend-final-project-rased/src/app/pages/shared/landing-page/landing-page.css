@@ -4688,13 +4688,6 @@ html.light-theme .footer-bottom-made {
 .carousel-track {
   display: flex;
   transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-  /* LTR by default: move left (negative) */
-  transform: translateX(calc(var(--idx, 0) * -50%));
-}
-
-.landing-container.rtl .carousel-track {
-  /* RTL: move right (positive) */
-  transform: translateX(calc(var(--idx, 0) * 50%));
 }
 
 /* Individual Card */
@@ -4937,14 +4930,6 @@ html.light-theme .carousel-indicators .dot.active {
 @media (max-width: 900px) {
   .testimonials-section h2 {
     font-size: 2.2rem;
-  }
-
-  .carousel-track {
-    transform: translateX(calc(var(--idx, 0) * -100%));
-  }
-
-  .landing-container.rtl .carousel-track {
-    transform: translateX(calc(var(--idx, 0) * 100%));
   }
 
   /* Mobile shows 1 item per view */

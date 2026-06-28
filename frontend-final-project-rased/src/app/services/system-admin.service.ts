@@ -47,4 +47,24 @@ export class SystemAdminService {
   resolveIssue(id: string, action: string): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/issues/${id}/action`, { action });
   }
+
+  getDashboardStats(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/dashboard-stats`);
+  }
+
+  getPricingPlans(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/pricing-plans`);
+  }
+
+  updatePricingPlans(plans: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/pricing-plans`, plans);
+  }
+
+  getSettingsConfig(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/settings-config`);
+  }
+
+  updateSettingsConfig(config: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/settings-config`, config);
+  }
 }
