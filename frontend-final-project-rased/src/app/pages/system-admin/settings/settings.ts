@@ -1,9 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { I18nService } from '../../../services/i18n.service';
+import { SystemAdminService } from '../../../services/system-admin.service';
 
 @Component({
   selector: 'app-settings',
@@ -12,9 +13,10 @@ import { I18nService } from '../../../services/i18n.service';
   templateUrl: './settings.html',
   styleUrl: './settings.css'
 })
-export class Settings {
+export class Settings implements OnInit {
   authService = inject(AuthService);
   private toastService = inject(ToastService);
+  private systemAdminService = inject(SystemAdminService);
   i18n = inject(I18nService);
 
   // Form password state
@@ -22,7 +24,52 @@ export class Settings {
   newPassword = '';
   confirmPassword = '';
 
+  // System settings toggles
+  enableGlobalNotifications = true;
+  enableAiSupport = true;
+
   isSubmitting = signal(false);
+  isSavingConfig = signal(false);
+
+  ngOnInit() {
+    this.loadSettingsConfig();
+  }
+
+  loadSettingsConfig() {
+    this.systemAdminService.getSettingsConfig().subscribe({
+      next: (res) => {
+        if (res && res.success && res.data) {
+          this.enableGlobalNotifications = res.data.enableGlobalNotifications;
+          this.enableAiSupport = res.data.enableAiSupport;
+        }
+      },
+      error: (err) => console.error('Failed to load system config settings', err)
+    });
+  }
+
+  saveSystemConfig() {
+    this.isSavingConfig.set(true);
+    const config = {
+      enableGlobalNotifications: this.enableGlobalNotifications,
+      enableAiSupport: this.enableAiSupport
+    };
+    this.systemAdminService.updateSettingsConfig(config).subscribe({
+      next: (res) => {
+        this.toastService.success(
+          this.i18n.currentLang() === 'ar' ? 'تم تحديث إعدادات النظام بنجاح!' : 'System configuration saved successfully!',
+          this.i18n.currentLang() === 'ar' ? 'تحديث النظام' : 'System Configuration'
+        );
+        this.isSavingConfig.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to save settings config', err);
+        this.toastService.error(
+          this.i18n.currentLang() === 'ar' ? 'فشل حفظ إعدادات النظام' : 'Failed to save system settings'
+        );
+        this.isSavingConfig.set(false);
+      }
+    });
+  }
 
   onSubmit() {
     if (!this.currentPassword || !this.newPassword || !this.confirmPassword) {
