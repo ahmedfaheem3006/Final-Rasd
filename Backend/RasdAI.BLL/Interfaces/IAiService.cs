@@ -25,4 +25,7 @@ public interface IAiService
     Task<List<MeetingHistoryItemDto>> GetMeetingHistoryAsync(Guid tenantId);
     Task<MeetingTranscriptionResultDto> GetMeetingHistoryDetailsAsync(int id, Guid tenantId);
     Task DeleteMeetingHistoryAsync(int id, Guid tenantId);
+
+    // Support AI Scan
+    Task<List<object>> RunSupportScanAsync(Guid? tenantId = null);
 }

@@ -848,6 +848,11 @@ namespace RasdAI.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasDefaultValue("Medium")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -870,6 +875,7 @@ namespace RasdAI.DAL.Migrations
                             AiActionDetails = "اكتشف الذكاء الاصطناعي ملفات سجلات (logs) ضخمة غير مضغوطة. الإجراء المقترح: ضغط وحذف ملفات السجلات القديمة تلقائياً لتوفير 40GB من المساحة.",
                             CreatedAt = new DateTime(2026, 6, 21, 14, 30, 0, 0, DateTimeKind.Utc),
                             IssueDescription = "استهلاك مساحة القرص الصلب تجاوز 95% على الخادم الرئيسي للشركة.",
+                            Severity = "Critical",
                             Status = "Pending",
                             TenantId = new Guid("33333333-3333-3333-3333-333333333333"),
                             TenantName = "رصد للتقنية"
@@ -880,6 +886,7 @@ namespace RasdAI.DAL.Migrations
                             AiActionDetails = "اكتشف الذكاء الاصطناعي خطأ في الاتصال مع سيرفر SMTP بسبب انتهاء صلاحية الرمز المميز (Token). الإجراء المقترح: إعادة الاتصال وإصدار توكن جديد لإرسال الفواتير المعلقة.",
                             CreatedAt = new DateTime(2026, 6, 22, 10, 0, 0, 0, DateTimeKind.Utc),
                             IssueDescription = "فشل متكرر في إرسال البريد الإلكتروني الخاص بالفواتير للعملاء.",
+                            Severity = "High",
                             Status = "Pending",
                             TenantId = new Guid("44444444-4444-4444-4444-444444444444"),
                             TenantName = "مؤسسة القمة"

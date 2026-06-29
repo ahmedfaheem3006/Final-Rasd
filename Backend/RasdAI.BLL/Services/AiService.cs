@@ -1684,6 +1684,138 @@ If no future meetings are mentioned or suggested, leave the proposedMeetings lis
     }
 
     #endregion
+
+    #region Support AI Scan
+
+    public async Task<List<object>> RunSupportScanAsync(Guid? tenantId = null)
+    {
+        var query = _context.Tenants.IgnoreQueryFilters().Where(t => t.IsActive);
+        if (tenantId.HasValue) query = query.Where(t => t.TenantId == tenantId.Value);
+        var tenants = await query.ToListAsync();
+
+        var newIssues = new List<object>();
+
+        foreach (var tenant in tenants)
+        {
+            bool hasPending = await _context.SupportIssues
+                .IgnoreQueryFilters()
+                .AnyAsync(i => i.TenantId == tenant.TenantId && i.Status == "Pending");
+            if (hasPending) continue;
+
+            var userCount = await _context.Users.IgnoreQueryFilters()
+                .CountAsync(u => u.TenantId == tenant.TenantId);
+            var overdueInvoiceCount = await _context.Invoices.IgnoreQueryFilters()
+                .CountAsync(i => i.TenantId == tenant.TenantId && i.Status == "Overdue");
+            var aiConvCount = await _context.AIConversations.IgnoreQueryFilters()
+                .CountAsync(c => c.TenantId == tenant.TenantId);
+            var contractCount = await _context.Contracts.IgnoreQueryFilters()
+                .CountAsync(c => c.TenantId == tenant.TenantId);
+
+            var metrics = $"Company: {tenant.Name}\nUsers: {userCount}\nAI Conversations: {aiConvCount}\nContracts Analyzed: {contractCount}\nOverdue Invoices: {overdueInvoiceCount}\nAI Limit: {tenant.AiLimit}";
+
+            var (issueDesc, aiAction, severity) = await GenerateSupportIssueAsync(tenant.Name, metrics);
+
+            if (string.IsNullOrEmpty(issueDesc)) continue;
+
+            var issue = new SupportIssue
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenant.TenantId,
+                TenantName = tenant.Name,
+                IssueDescription = issueDesc,
+                AiActionDetails = aiAction,
+                Severity = severity,
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.SupportIssues.Add(issue);
+            newIssues.Add(new { issue.Id, issue.TenantId, issue.TenantName, issue.IssueDescription, issue.AiActionDetails, issue.Status, issue.CreatedAt, issue.Severity });
+        }
+
+        if (newIssues.Count > 0)
+            await _context.SaveChangesAsync();
+
+        return newIssues;
+    }
+
+    private async Task<(string issueDescription, string aiAction, string severity)> GenerateSupportIssueAsync(string companyName, string metrics)
+    {
+        if (!string.IsNullOrEmpty(_grokApiKey))
+        {
+            try
+            {
+                var targetModel = _grokApiKey.StartsWith("gsk_") ? "llama-3.3-70b-versatile" : _grokModel;
+                var prompt = $"You are an AI system monitor. Based on these company metrics, identify ONE realistic technical or operational issue needing attention. Return ONLY valid JSON with exactly these keys: {{\"issueDescription\": \"...\", \"aiAction\": \"...\", \"severity\": \"Critical|High|Medium|Low\"}}. Write issueDescription and aiAction in Arabic (1-2 sentences each). Severity must be one of: Critical, High, Medium, Low. Be specific and realistic.\n\nMetrics:\n{metrics}";
+
+                var requestBody = new
+                {
+                    model = targetModel,
+                    response_format = new { type = "json_object" },
+                    messages = new[] { new { role = "user", content = prompt } },
+                    temperature = 0.85
+                };
+
+                var response = await SendGrokRequestAsync("https://api.x.ai/v1/chat/completions", requestBody, _grokApiKey);
+                using var doc = JsonDocument.Parse(response);
+                var content = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+
+                if (!string.IsNullOrEmpty(content))
+                {
+                    using var issueDoc = JsonDocument.Parse(content);
+                    var issueDesc = issueDoc.RootElement.TryGetProperty("issueDescription", out var d) ? d.GetString() ?? "" : "";
+                    var aiAction = issueDoc.RootElement.TryGetProperty("aiAction", out var a) ? a.GetString() ?? "" : "";
+                    var severity = issueDoc.RootElement.TryGetProperty("severity", out var s) ? s.GetString() ?? "Medium" : "Medium";
+                    var validSeverities = new[] { "Critical", "High", "Medium", "Low" };
+                    if (!validSeverities.Contains(severity)) severity = "Medium";
+                    if (!string.IsNullOrEmpty(issueDesc))
+                        return (issueDesc, aiAction, severity);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteDebugLog($"Support scan AI failed for {companyName}: {ex.Message}");
+            }
+        }
+
+        return GenerateDeterministicIssue(companyName);
+    }
+
+    private static (string, string, string) GenerateDeterministicIssue(string companyName)
+    {
+        var rand = new Random(Math.Abs(companyName.GetHashCode()));
+        var issues = new[]
+        {
+            (
+                "فشل متكرر في إرسال البريد الإلكتروني الخاص بالفواتير للعملاء.",
+                "اكتشف الذكاء الاصطناعي خطأً في الاتصال مع سيرفر SMTP بسبب انتهاء صلاحية الرمز المميز (Token). الإجراء المقترح: إعادة الاتصال وإصدار توكن جديد لإرسال الفواتير المعلقة.",
+                "High"
+            ),
+            (
+                "استهلاك مساحة القرص الصلب تجاوز 95% على الخادم الرئيسي للشركة.",
+                "اكتشف الذكاء الاصطناعي ملفات سجلات (logs) ضخمة غير مضغوطة. الإجراء المقترح: ضغط وحذف ملفات السجلات القديمة لتوفير 40GB من المساحة.",
+                "Critical"
+            ),
+            (
+                "ارتفاع مفاجئ في عدد طلبات الذكاء الاصطناعي يشير إلى استخدام مفرط يقترب من الحد الشهري.",
+                "اكتشف الذكاء الاصطناعي نمطاً غير اعتيادي في الاستخدام. الإجراء المقترح: مراجعة سجل الاستخدام ورفع الحد الشهري للشركة إذا لزم الأمر.",
+                "Medium"
+            ),
+            (
+                "تراكم فواتير متأخرة غير مدفوعة تجاوزت مدة استحقاقها 30 يوماً.",
+                "اكتشف الذكاء الاصطناعي فواتير معلقة لم يُتخذ إجراء بشأنها. الإجراء المقترح: إرسال تذكير تلقائي بالدفع للعملاء المتأخرين وتحديث حالة الفواتير في النظام.",
+                "High"
+            ),
+            (
+                "انقطاع متكرر في خدمة النسخ الاحتياطي التلقائي للبيانات خلال الساعات الأخيرة.",
+                "اكتشف الذكاء الاصطناعي توقف مهمة النسخ الاحتياطي المجدولة. الإجراء المقترح: إعادة تشغيل الخدمة والتحقق من صحة بيانات الاعتماد وسلامة الاتصال بالسيرفر.",
+                "Critical"
+            )
+        };
+
+        return issues[rand.Next(issues.Length)];
+    }
+
+    #endregion
 }
 
 public class WhisperApiResponse

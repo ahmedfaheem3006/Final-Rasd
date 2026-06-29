@@ -1,4 +1,5 @@
 <div class="page-container">
+  <!-- Header -->
   <header class="page-header animate-fade-in">
     <div class="header-info">
       <div class="breadcrumbs">
@@ -9,54 +10,182 @@
         {{ i18n.currentLang() === 'ar' ? 'يتم اكتشاف المشاكل في خوادم الشركات تلقائياً ويقوم الـ AI باقتراح حلول مناسبة في انتظار موافقتك لتطبيقها.' : 'Issues are automatically detected in tenant servers, and AI generates instant resolutions waiting your review.' }}
       </p>
     </div>
+    <div class="header-actions">
+      <button class="btn btn-icon-sm" (click)="exportCsv()" title="{{ i18n.currentLang() === 'ar' ? 'تصدير CSV' : 'Export CSV' }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>CSV</span>
+      </button>
+      <button class="btn btn-icon-sm" [class.auto-on]="autoRefresh()" (click)="toggleAutoRefresh()" title="{{ i18n.currentLang() === 'ar' ? 'تحديث تلقائي كل دقيقة' : 'Auto-refresh every minute' }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span>{{ autoRefresh() ? (i18n.currentLang() === 'ar' ? 'إيقاف' : 'Stop') : (i18n.currentLang() === 'ar' ? 'تحديث تلقائي' : 'Auto') }}</span>
+      </button>
+      <button class="btn btn-scan" (click)="runScan()" [disabled]="isScanning()">
+        @if (isScanning()) {
+          <span class="scan-spinner"></span>
+          <span>{{ i18n.currentLang() === 'ar' ? 'جاري الفحص...' : 'Scanning...' }}</span>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><circle cx="11" cy="11" r="3"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>{{ i18n.currentLang() === 'ar' ? 'فحص ذكي الآن' : 'Run AI Scan' }}</span>
+        }
+      </button>
+    </div>
   </header>
 
+  @if (lastScanned()) {
+    <p class="last-scanned">
+      {{ i18n.currentLang() === 'ar' ? 'آخر تحديث:' : 'Last updated:' }}
+      {{ lastScanned() | date:'shortTime' }}
+      @if (autoRefresh()) { <span class="auto-badge">{{ i18n.currentLang() === 'ar' ? '• تحديث تلقائي' : '• auto' }}</span> }
+    </p>
+  }
+
+  <!-- Stats Strip -->
+  <div class="stats-strip animate-reveal">
+    <div class="stat-card">
+      <span class="stat-num">{{ issues().length }}</span>
+      <span class="stat-label">{{ i18n.currentLang() === 'ar' ? 'إجمالي' : 'Total' }}</span>
+    </div>
+    <div class="stat-card stat-pending">
+      <span class="stat-num">{{ pendingCount() }}</span>
+      <span class="stat-label">{{ i18n.currentLang() === 'ar' ? 'معلّقة' : 'Pending' }}</span>
+    </div>
+    <div class="stat-card stat-approved">
+      <span class="stat-num">{{ approvedCount() }}</span>
+      <span class="stat-label">{{ i18n.currentLang() === 'ar' ? 'مقبولة' : 'Approved' }}</span>
+    </div>
+    <div class="stat-card stat-rejected">
+      <span class="stat-num">{{ rejectedCount() }}</span>
+      <span class="stat-label">{{ i18n.currentLang() === 'ar' ? 'مرفوضة' : 'Rejected' }}</span>
+    </div>
+  </div>
+
+  <!-- Toolbar: Filter tabs + company dropdown + bulk actions -->
+  <div class="toolbar card animate-reveal">
+    <div class="filter-tabs">
+      <button class="tab-btn" [class.active]="activeFilter() === 'All'" (click)="setFilter('All')">
+        {{ i18n.currentLang() === 'ar' ? 'الكل' : 'All' }}
+        <span class="tab-count">{{ issues().length }}</span>
+      </button>
+      <button class="tab-btn tab-pending" [class.active]="activeFilter() === 'Pending'" (click)="setFilter('Pending')">
+        {{ i18n.currentLang() === 'ar' ? 'معلّقة' : 'Pending' }}
+        <span class="tab-count">{{ pendingCount() }}</span>
+      </button>
+      <button class="tab-btn tab-approved" [class.active]="activeFilter() === 'Approved'" (click)="setFilter('Approved')">
+        {{ i18n.currentLang() === 'ar' ? 'مقبولة' : 'Approved' }}
+        <span class="tab-count">{{ approvedCount() }}</span>
+      </button>
+      <button class="tab-btn tab-rejected" [class.active]="activeFilter() === 'Rejected'" (click)="setFilter('Rejected')">
+        {{ i18n.currentLang() === 'ar' ? 'مرفوضة' : 'Rejected' }}
+        <span class="tab-count">{{ rejectedCount() }}</span>
+      </button>
+    </div>
+
+    <div class="toolbar-end">
+      @if (companyNames().length > 1) {
+        <select class="company-select" (change)="selectedCompany.set($any($event.target).value)">
+          <option value="All">{{ i18n.currentLang() === 'ar' ? 'كل الشركات' : 'All Companies' }}</option>
+          @for (name of companyNames(); track name) {
+            <option [value]="name">{{ name }}</option>
+          }
+        </select>
+      }
+
+      @if (pendingCount() > 0) {
+        <button class="btn btn-sm btn-success" (click)="bulkAction('Approved')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ i18n.currentLang() === 'ar' ? 'قبول الكل' : 'Approve All' }} ({{ pendingCount() }})
+        </button>
+        <button class="btn btn-sm btn-secondary-danger" (click)="bulkAction('Rejected')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          {{ i18n.currentLang() === 'ar' ? 'رفض الكل' : 'Reject All' }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- List -->
   @if (isLoading()) {
     <div class="loading-state">
       <div class="spinner"></div>
       <p>{{ i18n.currentLang() === 'ar' ? 'جاري تحميل طلبات الدعم...' : 'Loading support issues...' }}</p>
     </div>
-  } @else if (issues().length === 0) {
+  } @else if (filteredIssues().length === 0 && issues().length === 0) {
     <div class="card empty-card animate-reveal">
       <div class="empty-icon">✓</div>
       <h3>{{ i18n.currentLang() === 'ar' ? 'كل الأنظمة تعمل بكفاءة تامة!' : 'All systems operating normally!' }}</h3>
-      <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد أي مشكلات أو تنبيهات معلقة من خوادم الشركات حالياً.' : 'No warnings or support requests are currently flagged by system monitors.' }}</p>
+      <p>{{ i18n.currentLang() === 'ar' ? 'اضغط "فحص ذكي الآن" لتشغيل فحص جديد.' : 'Click "Run AI Scan" to detect issues.' }}</p>
+    </div>
+  } @else if (filteredIssues().length === 0) {
+    <div class="card empty-card animate-reveal">
+      <div class="empty-icon filter-empty-icon">—</div>
+      <h3>{{ i18n.currentLang() === 'ar' ? 'لا توجد نتائج لهذا الفلتر' : 'No results for this filter' }}</h3>
     </div>
   } @else {
     <div class="issues-list animate-reveal">
-      @for (issue of issues(); track issue.id) {
-        <div class="card issue-card" [class.border-pending]="issue.status === 'Pending'" [class.border-approved]="issue.status === 'Approved'" [class.border-rejected]="issue.status === 'Rejected'">
+      @for (issue of filteredIssues(); track issue.id) {
+        <div class="card issue-card"
+             [class.border-pending]="issue.status === 'Pending'"
+             [class.border-approved]="issue.status === 'Approved'"
+             [class.border-rejected]="issue.status === 'Rejected'">
+
+          <!-- Card Header -->
           <div class="issue-header">
             <div class="company-meta">
               <span class="company-badge">{{ issue.tenantName }}</span>
               <span class="issue-date">{{ issue.createdAt | date:'short' }}</span>
+              <span class="severity-badge sev-{{ getSeverity(issue).toLowerCase() }}">
+                {{ getSeverity(issue) === 'Critical' ? (i18n.currentLang() === 'ar' ? 'حرج' : 'Critical') :
+                   getSeverity(issue) === 'High'     ? (i18n.currentLang() === 'ar' ? 'مرتفع' : 'High') :
+                   getSeverity(issue) === 'Medium'   ? (i18n.currentLang() === 'ar' ? 'متوسط' : 'Medium') :
+                                                       (i18n.currentLang() === 'ar' ? 'منخفض' : 'Low') }}
+              </span>
             </div>
-            
-            <div class="status-badge-wrapper">
+            <div class="card-header-end">
               @if (issue.status === 'Pending') {
                 <span class="badge badge-warning">{{ i18n.currentLang() === 'ar' ? 'بانتظار المراجعة' : 'Pending Review' }}</span>
               } @else if (issue.status === 'Approved') {
-                <span class="badge badge-success">{{ i18n.currentLang() === 'ar' ? 'تم القبول والتطبيق' : 'Approved & Executed' }}</span>
+                <span class="badge badge-success">{{ i18n.currentLang() === 'ar' ? 'تم القبول' : 'Approved' }}</span>
               } @else {
                 <span class="badge badge-danger">{{ i18n.currentLang() === 'ar' ? 'تم الرفض' : 'Rejected' }}</span>
+              }
+              <!-- Per-tenant re-scan -->
+              <button class="btn-icon-xs" (click)="runTenantScan(issue.tenantId)" [disabled]="scanningTenantId() === issue.tenantId" title="{{ i18n.currentLang() === 'ar' ? 'إعادة فحص هذه الشركة' : 'Re-scan this company' }}">
+                @if (scanningTenantId() === issue.tenantId) {
+                  <span class="scan-spinner sm"></span>
+                } @else {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                }
+              </button>
+              <!-- Delete (only on resolved) -->
+              @if (issue.status !== 'Pending') {
+                <button class="btn-icon-xs btn-icon-danger" (click)="deleteIssue(issue.id)" title="{{ i18n.currentLang() === 'ar' ? 'حذف' : 'Delete' }}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
               }
             </div>
           </div>
 
+          <!-- Issue body -->
           <div class="issue-body">
             <h4 class="issue-desc-title">{{ i18n.currentLang() === 'ar' ? 'وصف المشكلة المكتشفة:' : 'Detected Issue Description:' }}</h4>
             <p class="issue-desc">{{ issue.issueDescription }}</p>
 
-            <!-- AI Action Details Highlight Card -->
+            <!-- AI recommendation (collapsible) -->
             <div class="ai-action-card">
-              <div class="ai-badge">
+              <div class="ai-badge" style="cursor:pointer" (click)="toggleExpand(issue.id)">
                 <span class="sparkle">✦</span>
                 <span>{{ i18n.currentLang() === 'ar' ? 'إجراء الذكاء الاصطناعي المقترح (AI Recommendation)' : 'AI Recommendation' }}</span>
+                <svg class="expand-icon" [class.rotated]="isExpanded(issue.id)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
               </div>
-              <p class="ai-details">{{ issue.aiActionDetails }}</p>
+              @if (isExpanded(issue.id)) {
+                <p class="ai-details">{{ issue.aiActionDetails }}</p>
+              } @else {
+                <p class="ai-details ai-collapsed">{{ issue.aiActionDetails }}</p>
+              }
             </div>
           </div>
 
+          <!-- Footer actions (pending only) -->
           @if (issue.status === 'Pending') {
             <div class="issue-footer">
               <button class="btn btn-success" (click)="takeAction(issue.id, 'Approved')">

@@ -52,6 +52,22 @@ export class SystemAdminService {
     return this.http.post<any>(`${this.baseUrl}/issues/${id}/action`, { action });
   }
 
+  runAiScan(): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/run-ai-scan`, {});
+  }
+
+  runTenantScan(tenantId: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/run-ai-scan/${tenantId}`, {});
+  }
+
+  deleteIssue(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/issues/${id}`);
+  }
+
+  bulkAction(action: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/issues/bulk`, { action });
+  }
+
   getDashboardStats(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/dashboard-stats`);
   }

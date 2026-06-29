@@ -11,4 +11,5 @@ public class SupportIssue
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string Status { get; set; } = "Pending"; // Pending, Approved, Rejected
     public string AiActionDetails { get; set; } = string.Empty;
+    public string Severity { get; set; } = "Medium"; // Critical, High, Medium, Low
 }
