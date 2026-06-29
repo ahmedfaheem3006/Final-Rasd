@@ -57,6 +57,17 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
+    [HttpGet("permissions")]
+    public async Task<IActionResult> GetPermissions()
+    {
+        if (_tenantContext.UserId == null)
+            return Unauthorized(new { success = false });
+
+        var permissions = await _authService.GetUserPermissionsAsync(_tenantContext.UserId.Value);
+        return Ok(new { success = true, data = permissions });
+    }
+
+    [Authorize]
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfile()
     {

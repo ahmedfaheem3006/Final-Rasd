@@ -19,6 +19,40 @@
   border-bottom: 1px solid var(--border);
 }
 
+.pane-header .search-box {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input, rgba(255,255,255,0.05));
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pane-header .search-box svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.pane-header .search-box input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  min-width: 0;
+  text-align: right;
+  direction: rtl;
+}
+
+.pane-header .search-box input::placeholder {
+  color: var(--text-muted);
+}
+
 .pane-list {
   overflow-y: auto;
   flex: 1;
