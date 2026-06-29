@@ -86,68 +86,149 @@
 </div>
 
 <!-- Add Meeting Modal -->
-@if (showModal()) {
-  <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>جدولة اجتماع جديد</h3>
-        <button class="modal-close" (click)="closeModal()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+<div class="modal-overlay" [class.active]="showModal()" (click)="closeModal()">
+  <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge">
+          <i class="fa-solid fa-calendar-plus"></i>
+        </div>
+        <div>
+          <h3>جدولة اجتماع جديد</h3>
+          <p class="modal-subtitle">قم بتعبئة تفاصيل الاجتماع وتحديد الحضور والمنظمين</p>
+        </div>
       </div>
+      <button class="modal-close-btn" (click)="closeModal()" type="button">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form (ngSubmit)="saveMeeting()">
       <div class="modal-body">
+        
+        <!-- Meeting Title -->
+        <div class="form-group-modal">
+          <label>
+            <i class="fa-solid fa-heading"></i>
+            عنوان الاجتماع *
+          </label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-font input-icon"></i>
+            <input type="text" [(ngModel)]="newTitle" name="newTitle" required placeholder="مثال: اجتماع متابعة الأداء" />
+          </div>
+        </div>
+
         <div class="form-row">
-          <div class="form-group" style="flex:1">
-            <label>عنوان الاجتماع *</label>
-            <input type="text" class="form-control" [(ngModel)]="newTitle" placeholder="مثال: اجتماع متابعة الأداء">
+          <!-- Date -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-calendar-days"></i>
+              التاريخ *
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar-day input-icon"></i>
+              <input type="date" [(ngModel)]="newDate" name="newDate" required />
+            </div>
           </div>
-          <div class="form-group" style="width:180px">
-            <label>نوع الاجتماع</label>
-            <select class="form-control" [(ngModel)]="newType">
-              <option value="internal">داخلي</option>
-              <option value="training">تدريبي</option>
-              <option value="client">عميل</option>
-            </select>
+
+          <!-- Time -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-clock"></i>
+              الوقت *
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-stopwatch input-icon"></i>
+              <input type="time" [(ngModel)]="newTime" name="newTime" required />
+            </div>
           </div>
         </div>
+
         <div class="form-row">
-          <div class="form-group" style="flex:1">
-            <label>التاريخ *</label>
-            <input type="date" class="form-control" [(ngModel)]="newDate">
+          <!-- Duration -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-hourglass-half"></i>
+              المدة (بالدقائق) *
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-hourglass input-icon"></i>
+              <input type="number" [(ngModel)]="newDuration" name="newDuration" required placeholder="60" min="15" />
+            </div>
           </div>
-          <div class="form-group" style="flex:1">
-            <label>الوقت *</label>
-            <input type="time" class="form-control" [(ngModel)]="newTime">
-          </div>
-          <div class="form-group" style="width:150px">
-            <label>المدة (دقيقة)</label>
-            <input type="number" class="form-control" [(ngModel)]="newDuration" placeholder="60" min="15">
+
+          <!-- Meeting Type -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-tags"></i>
+              نوع الاجتماع
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <i class="fa-solid fa-tag input-icon"></i>
+              <select [(ngModel)]="newType" name="newType" required>
+                <option value="internal">داخلي</option>
+                <option value="training">تدريبي</option>
+                <option value="client">عميل</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
           </div>
         </div>
+
         <div class="form-row">
-          <div class="form-group" style="flex:1">
-            <label>الموقع / القاعة</label>
-            <input type="text" class="form-control" [(ngModel)]="newLocation" placeholder="مثال: قاعة A أو Zoom">
+          <!-- Location / Room -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-map-location-dot"></i>
+              الموقع / القاعة
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-location-dot input-icon"></i>
+              <input type="text" [(ngModel)]="newLocation" name="newLocation" placeholder="مثال: قاعة A أو Zoom" />
+            </div>
           </div>
-          <div class="form-group" style="flex:1">
-            <label>المنظّم</label>
-            <select class="form-control" [(ngModel)]="newOrganizer">
-              <option>سارة القحطاني</option>
-              <option>يوسف حسن</option>
-              <option>خالد الدوسري</option>
-              <option>فهد المطيري</option>
-            </select>
+
+          <!-- Organizer -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-user-tie"></i>
+              المنظّم
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <i class="fa-solid fa-user input-icon"></i>
+              <select [(ngModel)]="newOrganizer" name="newOrganizer" required>
+                <option>سارة القحطاني</option>
+                <option>يوسف حسن</option>
+                <option>خالد الدوسري</option>
+                <option>فهد المطيري</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
           </div>
         </div>
-        <div class="form-group">
-          <label>الحضور (مبادئ الأحرف مفصولة بفواصل)</label>
-          <input type="text" class="form-control" [(ngModel)]="newAttendeesStr" placeholder="مثال: SQ, FM, KD">
+
+        <!-- Attendees -->
+        <div class="form-group-modal">
+          <label>
+            <i class="fa-solid fa-users"></i>
+            الحضور (مبادئ الأحرف مفصولة بفواصل)
+          </label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-address-book input-icon"></i>
+            <input type="text" [(ngModel)]="newAttendeesStr" name="newAttendeesStr" placeholder="مثال: SQ, FM, KD" />
+          </div>
         </div>
+
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeModal()">إلغاء</button>
-        <button class="btn btn-primary" (click)="saveMeeting()">حفظ الاجتماع</button>
+        <button type="button" class="btn btn-ghost" (click)="closeModal()">
+          <i class="fa-solid fa-arrow-right"></i>
+          إلغاء
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-calendar-check"></i>
+          حفظ الاجتماع
+        </button>
       </div>
-    </div>
+    </form>
   </div>
-}
+</div>

@@ -28,11 +28,7 @@ export class HRDashboard implements OnInit {
     payrollDiff: '+1,200 ر.س حوافز'
   });
 
-  alerts = signal([
-    { id: 1, type: 'contract', user: 'يوسف حسن', detail: 'ينتهي عقد العمل السنوي خلال 14 يوماً (15 يوليو)', severity: 'high' },
-    { id: 2, type: 'appraisal', user: 'رنا علي', detail: 'موعد تقييم الأداء النصف سنوي مجدول غداً', severity: 'medium' },
-    { id: 4, type: 'document', user: 'فهد المطيري', detail: 'تحديث الهوية الوطنية / الإقامة مطلوب', severity: 'low' }
-  ]);
+  alerts = signal<any[]>([]);
 
   payrollStats = signal([
     { month: 'يناير', amount: 15000 },
@@ -156,12 +152,6 @@ export class HRDashboard implements OnInit {
           }));
 
           // Add pending leaves to alerts dynamically
-          const baseAlerts = [
-            { id: 1, type: 'contract', user: 'يوسف حسن', detail: 'ينتهي عقد العمل السنوي خلال 14 يوماً (15 يوليو)', severity: 'high' },
-            { id: 2, type: 'appraisal', user: 'رنا علي', detail: 'موعد تقييم الأداء النصف سنوي مجدول غداً', severity: 'medium' },
-            { id: 4, type: 'document', user: 'فهد المطيري', detail: 'تحديث الهوية الوطنية / الإقامة مطلوب', severity: 'low' }
-          ];
-
           const dynamicAlerts = pendingLeavesList.map((item: any, idx: number) => ({
             id: 100 + idx,
             type: 'leave',
@@ -172,7 +162,7 @@ export class HRDashboard implements OnInit {
             severity: 'high'
           }));
 
-          this.alerts.set([...dynamicAlerts, ...baseAlerts]);
+          this.alerts.set(dynamicAlerts);
         }
       }
     });

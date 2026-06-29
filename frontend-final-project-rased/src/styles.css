@@ -1548,6 +1548,22 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.72rem !important;
 }
 
+/* Global form row layouts for modals */
+.form-row {
+  display: flex !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+}
+.form-row > * {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+}
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column !important;
+  }
+}
+
 /* Inputs inside modal */
 .form-group-modal input,
 .form-group-modal select,
@@ -1566,11 +1582,21 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: none !important;
 }
 
+.form-group-modal select option {
+  background-color: #0b1437 !important;
+  color: #ffffff !important;
+}
+
 :root.light-theme .form-group-modal input,
 :root.light-theme .form-group-modal select,
 :root.light-theme .form-group-modal textarea {
   background: #f8fafc !important;
   border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+:root.light-theme .form-group-modal select option {
+  background-color: #ffffff !important;
   color: #1e293b !important;
 }
 
@@ -2842,5 +2868,18 @@ body.modal-open .content-panel-wrapper {
 [dir="ltr"] .employee-autocomplete {
   direction: ltr;
   text-align: left;
+}
+
+/* Global layout stacking adjustments when any modal overlay is active */
+.layout-wrapper:has(.modal-overlay.active) .app-sidebar-container {
+  z-index: 1 !important;
+}
+.layout-wrapper:has(.modal-overlay.active) .main-app-container {
+  z-index: 1000 !important;
+}
+.layout-wrapper:has(.modal-overlay.active) .content-panel-wrapper,
+.layout-wrapper:has(.modal-overlay.active) .page-container {
+  transform: none !important;
+  animation: none !important;
 }
 
