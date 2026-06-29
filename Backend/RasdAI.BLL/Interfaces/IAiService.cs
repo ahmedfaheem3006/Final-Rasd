@@ -27,5 +27,5 @@ public interface IAiService
     Task DeleteMeetingHistoryAsync(int id, Guid tenantId);
 
     // Support AI Scan
-    Task<List<object>> RunSupportScanAsync();
+    Task<List<object>> RunSupportScanAsync(Guid? tenantId = null);
 }

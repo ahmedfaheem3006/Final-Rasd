@@ -187,6 +187,39 @@ public class SystemAdminController : ControllerBase
         }
     }
 
+    [HttpDelete("issues/{id}")]
+    public async Task<IActionResult> DeleteIssue(Guid id)
+    {
+        try
+        {
+            var issue = await _context.SupportIssues.FindAsync(id);
+            if (issue == null) return NotFound(new { success = false, message = "المشكلة غير موجودة" });
+            _context.SupportIssues.Remove(issue);
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "تم حذف المشكلة بنجاح" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("issues/bulk")]
+    public async Task<IActionResult> BulkAction([FromBody] BulkIssueActionDto dto)
+    {
+        try
+        {
+            var pending = await _context.SupportIssues.Where(i => i.Status == "Pending").ToListAsync();
+            foreach (var issue in pending) issue.Status = dto.Action;
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = $"تم تطبيق الإجراء على {pending.Count} مشكلة.", count = pending.Count });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
     [HttpPost("run-ai-scan")]
     public async Task<IActionResult> RunAiScan()
     {
@@ -196,6 +229,23 @@ public class SystemAdminController : ControllerBase
             var message = newIssues.Count > 0
                 ? $"تم اكتشاف {newIssues.Count} مشكلة جديدة وإضافتها للمراجعة."
                 : "لم يتم اكتشاف مشكلات جديدة. جميع الأنظمة تعمل بشكل طبيعي.";
+            return Ok(new { success = true, message, data = newIssues, count = newIssues.Count });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("run-ai-scan/{tenantId}")]
+    public async Task<IActionResult> RunTenantScan(Guid tenantId)
+    {
+        try
+        {
+            var newIssues = await _aiService.RunSupportScanAsync(tenantId);
+            var message = newIssues.Count > 0
+                ? $"تم اكتشاف {newIssues.Count} مشكلة جديدة لهذه الشركة."
+                : "لا توجد مشكلات مكتشفة لهذه الشركة حالياً.";
             return Ok(new { success = true, message, data = newIssues, count = newIssues.Count });
         }
         catch (Exception ex)
@@ -394,6 +444,11 @@ public class UpdateTenantPricingDto
 }
 
 public class IssueActionDto
+{
+    public string Action { get; set; } = string.Empty; // Approved or Rejected
+}
+
+public class BulkIssueActionDto
 {
     public string Action { get; set; } = string.Empty; // Approved or Rejected
 }
