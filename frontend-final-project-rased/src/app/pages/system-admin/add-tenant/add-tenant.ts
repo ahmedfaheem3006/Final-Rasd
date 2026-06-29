@@ -23,8 +23,10 @@ export class AddTenant {
   ownerFullName = '';
   ownerEmail = '';
   ownerPassword = '';
-  price = 100;
-  aiLimit = 1000;
+  phone = '';
+  location = '';
+  price = 49;
+  aiLimit = 200;
 
   // Module check boxes
   isCrmEnabled = true;
@@ -34,6 +36,19 @@ export class AddTenant {
   isAiEnabled = true;
 
   isSubmitting = signal(false);
+
+  availablePlans = [
+    { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 49, aiLimit: 200, periodAr: 'شهر', periodEn: 'mo' },
+    { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 199, aiLimit: 5000, periodAr: 'شهر', periodEn: 'mo' },
+    { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 300, aiLimit: 999999, periodAr: 'شهر', periodEn: 'mo' }
+  ];
+
+  onPricePlanChange() {
+    const selected = this.availablePlans.find(p => p.price === Number(this.price));
+    if (selected) {
+      this.aiLimit = selected.aiLimit;
+    }
+  }
 
   onSubmit() {
     if (!this.companyName || !this.ownerFullName || !this.ownerEmail || !this.ownerPassword) {
@@ -61,6 +76,12 @@ export class AddTenant {
 
     this.systemAdminService.createTenant(payload).subscribe({
       next: (res) => {
+        const tenantId = res.data?.tenantId || '';
+        if (tenantId) {
+          localStorage.setItem(`tenant_phone_${tenantId}`, this.phone);
+          localStorage.setItem(`tenant_location_${tenantId}`, this.location);
+        }
+
         this.toastService.success(
           this.i18n.currentLang() === 'ar' 
             ? `تم تسجيل شركة "${this.companyName}" بنجاح!` 
