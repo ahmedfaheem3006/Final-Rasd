@@ -141,7 +141,30 @@
         </a>
       }
 
-      <div class="nav-group-label">{{ i18n.t('sidebar.smart_tools') }}</div>
+      @if (currentUser()?.isAiEnabled !== false) {
+        <div class="nav-group-label">{{ i18n.t('sidebar.smart_tools') }}</div>
+
+        <a routerLink="/app/owner/ai-assistant" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
+          <div class="nav-icon ai-icon">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <span class="nav-label">{{ i18n.t('sidebar.ai_assistant') }}</span>
+        </a>
+
+        <a routerLink="/app/owner/analyze-contract" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
+          <div class="nav-icon ai-icon" style="filter: hue-rotate(45deg);">
+            <i class="fa-solid fa-file-contract"></i>
+          </div>
+          <span class="nav-label">{{ i18n.t('sidebar.analyze_contract') }}</span>
+        </a>
+
+        <a routerLink="/app/owner/transcribe-meeting" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
+          <div class="nav-icon ai-icon" style="filter: hue-rotate(90deg);">
+            <i class="fa-solid fa-microphone-lines"></i>
+          </div>
+          <span class="nav-label">{{ i18n.t('sidebar.transcribe_meeting') }}</span>
+        </a>
+      }
 
       <a routerLink="/app/owner/settings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
         <div class="nav-icon">

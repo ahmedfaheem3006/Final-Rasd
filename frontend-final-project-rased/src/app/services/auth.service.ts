@@ -135,10 +135,36 @@ export class AuthService {
     if (saved) {
       try {
         this.currentUser.set(JSON.parse(saved));
+        this.refreshPermissions();
       } catch (e) {
         localStorage.removeItem(AuthService.STORAGE_KEY);
       }
     }
+  }
+
+  refreshPermissions() {
+    const token = localStorage.getItem(AuthService.TOKEN_KEY);
+    if (!token) return;
+    this.http.get<any>(`${this.baseUrl}/permissions`).subscribe({
+      next: (res) => {
+        if (res?.success && res.data) {
+          const user = this.currentUser();
+          if (user) {
+            const updated = {
+              ...user,
+              isCrmEnabled: res.data.isCrmEnabled !== false,
+              isInvoicesEnabled: res.data.isInvoicesEnabled !== false,
+              isTasksEnabled: res.data.isTasksEnabled !== false,
+              isMeetingsEnabled: res.data.isMeetingsEnabled !== false,
+              isAiEnabled: res.data.isAiEnabled !== false,
+            };
+            this.currentUser.set(updated);
+            localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(updated));
+          }
+        }
+      },
+      error: () => {}
+    });
   }
 
   // Real API Login

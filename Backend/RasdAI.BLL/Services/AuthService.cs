@@ -85,6 +85,26 @@ public class AuthService : IAuthService
         };
     }
 
+    public async Task<object> GetUserPermissionsAsync(int userId)
+    {
+        var user = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null || user.RoleId == 1)
+            return new { isCrmEnabled = true, isInvoicesEnabled = true, isTasksEnabled = true, isMeetingsEnabled = true, isAiEnabled = true };
+
+        var tenant = await _context.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.TenantId == user.TenantId);
+        if (tenant == null)
+            return new { isCrmEnabled = true, isInvoicesEnabled = true, isTasksEnabled = true, isMeetingsEnabled = true, isAiEnabled = true };
+
+        return new
+        {
+            isCrmEnabled = tenant.IsCrmEnabled,
+            isInvoicesEnabled = tenant.IsInvoicesEnabled,
+            isTasksEnabled = tenant.IsTasksEnabled,
+            isMeetingsEnabled = tenant.IsMeetingsEnabled,
+            isAiEnabled = tenant.IsAiEnabled
+        };
+    }
+
     public async Task<bool> RegisterUserAsync(RegisterDto registerDto, Guid tenantId)
     {
         var emailExists = await _context.Users

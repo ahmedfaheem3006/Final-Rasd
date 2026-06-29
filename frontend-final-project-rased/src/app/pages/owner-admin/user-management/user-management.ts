@@ -193,7 +193,7 @@ export class UserManagement implements OnInit, AfterViewInit, OnDestroy {
             email: u.email,
             roleName: u.roleName,
             roleId: u.roleId,
-            status: u.status || 'active',
+            status: (u.status || 'active').toLowerCase(),
             createdAt: u.createdAt || u.joinDate || null,
             avatar: this.getInitials(u.fullName)
           })));
