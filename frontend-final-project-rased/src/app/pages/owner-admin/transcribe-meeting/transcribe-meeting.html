@@ -6,10 +6,15 @@
       <h1 class="animate-gradient-text">{{ i18n.currentLang() === 'ar' ? 'تفريغ وتحليل الاجتماعات' : 'Meeting Transcription & Analysis' }}</h1>
       <p class="subtitle">{{ i18n.currentLang() === 'ar' ? 'قم بتحميل ملف تسجيل الاجتماع (صوت أو فيديو) لتفريغه فوراً وتوليد ملخص وتوزيع المهام' : 'Upload meeting audio or video to instantly transcribe, summarize, and assign action items' }}</p>
     </div>
-    <div class="ai-model-badge glow-border-animate">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="url(#ai-h)" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/><defs><linearGradient id="ai-h" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#06b6d4"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs></svg>
-      <span>grok-2-1212 / Whisper</span>
-      <span class="model-dot animate-pulse"></span>
+    <div class="header-actions">
+      <button (click)="showHistoryModal.set(true)" class="btn btn-secondary history-modal-btn" [title]="i18n.currentLang() === 'ar' ? 'سجل الاجتماعات' : 'Meeting History'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </button>
+      <div class="ai-model-badge glow-border-animate">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="url(#ai-h)" stroke-width="2"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/><circle cx="12" cy="12" r="4"/><defs><linearGradient id="ai-h" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#06b6d4"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs></svg>
+        <span>grok-2-1212 / Whisper</span>
+        <span class="model-dot animate-pulse"></span>
+      </div>
     </div>
   </header>
 
@@ -287,31 +292,37 @@
         </div>
       }
 
-      <!-- Meeting History -->
-      <div class="card history-card" style="margin-top: 16px;">
-        <div class="card-header-s">
-          <h3>{{ i18n.currentLang() === 'ar' ? 'سجل تفريغ الاجتماعات' : 'Meeting Transcription History' }}</h3>
-          <p>{{ i18n.currentLang() === 'ar' ? 'بحد أقصى 5 اجتماعات أخيرة' : 'Maximum last 5 meetings' }}</p>
-        </div>
-        <div class="history-list" style="display: flex; flex-direction: column; gap: 8px; padding: 12px;">
-          @if (meetingHistory().length === 0) {
-            <p class="no-history-text" style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin: 8px 0;">
-              {{ i18n.currentLang() === 'ar' ? 'لا توجد اجتماعات سابقة' : 'No past meetings' }}
-            </p>
-          }
-          @for (h of meetingHistory(); track h.id) {
-            <div class="history-item" [class.active]="activeMeetingId() === h.id" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); cursor: pointer; transition: all 0.2s;" (click)="loadMeetingDetails(h.id)">
-              <div class="history-item-info" style="display: flex; flex-direction: column; gap: 2px; overflow: hidden; flex: 1; text-align: start;">
-                <span class="history-item-title" style="font-weight: 500; font-size: 0.9rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; color: var(--text-main);">{{ h.videoFilePath }}</span>
-                <span class="history-item-date" style="font-size: 0.75rem; color: var(--text-muted);">{{ h.createdAt | date:'yyyy-MM-dd HH:mm' }}</span>
-              </div>
-              <button class="delete-history-btn" style="background: none; border: none; color: var(--danger); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;" (click)="deleteMeetingFromHistory(h.id, $event)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-              </button>
-            </div>
-          }
-        </div>
-      </div>
     </div>
   </div>
 </div>
+
+<!-- Meeting History Modal -->
+@if (showHistoryModal()) {
+  <div class="history-modal-overlay" (click)="showHistoryModal.set(false)">
+    <div class="history-modal" (click)="$event.stopPropagation()">
+      <div class="history-modal-header">
+        <div class="history-modal-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>{{ i18n.currentLang() === 'ar' ? 'سجل تفريغ الاجتماعات' : 'Meeting Transcription History' }}</span>
+        </div>
+        <button class="history-modal-close" (click)="showHistoryModal.set(false)">✕</button>
+      </div>
+      <div class="history-modal-body">
+        @if (meetingHistory().length === 0) {
+          <p class="history-empty">{{ i18n.currentLang() === 'ar' ? 'لا توجد اجتماعات سابقة' : 'No past meetings' }}</p>
+        }
+        @for (h of meetingHistory(); track h.id) {
+          <div class="history-modal-item" [class.active]="activeMeetingId() === h.id" (click)="loadMeetingDetails(h.id); showHistoryModal.set(false)">
+            <div class="history-modal-item-info">
+              <span class="history-modal-item-title">{{ h.videoFilePath }}</span>
+              <span class="history-modal-item-date">{{ h.createdAt | date:'yyyy-MM-dd HH:mm' }}</span>
+            </div>
+            <button class="history-modal-delete" (click)="deleteMeetingFromHistory(h.id, $event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

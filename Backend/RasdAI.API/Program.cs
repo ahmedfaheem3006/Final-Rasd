@@ -255,6 +255,9 @@ using (var scope = app.Services.CreateScope())
             dbContext.SaveChanges();
         }
 
+        // Seed a company with one account per role
+        RasdAI.DAL.DbSeeder.SeedCompanyWithAllRoles(dbContext);
+
         // Remove report seeding and clear existing reports for devTenantId so only user-created reports are shown
         var existingReports = dbContext.Reports.IgnoreQueryFilters().Where(r => r.TenantId == devTenantId).ToList();
         if (existingReports.Any())

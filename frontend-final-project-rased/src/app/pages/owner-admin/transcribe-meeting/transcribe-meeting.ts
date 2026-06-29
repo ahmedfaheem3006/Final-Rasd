@@ -75,6 +75,7 @@ export class TranscribeMeeting implements OnInit {
   // Loading progression
   isUploading = signal(false);
   isTyping = signal(false);
+  showHistoryModal = signal(false);
   loadingStep = signal<number>(0); // 0 = Idle, 1 = Audio Extract, 2 = Chunking, 3 = Transcribing, 4 = Analyzing
 
   meetingData = signal<MeetingData | null>(null);

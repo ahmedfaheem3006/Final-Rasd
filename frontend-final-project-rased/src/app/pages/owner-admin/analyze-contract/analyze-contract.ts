@@ -79,6 +79,7 @@ export class AnalyzeContract implements OnInit, AfterViewChecked {
   inputText = '';
   isTyping = signal(false);
   isUploading = signal(false);
+  showHistoryModal = signal(false);
   private shouldScroll = false;
 
   constructor() {
@@ -281,17 +282,8 @@ export class AnalyzeContract implements OnInit, AfterViewChecked {
     if (data.risks && data.risks.length > 0) {
       data.risks.forEach(risk => {
         const severity = risk.severity.toLowerCase();
-        let badgeHtml = '';
-        if (severity === 'red') {
-          badgeHtml = `<span class="severity-badge danger">🔴 Danger</span>`;
-        } else if (severity === 'orange') {
-          badgeHtml = `<span class="severity-badge warning">🟠 Warning</span>`;
-        } else if (severity === 'blue') {
-          badgeHtml = `<span class="severity-badge info">🔵 Info</span>`;
-        } else {
-          badgeHtml = `<span class="severity-badge safe">🟢 Safe</span>`;
-        }
-        clausesText += `* ${badgeHtml} ${risk.description}\n`;
+        const circle = severity === 'red' ? '🔴' : severity === 'orange' ? '🟠' : severity === 'blue' ? '🔵' : '🟢';
+        clausesText += `* ${circle} ${risk.description}\n`;
       });
     } else {
       clausesText += isAr 

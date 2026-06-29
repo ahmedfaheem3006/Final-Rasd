@@ -61,6 +61,7 @@ export class AiAssistant implements OnInit, AfterViewChecked {
   messages = signal<ChatMessage[]>([]);
   inputText = '';
   isTyping = signal(false);
+  showHistoryModal = signal(false);
   private shouldScroll = false;
 
   // Chat History state
