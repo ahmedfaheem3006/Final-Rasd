@@ -234,8 +234,14 @@
                       <td class="text-center font-weight-bold">{{ row.days }} {{ i18n.isRtl() ? 'أيام' : 'days' }}</td>
                       <td>{{ row.approvedBy }}</td>
                       <td>
-                        <span class="doc-badge doc-badge-success">
-                          {{ i18n.isRtl() ? 'معتمد' : 'Approved' }}
+                        <span class="doc-badge" 
+                          [class.doc-badge-success]="row.status === 'Approved'"
+                          [class.doc-badge-warning]="row.status === 'Pending'"
+                          [class.doc-badge-danger]="row.status === 'Rejected'"
+                        >
+                          {{ row.status === 'Approved' ? (i18n.isRtl() ? 'معتمد' : 'Approved') : 
+                             row.status === 'Rejected' ? (i18n.isRtl() ? 'مرفوض' : 'Rejected') : 
+                             (i18n.isRtl() ? 'معلق' : 'Pending') }}
                         </span>
                       </td>
                     </tr>

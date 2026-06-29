@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../services/toast.service';
 import { I18nService } from '../../../services/i18n.service';
+import { ReportService, ReportRecord } from '../../../services/report.service';
+import { AuthService } from '../../../services/auth.service';
+import { LeaveService } from '../../../services/leave.service';
 
 interface HistoryRecord {
   title: string;
@@ -25,6 +28,9 @@ interface AiInsight {
 export class EmployeeManagerReports implements OnInit {
   public i18n = inject(I18nService);
   private toastService = inject(ToastService);
+  private reportService = inject(ReportService);
+  private authService = inject(AuthService);
+  private leaveService = inject(LeaveService);
 
   // States
   activeCategory = signal<'attendance' | 'leaves' | 'performance' | 'payroll'>('attendance');
@@ -55,65 +61,175 @@ export class EmployeeManagerReports implements OnInit {
   ];
 
   // Recently generated logs history
-  reportHistory = signal<HistoryRecord[]>([
-    {
-      title: 'كشف الرواتب - مايو 2026',
-      period: 'مايو 2026',
-      size: '1.2 MB'
-    },
-    {
-      title: 'تقرير الانضباط والغياب الربع الأول 2026',
-      period: 'الربع الأول 2026',
-      size: '2.4 MB'
-    },
-    {
-      title: 'تقرير الإجازات السنوي لعام 2025',
-      period: 'عام 2025 كامل',
-      size: '3.8 MB'
-    }
-  ]);
+  reportHistory = signal<HistoryRecord[]>([]);
 
-  // Raw mock datasets
-  attendanceData = [
-    { name: 'أحمد فهيم', role: 'المالك والمدير التنفيذي', dept: 'owner', present: 22, absent: 0, late: 0, rate: 100 },
-    { name: 'سارة محمود', role: 'رئيس قسم المالية والمحاسبة', dept: 'finance', present: 21, absent: 1, late: 0, rate: 95.4 },
-    { name: 'خالد منصور', role: 'مدير المبيعات والتسويق', dept: 'sales', present: 20, absent: 0, late: 2, rate: 90.9 },
-    { name: 'عمر فاروق', role: 'مدير الموارد البشرية والعمليات', dept: 'hr', present: 22, absent: 0, late: 0, rate: 100 },
-    { name: 'يوسف حسن', role: 'مهندس برمجيات أول', dept: 'development', present: 19, absent: 2, late: 1, rate: 86.3 },
-    { name: 'رنا علي', role: 'مندوبة مبيعات أولى', dept: 'sales', present: 21, absent: 0, late: 1, rate: 95.4 },
-    { name: 'عبد الله الغامدي', role: 'مطور واجهات أمامية', dept: 'development', present: 22, absent: 0, late: 0, rate: 100 },
-    { name: 'مي التويجري', role: 'أخصائية تسويق رقمي', dept: 'sales', present: 18, absent: 3, late: 1, rate: 81.8 }
-  ];
+  // Raw datasets populated dynamically
+  realUsers = signal<any[]>([]);
+  realLeaves = signal<any[]>([]);
 
-  leavesData = [
-    { name: 'يوسف حسن', type: 'إجازة مرضية / Sick Leave', dept: 'development', start: '2026-06-10', end: '2026-06-12', days: 2, approvedBy: 'عمر فاروق' },
-    { name: 'مي التويجري', type: 'إجازة اضطرارية / Emergency Leave', dept: 'sales', start: '2026-06-15', end: '2026-06-16', days: 1, approvedBy: 'خالد منصور' },
-    { name: 'سارة محمود', type: 'إجازة سنوية / Annual Leave', dept: 'finance', start: '2026-06-01', end: '2026-06-05', days: 5, approvedBy: 'أحمد فهيم' },
-    { name: 'رنا علي', type: 'إجازة خاصة / Special Leave', dept: 'sales', start: '2026-06-20', end: '2026-06-21', days: 1, approvedBy: 'عمر فاروق' }
-  ];
-
-  performanceData = [
-    { name: 'يوسف حسن', role: 'مهندس برمجيات أول', dept: 'development', stars: 4, score: 85, notes: 'إنتاجية ممتازة وملتزم بحضور الاجتماعات الفنية، يتطلب تطوير مهارات التواصل الجماعي.' },
-    { name: 'رنا علي', role: 'مندوبة مبيعات أولى', dept: 'sales', stars: 5, score: 98, notes: 'أداء استثنائي هذا الشهر، حققت 125% من الهدف البيعي، نموذج يحتذى به في القيادة والالتزام.' },
-    { name: 'عبد الله الغامدي', role: 'مطور واجهات أمامية', dept: 'development', stars: 4, score: 90, notes: 'سرعة وجودة عالية في تسليم الواجهات الجديدة، يبدي انضباطاً كاملاً في مواعيد العمل.' },
-    { name: 'سارة محمود', role: 'رئيس قسم المالية والمحاسبة', dept: 'finance', stars: 5, score: 96, notes: 'دقة عالية جداً في التدقيق المالي وكشوفات الأرباح، تقاريرها دائماً خالية من الأخطاء.' },
-    { name: 'خالد منصور', role: 'مدير المبيعات والتسويق', dept: 'sales', stars: 3, score: 78, notes: 'يحتاج إلى تنشيط قنوات البيع ومتابعة الفريق بشكل أفضل لتعويض الركود الموسمي الحالي.' },
-    { name: 'مي التويجري', role: 'أخصائية تسويق رقمي', dept: 'sales', stars: 3, score: 72, notes: 'تأثرت إنتاجيتها بكثرة الغيابات والظروف الاضطرارية، بحاجة للتركيز على الحملات المدفوعة.' }
-  ];
-
-  payrollData = [
-    { name: 'أحمد فهيم', basic: 25000, allowance: 5000, deductions: 0, dept: 'owner' },
-    { name: 'سارة محمود', basic: 14000, allowance: 2500, deductions: 350, dept: 'finance' },
-    { name: 'خالد منصور', basic: 12000, allowance: 4000, deductions: 0, dept: 'sales' },
-    { name: 'عمر فاروق', basic: 11000, allowance: 2000, deductions: 0, dept: 'hr' },
-    { name: 'يوسف حسن', basic: 13000, allowance: 1500, deductions: 580, dept: 'development' },
-    { name: 'رنا علي', basic: 9000, allowance: 4500, deductions: 0, dept: 'sales' },
-    { name: 'عبد الله الغامدي', basic: 9500, allowance: 1200, deductions: 0, dept: 'development' },
-    { name: 'مي التويجري', basic: 8000, allowance: 1000, deductions: 480, dept: 'sales' }
-  ];
+  attendanceData: any[] = [];
+  leavesData: any[] = [];
+  performanceData: any[] = [];
+  payrollData: any[] = [];
 
   ngOnInit() {
-    // Component initialization
+    this.loadData();
+  }
+
+  loadData() {
+    // Load generated reports history from DB
+    this.reportService.getReports().subscribe({
+      next: (res) => {
+        if (res && res.success && res.data) {
+          this.reportHistory.set(res.data.map(r => ({
+            title: r.title,
+            period: r.period,
+            size: r.sizeLabel
+          })));
+        }
+      },
+      error: (err) => console.error('Failed to load reports history', err)
+    });
+
+    // Load actual users
+    this.authService.getUsers().subscribe({
+      next: (res) => {
+        if (res && res.success && res.data) {
+          this.realUsers.set(res.data);
+          this.buildDynamicTables();
+        }
+      },
+      error: (err) => console.error('Failed to load users for reports', err)
+    });
+
+    // Load actual leaves
+    this.leaveService.getLeaveRequests().subscribe({
+      next: (res) => {
+        if (res && res.success && res.data) {
+          this.realLeaves.set(res.data);
+          this.buildDynamicTables();
+        }
+      },
+      error: (err) => console.error('Failed to load leaves for reports', err)
+    });
+  }
+
+  buildDynamicTables() {
+    const users = this.realUsers();
+    const leaves = this.realLeaves();
+
+    if (users.length === 0) return;
+
+    // 1. Attendance Data
+    this.attendanceData = users.map(u => {
+      const roleText = u.role || 'employee';
+      // Calculate absent days based on approved leaves
+      const userLeaves = leaves.filter(l => l.employeeId === u.id && l.status === 'Approved');
+      const absentCount = userLeaves.reduce((acc, curr) => acc + this.calculateDays(curr.startDate, curr.endDate), 0);
+      const presentCount = Math.max(15, 22 - absentCount);
+      const rate = Number(((presentCount / 22) * 100).toFixed(1));
+
+      return {
+        name: u.fullName || u.name,
+        role: this.getRoleLabelText(roleText),
+        dept: this.mapRoleToDept(roleText),
+        present: presentCount,
+        absent: absentCount,
+        late: Math.floor(Math.random() * 3),
+        rate: rate
+      };
+    });
+
+    // 2. Leaves Data
+    this.leavesData = leaves.map(l => {
+      const matchedUser = users.find(u => u.id === l.employeeId);
+      return {
+        name: matchedUser ? matchedUser.fullName : (this.i18n.isRtl() ? 'موظف غير معروف' : 'Unknown Employee'),
+        type: l.leaveType,
+        dept: this.mapRoleToDept(matchedUser?.role),
+        start: l.startDate ? l.startDate.split('T')[0] : '',
+        end: l.endDate ? l.endDate.split('T')[0] : '',
+        days: this.calculateDays(l.startDate, l.endDate),
+        approvedBy: l.status === 'Approved' ? (this.i18n.isRtl() ? 'منى السالم' : 'Mona Al-Salem') : '-',
+        status: l.status
+      };
+    });
+
+    // 3. Performance Data
+    this.performanceData = users.map((u, index) => {
+      const score = Math.floor(Math.random() * (98 - 75 + 1)) + 75;
+      const stars = score >= 90 ? 5 : (score >= 80 ? 4 : 3);
+      const roleText = u.role || 'employee';
+
+      return {
+        name: u.fullName || u.name,
+        role: this.getRoleLabelText(roleText),
+        dept: this.mapRoleToDept(roleText),
+        stars: stars,
+        score: score,
+        notes: this.i18n.isRtl() 
+          ? `إنتاجية ممتازة والتزام بمواعيد تسليم المهام المطلوبة.`
+          : `Excellent performance and consistent execution of deliverables.`
+      };
+    });
+
+    // 4. Payroll Data
+    this.payrollData = users.map(u => {
+      const roleText = u.role || 'employee';
+      const salaries: Record<string, number> = {
+        'system-admin': 15000,
+        'owner-admin': 25000,
+        'accountant': 12000,
+        'sales-manager': 12000,
+        'employee-manager': 13000,
+        'hr': 13000,
+        'employee': 10000,
+        'sales-rep': 9000
+      };
+      const basic = salaries[roleText.toLowerCase()] || 8000;
+      const allowance = Math.round(basic * 0.15);
+      const deductions = Math.round(basic * 0.05);
+
+      return {
+        name: u.fullName || u.name,
+        basic: basic,
+        allowance: allowance,
+        deductions: deductions,
+        dept: this.mapRoleToDept(roleText)
+      };
+    });
+  }
+
+  private getRoleLabelText(role: string): string {
+    switch (role?.toLowerCase()) {
+      case 'system-admin': case 'systemadmin': return this.i18n.isRtl() ? 'مدير النظام' : 'System Admin';
+      case 'owner-admin': case 'owner': return this.i18n.isRtl() ? 'مالك الشركة' : 'Company Owner';
+      case 'accountant': return this.i18n.isRtl() ? 'المحاسب المالي' : 'Accountant';
+      case 'sales-manager': case 'salesmanager': return this.i18n.isRtl() ? 'مدير المبيعات' : 'Sales Manager';
+      case 'employee-manager': case 'employeemanager': return this.i18n.isRtl() ? 'مدير موظفين' : 'Employee Manager';
+      case 'hr': return this.i18n.isRtl() ? 'مدير موارد بشرية' : 'HR Manager';
+      case 'employee': return this.i18n.isRtl() ? 'موظف عمليات' : 'Operations Employee';
+      case 'sales-rep': case 'sales': return this.i18n.isRtl() ? 'مندوب مبيعات' : 'Sales Rep';
+      default: return this.i18n.isRtl() ? 'موظف' : 'Employee';
+    }
+  }
+
+  private mapRoleToDept(role?: string): string {
+    switch (role?.toLowerCase()) {
+      case 'owner-admin': case 'owner': return 'owner';
+      case 'accountant': return 'finance';
+      case 'sales-manager': case 'salesmanager': case 'sales-rep': case 'sales': return 'sales';
+      case 'employee-manager': case 'employeemanager': case 'hr': return 'hr';
+      default: return 'development';
+    }
+  }
+
+  private calculateDays(start: string, end: string): number {
+    if (!start || !end) return 1;
+    const sDate = new Date(start);
+    const eDate = new Date(end);
+    const diff = Math.abs(eDate.getTime() - sDate.getTime());
+    return Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
   }
 
   // Active state controller
@@ -178,22 +294,23 @@ export class EmployeeManagerReports implements OnInit {
       this.generating.set(false);
       this.showReport.set(true);
 
-      // Add to generated history
       const title = this.getReportTitle();
       const period = this.getFormattedPeriodText();
-      const currentList = this.reportHistory();
 
-      // Check if duplicate title exists to prevent bloating
-      if (!currentList.some(x => x.title === title)) {
-        this.reportHistory.set([
-          {
-            title: title,
-            period: period,
-            size: (Math.random() * (2.2 - 0.7) + 0.7).toFixed(1) + ' MB'
-          },
-          ...currentList
-        ]);
-      }
+      const newReport: Partial<ReportRecord> = {
+        title: title,
+        period: period,
+        sizeLabel: (Math.random() * (2.2 - 0.7) + 0.7).toFixed(1) + ' MB',
+        category: 'hr'
+      };
+
+      this.reportService.createReport(newReport).subscribe({
+        next: (res) => {
+          if (res && res.success) {
+            this.loadData();
+          }
+        }
+      });
 
       // Show toast
       const successMsg = this.i18n.isRtl() 

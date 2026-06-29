@@ -1,4 +1,4 @@
-﻿import { Component, signal, computed, inject, OnInit, AfterViewInit, OnDestroy, HostBinding, HostListener, ViewChild, ElementRef, effect, Renderer2 } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, AfterViewInit, OnDestroy, HostBinding, HostListener, ViewChild, ElementRef, effect, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LeaveService } from '../../../services/leave.service';
@@ -208,61 +208,56 @@ export class EmployeeLeaveRequest implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const session = localStorage.getItem('rasd_user_session');
-    if (!session) {
-      this.toastService.error('بيانات المستخدم غير متوفرة', 'خطأ');
+    const sessionUser = this.authService.currentUser();
+    if (!sessionUser || !sessionUser.id) {
+      this.toastService.error('بيانات المستخدم غير متوفرة أو لم يتم تسجيل الدخول بشكل صحيح', 'خطأ');
       this.isSubmitting.set(false);
       return;
     }
 
-    const user = JSON.parse(session);
     const apiLeaveType = this.leaveTypeMap[this.newType] || this.newType;
     const startDate = new Date(this.newStartDate);
     const endDate = new Date(this.newEndDate);
     startDate.setHours(0, 0, 0, 0);
     endDate.setHours(0, 0, 0, 0);
 
-    // Get current user's real data from AuthService to get employeeId/roleId
-    this.authService.getUsers().subscribe({
-      next: (res) => {
-        if (res && res.success && res.data) {
-          const currentUserData = res.data.find((u: any) =>
-            u.email === user.email
-          );
-          if (!currentUserData) {
-            this.toastService.error('بيانات المستخدم غير موجودة في النظام', 'خطأ');
-            this.isSubmitting.set(false);
-            return;
-          }
+    const roleId = this.mapRoleToId(sessionUser.role);
 
-          this.leaveService.createLeaveRequest({
-            employeeId: Number(currentUserData.id),
-            roleId: Number(currentUserData.roleId),
-            leaveType: apiLeaveType,
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString(),
-            reason: this.newReason || undefined
-          }).subscribe({
-            next: (res2) => {
-              this.isSubmitting.set(false);
-              if (res2 && res2.success) {
-                this.toastService.success('تم تقديم طلب الإجازة بنجاح', 'تقديم طلب إجازة');
-                this.loadMyRequests();
-                this.closeModal();
-              }
-            },
-            error: (err2) => {
-              this.isSubmitting.set(false);
-              this.toastService.error(err2.error?.message || 'فشل تقديم الطلب', 'خطأ');
-            }
-          });
+    this.leaveService.createLeaveRequest({
+      employeeId: Number(sessionUser.id),
+      roleId: roleId,
+      leaveType: apiLeaveType,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      reason: this.newReason || undefined
+    }).subscribe({
+      next: (res) => {
+        this.isSubmitting.set(false);
+        if (res && res.success) {
+          this.toastService.success('تم تقديم طلب الإجازة بنجاح', 'تقديم طلب إجازة');
+          this.loadMyRequests();
+          this.closeModal();
         }
       },
-      error: () => {
+      error: (err) => {
         this.isSubmitting.set(false);
-        this.toastService.error('فشل تحميل بيانات المستخدم', 'خطأ');
+        this.toastService.error(err.error?.message || 'فشل تقديم الطلب', 'خطأ');
       }
     });
+  }
+
+  private mapRoleToId(roleName?: string): number {
+    switch (roleName?.toLowerCase()) {
+      case 'system-admin': return 1;
+      case 'owner-admin': return 2;
+      case 'accountant': return 3;
+      case 'sales-manager': return 4;
+      case 'sales-rep': return 5;
+      case 'employee-manager': return 6;
+      case 'employee': return 7;
+      case 'hr': return 8;
+      default: return 7; // default to Employee
+    }
   }
 
   private getIconForLabel(label: string): string {

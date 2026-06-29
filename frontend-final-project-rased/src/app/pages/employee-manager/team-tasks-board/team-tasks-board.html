@@ -41,6 +41,7 @@
               (dragstart)="onDragStart($event, task.id)"
               (dragend)="onDragEnd()"
               [class.dragging]="draggedTaskId() === task.id"
+              [class.completed-card]="task.stage === 'done'"
             >
               <div class="deal-header-info">
                 <span class="priority-badge" [ngClass]="{
@@ -62,25 +63,29 @@
                 <span class="task-date">{{ task.date }}</span>
               </div>
               
-              <div class="task-title">{{ task.title }}</div>
+              <div class="task-title" [class.completed-title]="task.stage === 'done'">{{ task.title }}</div>
               <p class="task-desc">{{ task.desc }}</p>
               
               <div class="deal-footer">
-                <div class="deal-agent">
-                  <div class="user-avatar-sm" [ngClass]="{
-                    'avatar-1': task.assignee.length % 3 === 0,
-                    'avatar-2': task.assignee.length % 3 === 1,
-                    'avatar-3': task.assignee.length % 3 === 2
-                  }">
-                    {{ task.assignee.slice(0, 2) }}
+                <div class="deal-agent-info">
+                  <div class="user-avatar-sm" [ngClass]="getRoleAvatarClass(task.assignedTo.role)">
+                    {{ task.assignedTo.initials }}
                   </div>
-                  <span class="assignee-name">{{ task.assignee }}</span>
+                  <div class="assignee-details">
+                    <span class="assignee-name">{{ task.assignedTo.fullName }}</span>
+                    <span class="assignee-role">{{ task.assignedTo.role }}</span>
+                  </div>
                 </div>
                 
-                <!-- Drag Handle Indicator instead of navigation arrows -->
-                <div class="drag-handle" [title]="i18n.isRtl() ? 'اسحب لنقل المهمة' : 'Drag to move task'">
-                  <i class="fa-solid fa-grip-vertical"></i>
-                </div>
+                @if (task.stage === 'done') {
+                  <div class="completed-check-icon" [title]="i18n.isRtl() ? 'مهمة مكتملة' : 'Completed task'">
+                    <i class="fa-solid fa-circle-check"></i>
+                  </div>
+                } @else {
+                  <div class="drag-handle" [title]="i18n.isRtl() ? 'اسحب لنقل المهمة' : 'Drag to move task'">
+                    <i class="fa-solid fa-grip-vertical"></i>
+                  </div>
+                }
               </div>
             </div>
           } @empty {
@@ -99,49 +104,120 @@
     }
   </div>
 
-  <!-- Add Task Modal -->
-  @if (isModalOpen()) {
-    <div class="modal-backdrop" (click)="closeModal()">
-      <div class="modal-card modal-scale-up" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h3>{{ i18n.isRtl() ? 'إسناد مهمة جديدة للفريق' : 'Assign New Team Task' }}</h3>
-          <button (click)="closeModal()" class="close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>{{ i18n.isRtl() ? 'عنوان المهمة *' : 'Task Title *' }}</label>
-            <input type="text" [(ngModel)]="newTitle" [placeholder]="i18n.isRtl() ? 'مثال: مراجعة عقود العمل السنوية' : 'e.g. Annual contract audit'" required />
-          </div>
-          <div class="form-group">
-            <label>{{ i18n.isRtl() ? 'تفاصيل المهمة *' : 'Task Details *' }}</label>
-            <textarea [(ngModel)]="newDesc" [placeholder]="i18n.isRtl() ? 'اكتب تفاصيل المهمة ومخرجاتها المطلوبة هنا...' : 'Describe task parameters and deliverables here...'" style="min-height: 90px;"></textarea>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>{{ i18n.isRtl() ? 'المسؤول عن المهمة' : 'Assignee' }}</label>
-              <select [(ngModel)]="newAssignee">
-                <option value="فهد المطيري">فهد المطيري</option>
-                <option value="نورة السعيد">نورة السعيد</option>
-                <option value="رنا علي">رنا علي</option>
-                <option value="يوسف حسن">يوسف حسن</option>
-                <option value="خالد الدوسري">خالد الدوسري</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>{{ i18n.isRtl() ? 'الأولوية' : 'Priority' }}</label>
-              <select [(ngModel)]="newPriority">
-                <option value="high">{{ i18n.isRtl() ? 'عاجلة جداً' : 'Urgent / High' }}</option>
-                <option value="medium">{{ i18n.isRtl() ? 'متوسطة' : 'Medium' }}</option>
-                <option value="low">{{ i18n.isRtl() ? 'منخفضة' : 'Low' }}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button (click)="closeModal()" class="btn-cancel">{{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}</button>
-          <button (click)="addTask()" class="btn-save">{{ i18n.isRtl() ? 'إضافة وإسناد' : 'Add & Assign' }}</button>
-        </div>
+  <!-- Status Legend -->
+  <div class="status-legend-row">
+    <span class="legend-title">{{ i18n.isRtl() ? 'دليل الحالات:' : 'Status Legend:' }}</span>
+    <div class="legend-items">
+      <div class="legend-item">
+        <span class="legend-dot purple"></span>
+        <span>{{ i18n.isRtl() ? 'مهام معلقة' : 'Pending' }}</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot amber"></span>
+        <span>{{ i18n.isRtl() ? 'جاري العمل' : 'In-Progress' }}</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot blue"></span>
+        <span>{{ i18n.isRtl() ? 'قيد المراجعة' : 'In-Review' }}</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot green"></span>
+        <span>{{ i18n.isRtl() ? 'مهام مكتملة' : 'Completed' }}</span>
       </div>
     </div>
-  }
+  </div>
+
+  <!-- Add Task Modal -->
+  <div class="modal-overlay" [class.active]="isModalOpen()" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-badge">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+          <div>
+            <h3>{{ i18n.isRtl() ? 'إسناد مهمة جديدة للفريق' : 'Assign New Team Task' }}</h3>
+            <p class="modal-subtitle">قم بإدخال تفاصيل المهمة وتحديد المسؤول والأولوية</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" (click)="closeModal()" type="button">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form (ngSubmit)="addTask()">
+        <div class="modal-body">
+          
+          <!-- Task Title -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-heading"></i>
+              {{ i18n.isRtl() ? 'عنوان المهمة *' : 'Task Title *' }}
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-font input-icon"></i>
+              <input type="text" [(ngModel)]="newTitle" name="newTitle" required [placeholder]="i18n.isRtl() ? 'مثال: مراجعة عقود العمل السنوية' : 'e.g. Annual contract audit'" />
+            </div>
+          </div>
+
+          <!-- Task Details -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-align-left"></i>
+              {{ i18n.isRtl() ? 'تفاصيل المهمة *' : 'Task Details *' }}
+            </label>
+            <div class="input-wrapper">
+              <textarea [(ngModel)]="newDesc" name="newDesc" required [placeholder]="i18n.isRtl() ? 'اكتب تفاصيل المهمة ومخرجاتها المطلوبة هنا...' : 'Describe task parameters and deliverables here...'" style="min-height: 90px; width: 100%; padding: 12px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-title);" class="form-input"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <!-- Assignee -->
+            <div class="form-group-modal">
+              <label>
+                <i class="fa-solid fa-user-gear"></i>
+                {{ i18n.isRtl() ? 'المسؤول عن المهمة' : 'Assignee' }}
+              </label>
+              <div class="input-wrapper select-wrapper">
+                <i class="fa-solid fa-user input-icon"></i>
+                <select [(ngModel)]="newAssignee" name="newAssignee" required>
+                  @for (a of assignees; track a.fullName) {
+                    <option [ngValue]="a">{{ a.fullName }}</option>
+                  }
+                </select>
+                <i class="fa-solid fa-chevron-down select-arrow"></i>
+              </div>
+            </div>
+
+            <!-- Priority -->
+            <div class="form-group-modal">
+              <label>
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                {{ i18n.isRtl() ? 'الأولوية' : 'Priority' }}
+              </label>
+              <div class="input-wrapper select-wrapper">
+                <i class="fa-solid fa-layer-group input-icon"></i>
+                <select [(ngModel)]="newPriority" name="newPriority" required>
+                  <option value="high">{{ i18n.isRtl() ? 'عاجلة جداً' : 'Urgent / High' }}</option>
+                  <option value="medium">{{ i18n.isRtl() ? 'متوسطة' : 'Medium' }}</option>
+                  <option value="low">{{ i18n.isRtl() ? 'منخفضة' : 'Low' }}</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-arrow"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" (click)="closeModal()">
+            <i class="fa-solid fa-arrow-right"></i>
+            {{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i>
+            {{ i18n.isRtl() ? 'إضافة وإسناد' : 'Add & Assign' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

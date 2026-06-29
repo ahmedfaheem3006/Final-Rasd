@@ -101,24 +101,25 @@
 }
 
 .filter-tab {
-  background: var(--bg-card-inner, #ffffff);
-  border: 1px solid var(--border-light, #e2e8f0);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.5rem 1rem;
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--text-body, #475569);
+  color: var(--text-body);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .filter-tab:hover {
-  background: var(--bg-hover, #f1f5f9);
+  background: var(--bg-card-hover);
+  color: var(--text-title);
 }
 
 .filter-tab.active {
-  background: var(--primary-color, #7c3aed);
-  border-color: var(--primary-color, #7c3aed);
+  background: var(--primary);
+  border-color: var(--primary);
   color: #ffffff;
 }
 
@@ -466,8 +467,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg-card-inner, #ffffff);
-  border: 1px solid var(--border-light, #e2e8f0);
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 0.65rem 0.85rem;
 }
