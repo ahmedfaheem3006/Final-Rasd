@@ -1,20 +1,208 @@
 <div class="page-container">
-  <header class="page-header animate-fade-in">
-    <div class="header-info"><div class="breadcrumbs">المحاسبة / العملاء</div><h1>سجل العملاء</h1><p class="subtitle">عرض بيانات العملاء وسجلاتهم المالية (للقراءة فقط)</p></div>
-  </header>
-  <div class="card table-card animate-reveal">
-    <div class="table-wrapper">
-      <table class="data-table">
-        <thead><tr><th>اسم العميل</th><th>المسؤول</th><th>البريد الإلكتروني</th><th>إجمالي الفواتير</th><th>آخر سداد</th><th>الحالة</th></tr></thead>
-        <tbody>
-          @for (c of customers(); track c.email) {
-            <tr>
-              <td class="fw-bold">{{ c.name }}</td><td>{{ c.contact }}</td><td class="text-muted">{{ c.email }}</td><td class="fw-bold text-primary">{{ c.totalInvoices }}</td><td class="text-muted">{{ c.lastPayment }}</td>
-              <td>@if(c.status==='active'){<span class="badge badge-success">منتظم</span>}@else{<span class="badge badge-danger">متأخر</span>}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+
+  <!-- ══ PAGE HEADER ══ -->
+  <header class="page-header">
+    <div class="header-left">
+      <div class="header-icon-wrap">
+        <i class="fa-solid fa-users-between-lines"></i>
+      </div>
+      <div class="header-info">
+        <div class="breadcrumbs">
+          <i class="fa-solid fa-home"></i>
+          <span>{{ i18n.currentLang() === 'ar' ? 'المحاسبة' : 'Accounting' }}</span>
+          <i class="fa-solid fa-chevron-left sep-icon"></i>
+          <span>{{ i18n.currentLang() === 'ar' ? 'سجل العملاء' : 'Customers' }}</span>
+        </div>
+        <h1>{{ i18n.currentLang() === 'ar' ? 'سجل العملاء' : 'Customer Register' }}</h1>
+        <p class="subtitle">{{ i18n.currentLang() === 'ar' ? 'عرض بيانات العملاء وسجلاتهم المالية (للقراءة فقط)' : 'View client data and financial records (read-only)' }}</p>
+      </div>
     </div>
+
+    <div class="header-meta" *ngIf="!loading() && customers().length > 0">
+      <div class="meta-badge">
+        <i class="fa-solid fa-users"></i>
+        <span>{{ customers().length }} {{ i18n.currentLang() === 'ar' ? 'عميل' : 'Clients' }}</span>
+      </div>
+      <div class="meta-badge active-badge">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>{{ activeCustomersCount() }} {{ i18n.currentLang() === 'ar' ? 'نشط' : 'Active' }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ TABLE PANEL ══ -->
+  <div class="table-panel">
+
+    <!-- Loading Skeleton -->
+    @if (loading()) {
+      <div class="skeleton-wrap">
+        <div class="skeleton-header">
+          <div class="skeleton-line w60"></div>
+          <div class="skeleton-line w30"></div>
+        </div>
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="skeleton-row">
+            <div class="skeleton-cell circle"></div>
+            <div class="skeleton-cell w40"></div>
+            <div class="skeleton-cell w30"></div>
+            <div class="skeleton-cell w50"></div>
+            <div class="skeleton-cell w30"></div>
+            <div class="skeleton-cell w20"></div>
+          </div>
+        }
+      </div>
+    } @else {
+
+      <div class="panel-header">
+        <div class="panel-title-group">
+          <i class="fa-solid fa-table-list"></i>
+          <span class="panel-title">{{ i18n.currentLang() === 'ar' ? 'قائمة العملاء' : 'Customer List' }}</span>
+          <span class="count-pill">{{ customers().length }}</span>
+        </div>
+        <div class="panel-legend">
+          <span class="legend-dot active-dot"></span>
+          <span class="legend-txt">{{ i18n.currentLang() === 'ar' ? 'نشط' : 'Active' }}</span>
+          <span class="legend-dot late-dot"></span>
+          <span class="legend-txt">{{ i18n.currentLang() === 'ar' ? 'متأخر' : 'Late' }}</span>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="customers-table">
+          <thead>
+            <tr>
+              <th>
+                <span class="th-content">
+                  <i class="fa-solid fa-user-tie"></i>
+                  {{ i18n.currentLang() === 'ar' ? 'اسم العميل' : 'Client' }}
+                </span>
+              </th>
+              <th>
+                <span class="th-content">
+                  <i class="fa-solid fa-id-badge"></i>
+                  {{ i18n.currentLang() === 'ar' ? 'المسؤول' : 'Contact' }}
+                </span>
+              </th>
+              <th>
+                <span class="th-content">
+                  <i class="fa-solid fa-envelope"></i>
+                  {{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}
+                </span>
+              </th>
+              <th>
+                <span class="th-content">
+                  <i class="fa-solid fa-file-invoice-dollar"></i>
+                  {{ i18n.currentLang() === 'ar' ? 'إجمالي الفواتير' : 'Total Invoices' }}
+                </span>
+              </th>
+              <th>
+                <span class="th-content">
+                  <i class="fa-solid fa-clock-rotate-left"></i>
+                  {{ i18n.currentLang() === 'ar' ? 'آخر سداد' : 'Last Payment' }}
+                </span>
+              </th>
+              <th>
+                <span class="th-content">
+                  <i class="fa-solid fa-signal"></i>
+                  {{ i18n.currentLang() === 'ar' ? 'الحالة' : 'Status' }}
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of customers(); track c.email; let i = $index) {
+              <tr class="table-row" [style.animation-delay]="(i * 50) + 'ms'">
+
+                <!-- Client Name -->
+                <td>
+                  <div class="client-cell">
+                    <div class="avatar" [class.avatar-active]="c.status === 'active'">
+                      {{ c.name.charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="client-info">
+                      <span class="client-name">{{ c.name }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Contact -->
+                <td>
+                  <span class="contact-chip">
+                    <i class="fa-solid fa-user"></i>
+                    {{ c.contact }}
+                  </span>
+                </td>
+
+                <!-- Email -->
+                <td>
+                  <a [href]="'mailto:' + c.email" class="email-link">
+                    <i class="fa-regular fa-envelope"></i>
+                    {{ c.email }}
+                  </a>
+                </td>
+
+                <!-- Total Invoices -->
+                <td>
+                  <span class="amount-chip" [class.zero-amount]="c.totalInvoices === '0'">
+                    {{ c.totalInvoices }}
+                  </span>
+                </td>
+
+                <!-- Last Payment -->
+                <td>
+                  <span class="date-cell">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    {{ c.lastPayment }}
+                  </span>
+                </td>
+
+                <!-- Status -->
+                <td>
+                  <div class="status-wrap">
+                    @if (c.status === 'active') {
+                      <span class="status-pill status-active">
+                        <span class="status-dot"></span>
+                        {{ i18n.currentLang() === 'ar' ? 'منتظم' : 'Regular' }}
+                      </span>
+                    } @else {
+                      <span class="status-pill status-late">
+                        <span class="status-dot"></span>
+                        {{ i18n.currentLang() === 'ar' ? 'متأخر' : 'Late' }}
+                      </span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6">
+                  <div class="empty-state">
+                    <div class="empty-icon-wrap">
+                      <i class="fa-regular fa-folder-open"></i>
+                    </div>
+                    <p class="empty-title">{{ i18n.currentLang() === 'ar' ? 'لا توجد بيانات' : 'No Records Found' }}</p>
+                    <p class="empty-sub">{{ i18n.currentLang() === 'ar' ? 'لا توجد بيانات عملاء متوفرة' : 'No customer records are available' }}</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer -->
+      @if (customers().length > 0) {
+        <div class="panel-footer">
+          <span class="footer-info">
+            <i class="fa-solid fa-circle-info"></i>
+            {{ i18n.currentLang() === 'ar' ? 'البيانات للقراءة فقط' : 'Data is read-only' }}
+          </span>
+          <span class="footer-count">
+            {{ i18n.currentLang() === 'ar' ? 'إجمالي' : 'Total' }}: <strong>{{ customers().length }}</strong>
+          </span>
+        </div>
+      }
+    }
   </div>
+
 </div>

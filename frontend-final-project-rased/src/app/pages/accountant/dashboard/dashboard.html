@@ -1,0 +1,1001 @@
+<div class="acc-dashboard">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        <i class="fa-solid fa-chart-line"></i>
+        {{ i18n.t('accountant_dashboard.breadcrumbs') }}
+      </div>
+      <h1>{{ i18n.t('accountant_dashboard.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('accountant_dashboard.subtitle') }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="onFilterDates()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>{{ i18n.t('accountant_dashboard.filter_dates') }}</span>
+      </button>
+      <button class="btn btn-primary" (click)="onExportReport()">
+        <i class="fa-solid fa-file-export"></i>
+        <span>{{ i18n.t('accountant_dashboard.export_report') }}</span>
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+  <div class="skeleton-grid">
+    <div class="stats-grid">
+      @for (s of [1,2,3,4,5,6,7,8]; track s) {
+      <div class="stat-card skeleton animate-shimmer">
+        <div class="skeleton-line" style="width:60%;height:12px;margin-bottom:12px"></div>
+        <div class="skeleton-line" style="width:80%;height:28px"></div>
+      </div>
+      }
+    </div>
+    <div class="dashboard-grid">
+      <div class="main-column">
+        <div class="card skeleton-card animate-shimmer"></div>
+        <div class="card skeleton-card animate-shimmer" style="height:200px;margin-top:24px"></div>
+      </div>
+      <div class="side-column">
+        <div class="card skeleton-card animate-shimmer" style="height:300px"></div>
+        <div class="card skeleton-card animate-shimmer" style="height:200px;margin-top:24px"></div>
+      </div>
+    </div>
+  </div>
+  } @else {
+  <!-- Stats Grid -->
+  <div class="stats-grid animate-reveal">
+    <div class="stat-card premium-stat-card accent-primary">
+      <div class="premium-stat-gradient-bar"></div>
+      <div class="premium-stat-content">
+        <div class="stat-top">
+          <span class="stat-label">{{ i18n.t('accountant_dashboard.stats.total_revenue') }}</span>
+          <i class="fa-solid fa-sack-dollar stat-icon-color primary"></i>
+        </div>
+        <div class="stat-value color-primary">{{ formatCurrency(totalRevenue()) }}</div>
+      </div>
+    </div>
+    <div class="stat-card premium-stat-card accent-danger">
+      <div class="premium-stat-gradient-bar"></div>
+      <div class="premium-stat-content">
+        <div class="stat-top">
+          <span class="stat-label">{{ i18n.t('accountant_dashboard.stats.outstanding') }}</span>
+          <i class="fa-solid fa-hand-holding-dollar stat-icon-color danger"></i>
+        </div>
+        <div class="stat-value color-danger">{{ formatCurrency(outstandingBalance()) }}</div>
+      </div>
+    </div>
+    <div class="stat-card premium-stat-card accent-success">
+      <div class="premium-stat-gradient-bar"></div>
+      <div class="premium-stat-content">
+        <div class="stat-top">
+          <span class="stat-label">{{ i18n.t('accountant_dashboard.stats.paid_invoices') }}</span>
+          <i class="fa-solid fa-file-invoice stat-icon-color success"></i>
+        </div>
+        <div class="stat-value color-success">{{ paidCount() }}</div>
+      </div>
+    </div>
+    <div class="stat-card premium-stat-card accent-warning">
+      <div class="premium-stat-gradient-bar"></div>
+      <div class="premium-stat-content">
+        <div class="stat-top">
+          <span class="stat-label">{{ i18n.t('accountant_dashboard.stats.pending_invoices') }}</span>
+          <i class="fa-solid fa-clock stat-icon-color warning"></i>
+        </div>
+        <div class="stat-value color-warning">{{ pendingCount() }}</div>
+      </div>
+    </div>
+    <div class="stat-card premium-stat-card accent-danger">
+      <div class="premium-stat-gradient-bar"></div>
+      <div class="premium-stat-content">
+        <div class="stat-top">
+          <span class="stat-label">{{ i18n.t('accountant_dashboard.stats.overdue_invoices') }}</span>
+          <i class="fa-solid fa-exclamation-triangle stat-icon-color danger"></i>
+        </div>
+        <div class="stat-value color-danger">{{ overdueCount() }}</div>
+      </div>
+    </div>
+    <div class="stat-card premium-stat-card accent-info">
+      <div class="premium-stat-gradient-bar"></div>
+      <div class="premium-stat-content">
+        <div class="stat-top">
+          <span class="stat-label">{{ i18n.t('accountant_dashboard.stats.total_clients') }}</span>
+          <i class="fa-solid fa-users stat-icon-color info"></i>
+        </div>
+        <div class="stat-value color-primary">{{ totalClientCount() }}</div>
+      </div>
+    </div>
+    <div class="stat-card premium-stat-card accent-primary">
+      <div class="premium-stat-gradient-bar"></div>
+      <div class="premium-stat-content">
+        <div class="stat-top">
+          <span class="stat-label">{{ i18n.t('accountant_dashboard.stats.monthly_revenue') }}</span>
+          <i class="fa-solid fa-chart-line stat-icon-color primary"></i>
+        </div>
+        <div class="stat-value color-primary">{{ formatShortCurrency(monthlyRevenue()) }}</div>
+      </div>
+    </div>
+    <div class="stat-card premium-stat-card accent-success">
+      <div class="premium-stat-gradient-bar"></div>
+      <div class="premium-stat-content">
+        <div class="stat-top">
+          <span class="stat-label">{{ i18n.t('accountant_dashboard.stats.monthly_payments') }}</span>
+          <i class="fa-solid fa-credit-card stat-icon-color success"></i>
+        </div>
+        <div class="stat-value color-success">{{ formatShortCurrency(monthlyPayments()) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="dashboard-grid animate-reveal">
+    <!-- Main Column -->
+    <div class="main-column">
+      <!-- Revenue Analysis Chart -->
+      <div class="card chart-card glow-border-animate">
+        <div class="card-header">
+          <div>
+            <h3>{{ i18n.t('accountant_dashboard.revenue_chart_title') }}</h3>
+            <p class="subtitle">{{ i18n.t('accountant_dashboard.revenue_chart') }}</p>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="dot success"></span> {{
+              i18n.t('accountant_dashboard.revenue_chart_revenue') }}</span>
+            <span class="legend-item"><span class="dot danger"></span> {{
+              i18n.t('accountant_dashboard.revenue_chart_expenses') }}</span>
+            <span class="legend-item"><span class="dot primary"></span> {{
+              i18n.t('accountant_dashboard.revenue_chart_profit') }}</span>
+          </div>
+        </div>
+        <div class="chart-content">
+          @if (revChartEmpty()) {
+          <div class="chart-empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              style="opacity:0.3">
+              <path d="M18 20V10"></path>
+              <path d="M12 20V4"></path>
+              <path d="M6 20v-6"></path>
+            </svg>
+            <p>{{ i18n.t('accountant_dashboard.no_data') }}</p>
+          </div>
+          }
+          <svg viewBox="0 0 800 240" fill="none" class="svg-dashboard-chart" [class.chart-hidden]="revChartEmpty()">
+            <g opacity="0.05" stroke="#000" stroke-width="1">
+              <line x1="0" y1="40" x2="800" y2="40" />
+              <line x1="0" y1="90" x2="800" y2="90" />
+              <line x1="0" y1="140" x2="800" y2="140" />
+              <line x1="0" y1="190" x2="800" y2="190" />
+            </g>
+            <path [attr.d]="revenuePath()" fill="none" stroke="var(--success)" stroke-width="3.5" stroke-linecap="round"
+              class="chart-line" />
+            <path [attr.d]="expensesPath()" fill="none" stroke="var(--danger)" stroke-width="3.5" stroke-linecap="round"
+              stroke-dasharray="6 4" class="chart-line" />
+            <path [attr.d]="profitPath()" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"
+              stroke-dasharray="3 3" class="chart-line" />
+            @for (point of revChartPoints(); track $index) {
+            <circle [attr.cx]="point.cx" [attr.cy]="point.cyRev" r="4" fill="#fff" stroke="var(--success)"
+              stroke-width="2.5" class="chart-dot" />
+            <circle [attr.cx]="point.cx" [attr.cy]="point.cyExp" r="4" fill="#fff" stroke="var(--danger)"
+              stroke-width="2.5" class="chart-dot" />
+            <circle [attr.cx]="point.cx" [attr.cy]="point.cyProf" r="4" fill="#fff" stroke="var(--primary)"
+              stroke-width="2.5" class="chart-dot" />
+            }
+            @for (m of revenueChartMonths(); track $index) {
+            <text [attr.x]="(revChartPoints()[$index]?.cx || 50 + $index * 130)" y="235" fill="var(--text-muted)"
+              font-size="10" text-anchor="middle">{{ m.label }}</text>
+            }
+          </svg>
+        </div>
+      </div>
+
+      <!-- Recent Financial Activity -->
+      <div class="card table-card">
+        <div class="card-header">
+          <h3>{{ i18n.t('accountant_dashboard.recent_activity') }}</h3>
+        </div>
+        <div class="table-wrapper">
+          <table class="vision-table">
+            <thead>
+              <tr>
+                <th>{{ i18n.t('accountant_dashboard.activity_invoice') }}</th>
+                <th>{{ i18n.t('accountant_dashboard.activity_client') }}</th>
+                <th>{{ i18n.t('accountant_dashboard.activity_amount') }}</th>
+                <th>{{ i18n.t('accountant_dashboard.activity_status') }}</th>
+                <th>{{ i18n.t('accountant_dashboard.activity_date') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (act of recentActivity(); track act.id || $index) {
+              <tr>
+                <td class="cell-mono">{{ act.invoiceNumber || '#' + act.id }}</td>
+                <td>{{ act.clientName || act.deal?.client?.name || '-' }}</td>
+                <td class="cell-amount">{{ formatCurrency(act.totalAmount) }}</td>
+                <td><span class="badge" [ngClass]="'badge-' + getInvoiceStatusColor(act.status)">{{
+                    getStatusText(act.status) }}</span></td>
+                <td class="cell-date">{{ act.createdAt ? (act.createdAt | date:'mediumDate') : '-' }}</td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="5" class="empty-cell">{{ i18n.t('accountant_dashboard.no_data') }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Column -->
+    <div class="side-column">
+      <!-- Invoice Status Doughnut -->
+      <div class="card">
+        <div class="card-header">
+          <h3>{{ i18n.t('accountant_dashboard.invoice_status') }}</h3>
+        </div>
+        <div class="doughnut-container">
+          @if (invoiceStatusData().paid + invoiceStatusData().pending + invoiceStatusData().overdue +
+          invoiceStatusData().cancelled === 0) {
+          <div class="empty-state" style="padding:20px">
+            <p>{{ i18n.t('accountant_dashboard.no_data') }}</p>
+          </div>
+          } @else {
+          <svg viewBox="0 0 120 120" class="doughnut-svg">
+            <circle cx="60" cy="60" r="45" fill="none" stroke="var(--border-light)" stroke-width="12" />
+            <circle cx="60" cy="60" r="45" fill="none" stroke="var(--success)" stroke-width="12" stroke-dasharray="283"
+              [attr.stroke-dashoffset]="283 - 283 * invoiceStatusData().paid / 100" transform="rotate(-90 60 60)"
+              stroke-linecap="round" class="doughnut-segment" />
+            <circle cx="60" cy="60" r="45" fill="none" stroke="var(--warning)" stroke-width="12" stroke-dasharray="283"
+              [attr.stroke-dashoffset]="283 - 283 * invoiceStatusData().pending / 100" transform="rotate(-90 60 60)"
+              stroke-linecap="round" class="doughnut-segment delay-1" />
+            <circle cx="60" cy="60" r="45" fill="none" stroke="var(--danger)" stroke-width="12" stroke-dasharray="283"
+              [attr.stroke-dashoffset]="283 - 283 * invoiceStatusData().overdue / 100" transform="rotate(-90 60 60)"
+              stroke-linecap="round" class="doughnut-segment delay-2" />
+            <circle cx="60" cy="60" r="45" fill="none" stroke="var(--info)" stroke-width="12" stroke-dasharray="283"
+              [attr.stroke-dashoffset]="283 - 283 * invoiceStatusData().cancelled / 100" transform="rotate(-90 60 60)"
+              stroke-linecap="round" class="doughnut-segment delay-3" />
+          </svg>
+          <div class="doughnut-legend">
+            <div class="doughnut-legend-item">
+              <span class="dot success"></span>
+              <span class="legend-label">{{ i18n.t('accountant_dashboard.status_paid') }} ({{ invoiceStatusData().paid
+                }}%)</span>
+            </div>
+            <div class="doughnut-legend-item">
+              <span class="dot warning"></span>
+              <span class="legend-label">{{ i18n.t('accountant_dashboard.status_pending') }} ({{
+                invoiceStatusData().pending }}%)</span>
+            </div>
+            <div class="doughnut-legend-item">
+              <span class="dot danger"></span>
+              <span class="legend-label">{{ i18n.t('accountant_dashboard.status_overdue') }} ({{
+                invoiceStatusData().overdue }}%)</span>
+            </div>
+            <div class="doughnut-legend-item">
+              <span class="dot info"></span>
+              <span class="legend-label">{{ i18n.t('accountant_dashboard.status_cancelled') }} ({{
+                invoiceStatusData().cancelled }}%)</span>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Top Clients -->
+      <div class="card">
+        <div class="card-header">
+          <h3>{{ i18n.t('accountant_dashboard.top_clients') }}</h3>
+        </div>
+        <div class="top-clients-list">
+          @for (c of topClients(); track c.id) {
+          <div class="top-client-item">
+            <div class="top-client-rank" [style.background]="$index < 3 ? 'var(--primary)' : 'var(--border-light)'">{{
+              $index + 1 }}</div>
+            <div class="top-client-info">
+              <div class="top-client-name">{{ c.companyName || c.name || '-' }}</div>
+              <div class="top-client-meta">{{ formatCurrency(c.totalRevenue || 0) }}</div>
+            </div>
+            <div class="top-client-balance">{{ formatCurrency(c.outstandingBalance || 0) }}</div>
+          </div>
+          } @empty {
+          <div class="empty-state" style="padding:20px">
+            <p>{{ i18n.t('accountant_dashboard.no_data') }}</p>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Outstanding Payments, Latest Clients, Latest Invoices -->
+  <div class="tri-grid animate-reveal">
+    <!-- Outstanding Payments -->
+    <div class="card">
+      <div class="card-header">
+        <h3>{{ i18n.t('accountant_dashboard.outstanding_payments') }}</h3>
+      </div>
+      <div class="table-wrapper">
+        <table class="vision-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.t('accountant_dashboard.top_company') }}</th>
+              <th>{{ i18n.t('accountant_dashboard.activity_invoice') }}</th>
+              <th>{{ i18n.t('accountant_dashboard.outstanding_due_date') }}</th>
+              <th>{{ i18n.t('accountant_dashboard.activity_amount') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (inv of outstandingPayments(); track inv.id) {
+            <tr [class.overdue-row]="isOverdue(inv)">
+              <td>{{ inv.clientName || inv.deal?.client?.name || '-' }}</td>
+              <td class="cell-mono">{{ inv.invoiceNumber || '#' + inv.id }}</td>
+              <td [class.text-danger]="isOverdue(inv)">{{ inv.dueDate ? (inv.dueDate | date:'mediumDate') : '-' }}</td>
+              <td class="cell-amount">{{ formatCurrency(inv.totalAmount) }}</td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="4" class="empty-cell">{{ i18n.t('accountant_dashboard.no_data') }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Latest Clients -->
+    <div class="card">
+      <div class="card-header">
+        <h3>{{ i18n.t('accountant_dashboard.latest_clients') }}</h3>
+      </div>
+      <div class="latest-list">
+        @for (c of latestClients(); track c.id) {
+        <div class="latest-item">
+          <div class="latest-avatar">{{ (c.companyName || c.name || '?')[0] }}</div>
+          <div class="latest-info">
+            <div class="latest-name">{{ c.companyName || c.name || '-' }}</div>
+            <div class="latest-meta">{{ c.email || '-' }}</div>
+          </div>
+          <div class="latest-date">{{ c.createdAt ? (c.createdAt | date:'shortDate') : '-' }}</div>
+        </div>
+        } @empty {
+        <div class="empty-state" style="padding:20px">
+          <p>{{ i18n.t('accountant_dashboard.no_data') }}</p>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Latest Invoices -->
+    <div class="card">
+      <div class="card-header">
+        <h3>{{ i18n.t('accountant_dashboard.latest_invoices') }}</h3>
+      </div>
+      <div class="latest-list">
+        @for (inv of latestInvoices(); track inv.id) {
+        <div class="latest-item">
+          <div class="latest-avatar"
+            [style.background]="inv.status === 'Paid' ? 'var(--success)' : inv.status === 'Overdue' ? 'var(--danger)' : 'var(--warning)'">
+            <i class="fa-solid fa-file-invoice" style="font-size:12px"></i>
+          </div>
+          <div class="latest-info">
+            <div class="latest-name">{{ inv.invoiceNumber || '#' + inv.id }}</div>
+            <div class="latest-meta">{{ inv.clientName || inv.deal?.client?.name || '-' }}</div>
+          </div>
+          <div class="latest-amount">{{ formatCurrency(inv.totalAmount) }}</div>
+        </div>
+        } @empty {
+        <div class="empty-state" style="padding:20px">
+          <p>{{ i18n.t('accountant_dashboard.no_data') }}</p>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 4: Quick Actions, Notifications, KPIs, Cash Flow, Upcoming -->
+  <div class="pent-grid animate-reveal">
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-header">
+        <h3>{{ i18n.t('accountant_dashboard.quick_actions') }}</h3>
+      </div>
+      <div class="qa-grid-dash">
+        <button class="qa-btn" (click)="onCreateInvoice()">
+          <span class="qa-icon-wrap" style="background:rgba(67,24,255,0.12);color:#4318ff">
+            <i class="fa-solid fa-file-invoice"></i>
+          </span>
+          <span class="qa-label">{{ i18n.t('accountant_dashboard.create_invoice') }}</span>
+        </button>
+        <button class="qa-btn" (click)="onAddClient()">
+          <span class="qa-icon-wrap" style="background:rgba(1,181,116,0.12);color:#01b574">
+            <i class="fa-solid fa-user-plus"></i>
+          </span>
+          <span class="qa-label">{{ i18n.t('accountant_dashboard.add_client') }}</span>
+        </button>
+        <button class="qa-btn" (click)="onRecordPayment()">
+          <span class="qa-icon-wrap" style="background:rgba(255,181,71,0.12);color:#ffb547">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+          </span>
+          <span class="qa-label">{{ i18n.t('accountant_dashboard.record_payment') }}</span>
+        </button>
+        <button class="qa-btn" (click)="onExportReport()">
+          <span class="qa-icon-wrap" style="background:rgba(0,117,255,0.12);color:#0075ff">
+            <i class="fa-solid fa-chart-simple"></i>
+          </span>
+          <span class="qa-label">{{ i18n.t('accountant_dashboard.export_report') }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card">
+      <div class="card-header">
+        <h3>{{ i18n.t('accountant_dashboard.notifications') }}</h3>
+      </div>
+      <div class="notif-list">
+        @for (n of notifications(); track n.title) {
+        <div class="notif-item" [ngClass]="'notif-' + n.color">
+          <div class="notif-icon" [ngClass]="'notif-icon-' + n.color">
+            <i class="fa-solid" [ngClass]="n.icon"></i>
+          </div>
+          <div class="notif-content">
+            <div class="notif-title">{{ n.title }}</div>
+            <div class="notif-desc">{{ n.desc }}</div>
+          </div>
+        </div>
+        } @empty {
+        <div class="empty-state" style="padding:16px">
+          <p>{{ i18n.t('accountant_dashboard.no_data') }}</p>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Financial KPIs -->
+    <div class="card">
+      <div class="card-header">
+        <h3>{{ i18n.t('common.financial') }}</h3>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-item">
+          <div class="kpi-header">
+            <span class="kpi-label">{{ i18n.t('accountant_dashboard.kpi_collection') }}</span>
+            <span class="kpi-value">{{ collectionRate() }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-fill green" [style.width.%]="collectionRate()"></div>
+          </div>
+        </div>
+        <div class="kpi-item">
+          <div class="kpi-header">
+            <span class="kpi-label">{{ i18n.t('accountant_dashboard.kpi_growth') }}</span>
+            <span class="kpi-value">{{ revenueGrowth() }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-fill blue" [style.width.%]="revenueGrowth()"></div>
+          </div>
+        </div>
+        <div class="kpi-item">
+          <div class="kpi-header">
+            <span class="kpi-label">{{ i18n.t('accountant_dashboard.kpi_payment') }}</span>
+            <span class="kpi-value">{{ paymentSuccess() }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-fill purple" [style.width.%]="paymentSuccess()"></div>
+          </div>
+        </div>
+        <div class="kpi-item">
+          <div class="kpi-header">
+            <span class="kpi-label">{{ i18n.t('accountant_dashboard.kpi_outstanding') }}</span>
+            <span class="kpi-value">{{ outstandingRatio() }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-fill orange" [style.width.%]="outstandingRatio()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cash Flow -->
+    <div class="card">
+      <div class="card-header">
+        <h3>{{ i18n.t('accountant_dashboard.cash_flow') }}</h3>
+      </div>
+      <div class="cashflow-grid">
+        <div class="cashflow-item cashflow-in">
+          <div class="cashflow-label">{{ i18n.t('accountant_dashboard.cash_in') }}</div>
+          <div class="cashflow-value success">{{ formatShortCurrency(cashFlow().cashIn) }}</div>
+        </div>
+        <div class="cashflow-item cashflow-out">
+          <div class="cashflow-label">{{ i18n.t('accountant_dashboard.cash_out') }}</div>
+          <div class="cashflow-value danger">{{ formatShortCurrency(cashFlow().cashOut) }}</div>
+        </div>
+        <div class="cashflow-item cashflow-net">
+          <div class="cashflow-label">{{ i18n.t('accountant_dashboard.net_cash') }}</div>
+          <div class="cashflow-value" [class.success]="cashFlow().net >= 0" [class.danger]="cashFlow().net < 0">{{
+            formatShortCurrency(cashFlow().net) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Due Dates -->
+    <div class="card">
+      <div class="card-header">
+        <h3>{{ i18n.t('accountant_dashboard.upcoming_dates') }}</h3>
+      </div>
+      <div class="latest-list">
+        @for (inv of upcomingDue(); track inv.id) {
+        <div class="latest-item">
+          <div class="latest-avatar" style="background:var(--warning-light);color:var(--warning)">
+            <i class="fa-solid fa-calendar-clock" style="font-size:12px"></i>
+          </div>
+          <div class="latest-info">
+            <div class="latest-name">{{ inv.clientName || inv.deal?.client?.name || '-' }}</div>
+            <div class="latest-meta">{{ inv.invoiceNumber || '#' + inv.id }}</div>
+          </div>
+          <div class="latest-date due-badge">{{ inv.dueDate ? (inv.dueDate | date:'shortDate') : '-' }}</div>
+        </div>
+        } @empty {
+        <div class="empty-state" style="padding:16px">
+          <p>{{ i18n.t('accountant_dashboard.no_data') }}</p>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ══════════════════════════════════════════
+       TELEPORTED MODAL OVERLAY
+       ══════════════════════════════════════════ -->
+  <div #modalOverlay class="premium-modal-overlay" [class.active]="!!activeModal()" [class.light]="isLightTheme" (click)="closeAllModals()">
+    <div #premiumModal class="premium-modal" [class.active]="!!activeModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+      @if (activeModal() === 'create-invoice') {
+        @if (invoiceSuccess()) {
+          <div class="premium-success">
+            <div class="success-particles"><span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span></div>
+            <div class="success-icon-wrap">
+              <div class="success-glow"></div>
+              <div class="success-ring"></div>
+              <div class="success-circle">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8" /></svg>
+              </div>
+            </div>
+            <div class="success-badge">{{ i18n.currentLang() === 'ar' ? 'تم بنجاح' : 'Success' }}</div>
+            <h3 class="success-title">{{ i18n.currentLang() === 'ar' ? 'تم إنشاء الفاتورة بنجاح' : 'Invoice Created Successfully' }}</h3>
+            <p class="success-desc">{{ i18n.currentLang() === 'ar' ? 'تم حفظ بيانات الفاتورة.' : 'Invoice details saved successfully.' }}</p>
+            <div class="success-divider"></div>
+            <div class="success-actions">
+              <button class="success-btn success-btn-primary" (click)="closeCreateInvoiceModal()">{{ i18n.currentLang() === 'ar' ? 'موافق' : 'OK' }}</button>
+            </div>
+          </div>
+        } @else {
+          <div class="premium-header">
+            <div class="premium-header-left">
+              <div class="premium-header-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+              <div class="premium-header-text">
+                <h2 class="premium-title">{{ i18n.currentLang() === 'ar' ? 'إصدار فاتورة جديدة' : 'Create New Invoice' }}</h2>
+                <p class="premium-subtitle">{{ i18n.currentLang() === 'ar' ? 'أدخل تفاصيل الفاتورة وحدد العقد المرتبط بها' : 'Enter invoice details and select the associated contract' }}</p>
+              </div>
+            </div>
+            <button class="premium-close-btn" (click)="closeCreateInvoiceModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="premium-header-divider"></div>
+          <form (ngSubmit)="onSubmitInvoice()">
+            <div class="premium-body">
+              <div class="premium-section">
+                <div class="premium-section-header"><i class="fa-solid fa-circle-info"></i> <span>{{ i18n.currentLang() === 'ar' ? 'بيانات الفاتورة' : 'Invoice Information' }}</span></div>
+                <div class="premium-form-grid">
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <select id="iClient" [ngModel]="selectedInvoiceClientId()" (ngModelChange)="onInvoiceClientChange($event)" name="selectedInvoiceClientId" required class="premium-input" style="padding-top:16px;">
+                        <option [value]="null" disabled selected>{{ i18n.currentLang() === 'ar' ? 'اختر العميل...' : 'Select client...' }}</option>
+                        @for (client of invoiceClients(); track client.id) {
+                          <option [value]="client.id">{{ client.companyName || client.name }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-building premium-input-icon"></i>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <select id="iContract" [(ngModel)]="selectedInvoiceContractId" name="selectedInvoiceContractId" required class="premium-input" style="padding-top:16px;" [disabled]="!selectedInvoiceClientId()">
+                        <option [value]="null" disabled selected>{{ i18n.currentLang() === 'ar' ? 'اختر عقدًا...' : 'Select a contract...' }}</option>
+                        @for (contract of filteredInvoiceContracts(); track contract.id) {
+                          <option [value]="contract.id">{{ contract.contractTitle || (i18n.currentLang() === 'ar' ? 'عقد رقم ' : 'Contract #') + contract.id }}</option>
+                        }
+                        @if (selectedInvoiceClientId() && filteredInvoiceContracts().length === 0) {
+                          <option value="AUTO_CREATE">{{ i18n.currentLang() === 'ar' ? 'إنشاء عقد تلقائي للعميل' : 'Create Auto Contract for Client' }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-file-contract premium-input-icon"></i>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <input id="iAmount" type="number" [(ngModel)]="invoiceTotalAmount" name="invoiceTotalAmount" required placeholder=" " class="premium-input" min="0.01" step="0.01" />
+                      <i class="fa-solid fa-dollar-sign premium-input-icon"></i>
+                      <label for="iAmount" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'المبلغ الإجمالي' : 'Total Amount' }}</label>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <input id="iDueDate" type="date" [(ngModel)]="invoiceDueDate" name="invoiceDueDate" required placeholder=" " class="premium-input" style="padding-top:16px;" />
+                      <i class="fa-solid fa-calendar-days premium-input-icon"></i>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <select id="iStatus" [(ngModel)]="invoiceStatus" name="invoiceStatus" required class="premium-input" style="padding-top:16px;">
+                        <option value="Unpaid">{{ i18n.currentLang() === 'ar' ? 'غير مدفوعة / مستحقة' : 'Unpaid / Pending' }}</option>
+                        <option value="Paid">{{ i18n.currentLang() === 'ar' ? 'مدفوعة' : 'Paid' }}</option>
+                        <option value="Overdue">{{ i18n.currentLang() === 'ar' ? 'متأخرة السداد' : 'Overdue' }}</option>
+                      </select>
+                      <i class="fa-solid fa-toggle-on premium-input-icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="premium-footer">
+              <button type="button" class="premium-btn premium-btn-ghost" (click)="closeCreateInvoiceModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.t('common.cancel') }}</button>
+              <button type="submit" class="premium-btn premium-btn-primary" [disabled]="invoiceSubmitting()">
+                @if (invoiceSubmitting()) {
+                  <span class="premium-btn-loader"></span> {{ i18n.t('common.loading') }}
+                } @else {
+                  <i class="fa-solid fa-check"></i> {{ i18n.currentLang() === 'ar' ? 'حفظ وإصدار' : 'Save & Issue' }}
+                }
+              </button>
+            </div>
+          </form>
+        }
+      }
+
+      @if (activeModal() === 'add-client') {
+        @if (clientSuccess()) {
+          <div class="premium-success">
+            <div class="success-particles"><span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span></div>
+            <div class="success-icon-wrap">
+              <div class="success-glow"></div>
+              <div class="success-ring"></div>
+              <div class="success-circle">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8" /></svg>
+              </div>
+            </div>
+            <div class="success-badge">{{ i18n.currentLang() === 'ar' ? 'تم بنجاح' : 'Success' }}</div>
+            <h3 class="success-title">{{ i18n.currentLang() === 'ar' ? 'تم إضافة العميل بنجاح' : 'Client Added Successfully' }}</h3>
+            <p class="success-desc">{{ i18n.currentLang() === 'ar' ? 'تم حفظ بيانات العميل.' : 'Client details saved successfully.' }}</p>
+            <div class="success-divider"></div>
+            <div class="success-actions">
+              <button class="success-btn success-btn-primary" (click)="closeAddClientModal()">{{ i18n.currentLang() === 'ar' ? 'موافق' : 'OK' }}</button>
+            </div>
+          </div>
+        } @else {
+          <div class="premium-header">
+            <div class="premium-header-left">
+              <div class="premium-header-icon"><i class="fa-solid fa-building"></i></div>
+              <div class="premium-header-text">
+                <h2 class="premium-title">{{ i18n.currentLang() === 'ar' ? 'إضافة عميل جديد' : 'Add New Client' }}</h2>
+                <p class="premium-subtitle">{{ i18n.currentLang() === 'ar' ? 'أدخل معلومات العميل الأساسية' : 'Enter basic client information' }}</p>
+              </div>
+            </div>
+            <button class="premium-close-btn" (click)="closeAddClientModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="premium-header-divider"></div>
+          <form (ngSubmit)="onSubmitClient()">
+            <div class="premium-body">
+              <div class="premium-section">
+                <div class="premium-section-header"><i class="fa-solid fa-building"></i> <span>{{ i18n.currentLang() === 'ar' ? 'معلومات العميل' : 'Client Information' }}</span></div>
+                <div class="premium-form-grid">
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <input id="cCompany" type="text" [(ngModel)]="clientCompanyName" name="clientCompanyName" required placeholder=" " class="premium-input" />
+                      <i class="fa-solid fa-building premium-input-icon"></i>
+                      <label for="cCompany" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'اسم الشركة' : 'Company Name' }}</label>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <input id="cOwner" type="text" [(ngModel)]="clientOwnerName" name="clientOwnerName" required placeholder=" " class="premium-input" />
+                      <i class="fa-solid fa-user premium-input-icon"></i>
+                      <label for="cOwner" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'اسم المالك' : 'Owner Name' }}</label>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <input id="cEmail" type="email" [(ngModel)]="clientEmail" name="clientEmail" required placeholder=" " class="premium-input" dir="ltr" />
+                      <i class="fa-solid fa-envelope premium-input-icon"></i>
+                      <label for="cEmail" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}</label>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <input id="cPhone" type="tel" [(ngModel)]="clientPhone" name="clientPhone" required placeholder=" " class="premium-input" dir="ltr" />
+                      <i class="fa-solid fa-phone premium-input-icon"></i>
+                      <label for="cPhone" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'رقم الهاتف' : 'Phone' }}</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="premium-section">
+                <div class="premium-section-header"><i class="fa-solid fa-toggle-on"></i> <span>{{ i18n.currentLang() === 'ar' ? 'الحالة' : 'Status' }}</span></div>
+                <div class="premium-role-grid" style="grid-template-columns:1fr 1fr">
+                  <div class="premium-role-card" [class.selected]="clientStatus === 'Active'" (click)="clientStatus = 'Active'">
+                    <div class="premium-role-card-icon" [class.selected]="clientStatus === 'Active'"><i class="fa-solid fa-check-circle"></i></div>
+                    <div class="premium-role-card-info"><span class="premium-role-card-title">{{ i18n.currentLang() === 'ar' ? 'نشط' : 'Active' }}</span></div>
+                    @if (clientStatus === 'Active') { <div class="premium-role-card-check"><i class="fa-solid fa-check"></i></div> }
+                  </div>
+                  <div class="premium-role-card" [class.selected]="clientStatus === 'Inactive'" (click)="clientStatus = 'Inactive'">
+                    <div class="premium-role-card-icon" [class.selected]="clientStatus === 'Inactive'"><i class="fa-solid fa-ban"></i></div>
+                    <div class="premium-role-card-info"><span class="premium-role-card-title">{{ i18n.currentLang() === 'ar' ? 'غير نشط' : 'Inactive' }}</span></div>
+                    @if (clientStatus === 'Inactive') { <div class="premium-role-card-check"><i class="fa-solid fa-check"></i></div> }
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="premium-footer">
+              <button type="button" class="premium-btn premium-btn-ghost" (click)="closeAddClientModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.t('common.cancel') }}</button>
+              <button type="submit" class="premium-btn premium-btn-primary" [disabled]="clientSubmitting()">
+                @if (clientSubmitting()) {
+                  <span class="premium-btn-loader"></span> {{ i18n.t('common.loading') }}
+                } @else {
+                  <i class="fa-solid fa-check"></i> {{ i18n.currentLang() === 'ar' ? 'إضافة العميل' : 'Add Client' }}
+                }
+              </button>
+            </div>
+          </form>
+        }
+      }
+
+      @if (activeModal() === 'record-payment') {
+        @if (paymentRecorded()) {
+          <div class="premium-success">
+            <div class="success-particles"><span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span></div>
+            <div class="success-icon-wrap">
+              <div class="success-glow"></div>
+              <div class="success-ring"></div>
+              <div class="success-circle">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8" /></svg>
+              </div>
+            </div>
+            <div class="success-badge">{{ i18n.currentLang() === 'ar' ? 'تم بنجاح' : 'Success' }}</div>
+            <h3 class="success-title">{{ i18n.currentLang() === 'ar' ? 'تم تسجيل الدفعة بنجاح' : 'Payment Recorded Successfully' }}</h3>
+            <p class="success-desc">{{ i18n.currentLang() === 'ar' ? 'تم حفظ بيانات الدفعة.' : 'Payment details saved successfully.' }}</p>
+            <div class="success-divider"></div>
+            <div class="success-actions">
+              <button class="success-btn success-btn-primary" (click)="closeRecordPaymentModal()">{{ i18n.currentLang() === 'ar' ? 'موافق' : 'OK' }}</button>
+            </div>
+          </div>
+        } @else {
+          <div class="premium-header">
+            <div class="premium-header-left">
+              <div class="premium-header-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+              <div class="premium-header-text">
+                <h2 class="premium-title">{{ i18n.currentLang() === 'ar' ? 'تسجيل دفعة جديدة' : 'Record New Payment' }}</h2>
+                <p class="premium-subtitle">{{ i18n.currentLang() === 'ar' ? 'أدخل تفاصيل الدفعة للفاتورة المحددة' : 'Enter payment details for the selected invoice' }}</p>
+              </div>
+            </div>
+            <button class="premium-close-btn" (click)="closeRecordPaymentModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="premium-header-divider"></div>
+          <form (ngSubmit)="onSubmitPayment()">
+            <div class="premium-body">
+              <div class="premium-section">
+                <div class="premium-section-header"><i class="fa-solid fa-file-invoice"></i> <span>{{ i18n.currentLang() === 'ar' ? 'اختيار فاتورة' : 'Select Invoice' }}</span></div>
+                <div class="premium-field">
+                  <div class="premium-input-wrapper" style="flex-direction:column;align-items:stretch">
+                    <div class="invoice-select-wrapper" (click)="$event.stopPropagation()" style="position:relative">
+                      <div class="premium-input-wrapper">
+                        <input type="text" class="premium-input" style="padding-top:16px;padding-left:40px" [value]="paymentInvoiceSearchQuery()" (focus)="paymentShowInvoiceDropdown.set(true)" (input)="onPaymentInvoiceSearch($any($event.target).value)" [placeholder]="i18n.currentLang() === 'ar' ? 'بحث برقم الفاتورة أو اسم العميل...' : 'Search invoice no or client name...'" />
+                        <i class="fa-solid fa-search premium-input-icon"></i>
+                        @if (paymentSelectedInvoice()) {
+                          <button type="button" class="premium-close-btn" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px" (click)="clearPaymentInvoice()"><i class="fa-solid fa-xmark"></i></button>
+                        }
+                      </div>
+                      @if (paymentShowInvoiceDropdown()) {
+                        <div style="position:absolute;top:100%;left:0;right:0;z-index:10;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;max-height:200px;overflow-y:auto;margin-top:4px">
+                          @if (paymentUnpaidInvoices().length === 0) {
+                            <div style="padding:16px;text-align:center;color:var(--text-muted)">{{ i18n.currentLang() === 'ar' ? 'لا توجد فواتير غير مدفوعة' : 'No unpaid invoices found' }}</div>
+                          }
+                          @for (inv of paymentUnpaidInvoices(); track inv.id) {
+                            <div style="padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border-light);transition:background 0.15s" (click)="selectPaymentInvoice(inv)" (mouseenter)="$any($event.target).style.background='var(--primary-light)'" (mouseleave)="$any($event.target).style.background=''">
+                              <div style="display:flex;justify-content:space-between;align-items:center">
+                                <span style="font-weight:700;font-size:0.85rem">{{ inv.invoiceNumber }}</span>
+                                <span style="font-size:0.78rem;color:var(--text-muted)">{{ inv.clientName }}</span>
+                              </div>
+                              <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted);margin-top:4px">
+                                 <span>{{ i18n.currentLang() === 'ar' ? 'المتبقي' : 'Remaining' }}: <strong>{{ formatAmount(inv.remainingBalance) }}</strong></span>
+                                 <span>{{ i18n.currentLang() === 'ar' ? 'الاستحقاق' : 'Due' }}: {{ inv.dueDate ? (inv.dueDate | date:'shortDate') : '-' }}</span>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              @if (paymentSelectedInvoice(); as inv) {
+                <div style="background:rgba(67,24,255,0.04);border:1px solid rgba(67,24,255,0.1);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;justify-content:space-between;font-size:0.82rem"><span style="color:var(--text-muted)">{{ i18n.currentLang() === 'ar' ? 'الفاتورة' : 'Invoice' }}</span><span style="font-weight:700">{{ inv.invoiceNumber }}</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.82rem"><span style="color:var(--text-muted)">{{ i18n.currentLang() === 'ar' ? 'العميل' : 'Client' }}</span><span style="font-weight:700">{{ inv.clientName }}</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.82rem"><span style="color:var(--text-muted)">{{ i18n.currentLang() === 'ar' ? 'إجمالي الفاتورة' : 'Invoice Total' }}</span><span style="font-weight:700">{{ formatAmount(inv.grandTotal) }}</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.82rem"><span style="color:var(--text-muted)">{{ i18n.currentLang() === 'ar' ? 'المبلغ المتبقي' : 'Remaining Balance' }}</span><span style="font-weight:700;color:var(--danger)">{{ formatAmount(inv.remainingBalance) }}</span></div>
+                </div>
+              }
+
+              <div class="premium-section">
+                <div class="premium-form-grid">
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <input id="pAmount" type="number" class="premium-input" style="padding-top:16px" [value]="paymentAmount()" (input)="paymentAmount.set(parseNumber($any($event.target).value))" [placeholder]="i18n.currentLang() === 'ar' ? 'أدخل المبلغ' : 'Enter amount'" min="0" step="0.01" />
+                      <i class="fa-solid fa-dollar-sign premium-input-icon"></i>
+                      <label for="pAmount" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'المبلغ' : 'Amount' }}</label>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <select id="pMethod" class="premium-input" style="padding-top:16px" [value]="paymentMethod()" (change)="paymentMethod.set($any($event.target).value)">
+                        @for (m of paymentMethods; track m) {
+                          <option [value]="m">{{ m }}</option>
+                        }
+                      </select>
+                      <i class="fa-solid fa-credit-card premium-input-icon"></i>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <input id="pDate" type="date" class="premium-input" style="padding-top:16px" [value]="paymentDate()" (change)="paymentDate.set($any($event.target).value)" />
+                      <i class="fa-solid fa-calendar-days premium-input-icon"></i>
+                    </div>
+                  </div>
+                  <div class="premium-field">
+                    <div class="premium-input-wrapper">
+                      <input id="pRef" type="text" class="premium-input" style="padding-top:16px" [value]="paymentReferenceNumber()" (input)="paymentReferenceNumber.set($any($event.target).value)" [placeholder]="i18n.currentLang() === 'ar' ? 'اختياري' : 'Optional'" />
+                      <i class="fa-solid fa-hashtag premium-input-icon"></i>
+                      <label for="pRef" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'رقم المرجع' : 'Reference No.' }}</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              @if (paymentMethod() === 'Bank Transfer') {
+                <div class="premium-section">
+                  <div class="premium-form-grid">
+                    <div class="premium-field">
+                      <div class="premium-input-wrapper">
+                        <input id="pTxn" type="text" class="premium-input" style="padding-top:16px" [value]="paymentTransactionNumber()" (input)="paymentTransactionNumber.set($any($event.target).value)" [placeholder]="i18n.currentLang() === 'ar' ? 'اختياري' : 'Optional'" />
+                        <i class="fa-solid fa-hashtag premium-input-icon"></i>
+                        <label for="pTxn" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'رقم العملية' : 'Transaction No.' }}</label>
+                      </div>
+                    </div>
+                    <div class="premium-field">
+                      <div class="premium-input-wrapper">
+                        <input id="pBank" type="text" class="premium-input" style="padding-top:16px" [value]="paymentBankName()" (input)="paymentBankName.set($any($event.target).value)" [placeholder]="i18n.currentLang() === 'ar' ? 'اختياري' : 'Optional'" />
+                        <i class="fa-solid fa-building-columns premium-input-icon"></i>
+                        <label for="pBank" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'اسم البنك' : 'Bank Name' }}</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <div class="premium-section">
+                <div class="premium-field">
+                  <div class="premium-input-wrapper" style="align-items:flex-start">
+                    <textarea id="pNotes" class="premium-input" style="padding-top:24px;height:80px;resize:none" [value]="paymentNotes()" (input)="paymentNotes.set($any($event.target).value)" [placeholder]="i18n.currentLang() === 'ar' ? 'اختياري' : 'Optional'"></textarea>
+                    <i class="fa-solid fa-note-sticky premium-input-icon" style="top:16px"></i>
+                    <label for="pNotes" class="premium-label" style="top:20px;transform:none">{{ i18n.currentLang() === 'ar' ? 'ملاحظات' : 'Notes' }}</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="premium-footer">
+              <button type="button" class="premium-btn premium-btn-ghost" (click)="closeRecordPaymentModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.t('common.cancel') }}</button>
+              <button type="submit" class="premium-btn premium-btn-primary" [disabled]="!canSubmitPayment || paymentSubmitting()">
+                @if (paymentSubmitting()) {
+                  <span class="premium-btn-loader"></span> {{ i18n.t('common.loading') }}
+                } @else {
+                  <i class="fa-solid fa-check"></i> {{ i18n.currentLang() === 'ar' ? 'تسجيل الدفعة' : 'Record Payment' }}
+                }
+              </button>
+            </div>
+          </form>
+        }
+      }
+
+      @if (activeModal() === 'generate-report') {
+        <div class="premium-header">
+          <div class="premium-header-left">
+            <div class="premium-header-icon"><i class="fa-solid fa-chart-simple"></i></div>
+            <div class="premium-header-text">
+              <h2 class="premium-title">{{ i18n.currentLang() === 'ar' ? 'إنشاء تقرير مالي' : 'Generate Financial Report' }}</h2>
+              <p class="premium-subtitle">{{ i18n.currentLang() === 'ar' ? 'حدد نوع التقرير ونطاق التاريخ والتنسيق' : 'Select report type, date range, and format' }}</p>
+            </div>
+          </div>
+          <button class="premium-close-btn" (click)="closeGenerateReportModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="premium-header-divider"></div>
+        <form (ngSubmit)="onSubmitReport()">
+          <div class="premium-body">
+            <div class="premium-section">
+              <div class="premium-section-header"><i class="fa-solid fa-sliders"></i> <span>{{ i18n.currentLang() === 'ar' ? 'معايير التقرير' : 'Report Criteria' }}</span></div>
+              <div class="premium-form-grid">
+                <div class="premium-field">
+                  <div class="premium-input-wrapper">
+                    <select id="rType" [(ngModel)]="reportType" name="reportType" required class="premium-input" style="padding-top:16px;">
+                      @for (t of reportTypes; track t) {
+                        <option [value]="t">{{ t }}</option>
+                      }
+                    </select>
+                    <i class="fa-solid fa-chart-bar premium-input-icon"></i>
+                  </div>
+                </div>
+                <div class="premium-field">
+                  <div class="premium-input-wrapper">
+                    <input id="rFrom" type="date" [(ngModel)]="reportFrom" name="reportFrom" required placeholder=" " class="premium-input" style="padding-top:16px;" />
+                    <i class="fa-solid fa-calendar-day premium-input-icon"></i>
+                  </div>
+                </div>
+                <div class="premium-field">
+                  <div class="premium-input-wrapper">
+                    <input id="rTo" type="date" [(ngModel)]="reportTo" name="reportTo" required placeholder=" " class="premium-input" style="padding-top:16px;" />
+                    <i class="fa-solid fa-calendar-day premium-input-icon"></i>
+                  </div>
+                </div>
+                <div class="premium-field">
+                  <div class="premium-input-wrapper">
+                    <select id="rClient" [(ngModel)]="reportClientId" name="reportClientId" class="premium-input" style="padding-top:16px;">
+                      <option [value]="null">{{ i18n.currentLang() === 'ar' ? 'كل العملاء' : 'All Clients' }}</option>
+                      @for (c of reportClients(); track c.id) {
+                        <option [value]="c.id">{{ c.companyName || c.name }}</option>
+                      }
+                    </select>
+                    <i class="fa-solid fa-users premium-input-icon"></i>
+                  </div>
+                </div>
+                <div class="premium-field">
+                  <div class="premium-input-wrapper">
+                    <select id="rStatus" [(ngModel)]="reportStatus" name="reportStatus" class="premium-input" style="padding-top:16px;">
+                      <option value="">{{ i18n.currentLang() === 'ar' ? 'كل الحالات' : 'All Statuses' }}</option>
+                      @for (s of reportStatuses.slice(1); track s) {
+                        <option [value]="s">{{ s }}</option>
+                      }
+                    </select>
+                    <i class="fa-solid fa-toggle-on premium-input-icon"></i>
+                  </div>
+                </div>
+                <div class="premium-field">
+                  <div class="premium-input-wrapper">
+                    <select id="rFormat" [(ngModel)]="reportFormat" name="reportFormat" required class="premium-input" style="padding-top:16px;">
+                      @for (f of reportFormats; track f) {
+                        <option [value]="f">{{ f }}</option>
+                      }
+                    </select>
+                    <i class="fa-solid fa-file-export premium-input-icon"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="premium-footer">
+            <button type="button" class="premium-btn premium-btn-ghost" (click)="closeGenerateReportModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.t('common.cancel') }}</button>
+            <button type="submit" class="premium-btn premium-btn-primary" [disabled]="reportGenerating()">
+              @if (reportGenerating()) {
+                <span class="premium-btn-loader"></span> {{ i18n.currentLang() === 'ar' ? 'جاري الإنشاء...' : 'Generating...' }}
+              } @else {
+                <i class="fa-solid fa-file-export"></i> {{ i18n.currentLang() === 'ar' ? 'إنشاء التقرير' : 'Generate Report' }}
+              }
+            </button>
+          </div>
+        </form>
+      }
+
+    </div>
+  </div>
+</div>

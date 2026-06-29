@@ -35,12 +35,16 @@ public class InvoiceService : IInvoiceService
             .Where(i => i.TenantId == tenantId)
             .Include(i => i.Deal)
                 .ThenInclude(d => d.Client)
+            .Include(i => i.Contract)
+            .Include(i => i.Client)
             .Select(i => new InvoiceDto
             {
                 Id = i.Id,
                 TenantId = i.TenantId,
                 DealId = i.DealId,
-                ClientName = i.Deal.Client.Name,
+                ContractId = i.ContractId,
+                ContractNumber = i.Contract != null ? i.Contract.ContractNumber : null,
+                ClientName = i.Client != null ? i.Client.Name : (i.Deal != null ? i.Deal.Client.Name : string.Empty),
                 TotalAmount = i.TotalAmount,
                 Status = i.Status,
                 DueDate = i.DueDate,
@@ -49,25 +53,36 @@ public class InvoiceService : IInvoiceService
             .ToListAsync();
     }
 
-    public async Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceDto createInvoiceDto, Guid tenantId)
+    public async Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceDto createInvoiceDto, Guid tenantId, int userId)
     {
-        var deal = await _context.Deals
-            .Include(d => d.Client)
-            .FirstOrDefaultAsync(d => d.Id == createInvoiceDto.DealId && d.TenantId == tenantId);
+        var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == createInvoiceDto.ClientId && c.TenantId == tenantId);
+        if (client == null)
+            throw new Exception("العميل المحدد غير موجود أو لا ينتمي لشركتك");
 
-        if (deal == null)
+        Contract? contract = null;
+        if (createInvoiceDto.ContractId.HasValue)
         {
-            throw new Exception("الصفقة المحددة غير موجودة أو لا تنتمي لشركتك");
+            contract = await _context.Contracts.FirstOrDefaultAsync(c => c.Id == createInvoiceDto.ContractId.Value && c.TenantId == tenantId);
         }
 
         var invoice = new Invoice
         {
             TenantId = tenantId,
             DealId = createInvoiceDto.DealId,
+            ContractId = createInvoiceDto.ContractId,
+            ClientId = createInvoiceDto.ClientId,
+            InvoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{new Random().Next(1000, 9999)}",
             TotalAmount = createInvoiceDto.TotalAmount,
+            GrandTotal = createInvoiceDto.TotalAmount,
+            RemainingBalance = createInvoiceDto.Status == "Paid" ? 0 : createInvoiceDto.TotalAmount,
+            PaidAmount = createInvoiceDto.Status == "Paid" ? createInvoiceDto.TotalAmount : 0,
             Status = createInvoiceDto.Status,
             DueDate = createInvoiceDto.DueDate,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            CreatedByUserId = userId,
+            Discount = 0m,
+            Subtotal = createInvoiceDto.TotalAmount,
+            IssueDate = DateTime.UtcNow
         };
 
         _context.Invoices.Add(invoice);
@@ -78,7 +93,9 @@ public class InvoiceService : IInvoiceService
             Id = invoice.Id,
             TenantId = invoice.TenantId,
             DealId = invoice.DealId,
-            ClientName = deal.Client.Name,
+            ContractId = invoice.ContractId,
+            ContractNumber = contract?.ContractNumber,
+            ClientName = client.Name,
             TotalAmount = invoice.TotalAmount,
             Status = invoice.Status,
             DueDate = invoice.DueDate,

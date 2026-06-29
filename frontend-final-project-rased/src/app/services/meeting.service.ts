@@ -21,7 +21,7 @@ export interface MeetingSchedule {
 })
 export class MeetingService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5092/api/Meetings';
+  private apiUrl = 'http://localhost:5292/api/Meetings';
 
   getMeetings(): Observable<{ success: boolean; data: MeetingSchedule[] }> {
     return this.http.get<{ success: boolean; data: MeetingSchedule[] }>(this.apiUrl);

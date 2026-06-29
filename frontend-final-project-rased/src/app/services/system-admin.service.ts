@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class SystemAdminService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5092/api/SystemAdmin';
+  private baseUrl = 'http://localhost:5292/api/SystemAdmin';
 
   getTenants(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/tenants`);

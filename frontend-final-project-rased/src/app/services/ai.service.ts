@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class AiService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5092/api/Ai';
+  private baseUrl = 'http://localhost:5292/api/Ai';
 
   chat(message: string, conversationId?: string, contractContext?: string): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/chat`, { message, conversationId, contractContext });

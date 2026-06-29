@@ -7,13 +7,13 @@ import { Observable } from 'rxjs';
 })
 export class InvoiceService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5092/api/Invoices';
+  private baseUrl = 'http://localhost:5292/api/Invoices';
 
   getInvoices(): Observable<any> {
     return this.http.get<any>(this.baseUrl);
   }
 
-  createInvoice(invoice: { invoiceNumber: string; clientId: number; issueDate: string; dueDate: string; items: { description: string; quantity: number; unitPrice: number }[] }): Observable<any> {
+  createInvoice(invoice: any): Observable<any> {
     return this.http.post<any>(this.baseUrl, invoice);
   }
 

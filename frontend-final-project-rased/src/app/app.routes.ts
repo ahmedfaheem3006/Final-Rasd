@@ -145,8 +145,44 @@ export const routes: Routes = [
 
       // ── Accountant ────────────────────────────────────────────────────────
       {
+        path: 'accountant/dashboard',
+        loadComponent: () => import('./pages/accountant/dashboard/dashboard').then(m => m.AccountantDashboard),
+        canActivate: [roleGuard],
+        data: { roles: ['accountant', 'owner-admin'] }
+      },
+      {
         path: 'accountant/finance',
         loadComponent: () => import('./pages/accountant/finance-overview/finance-overview').then(m => m.FinanceOverview),
+        canActivate: [roleGuard],
+        data: { roles: ['accountant', 'owner-admin'] }
+      },
+      {
+        path: 'accountant/clients',
+        loadComponent: () => import('./pages/accountant/clients/clients').then(m => m.AccountantClients),
+        canActivate: [roleGuard],
+        data: { roles: ['accountant', 'owner-admin'] }
+      },
+      {
+        path: 'accountant/clients/:id',
+        loadComponent: () => import('./pages/accountant/client-detail/client-detail').then(m => m.ClientDetail),
+        canActivate: [roleGuard],
+        data: { roles: ['accountant', 'owner-admin'] }
+      },
+      {
+        path: 'accountant/customers',
+        loadComponent: () => import('./pages/accountant/customers-readonly/customers-readonly').then(m => m.CustomersReadonly),
+        canActivate: [roleGuard],
+        data: { roles: ['accountant', 'owner-admin'] }
+      },
+      {
+        path: 'accountant/contracts',
+        loadComponent: () => import('./pages/accountant/contracts/contracts').then(m => m.Contracts),
+        canActivate: [roleGuard],
+        data: { roles: ['accountant', 'owner-admin'] }
+      },
+      {
+        path: 'accountant/contracts/:id',
+        loadComponent: () => import('./pages/accountant/contract-detail/contract-detail').then(m => m.ContractDetail),
         canActivate: [roleGuard],
         data: { roles: ['accountant', 'owner-admin'] }
       },
@@ -163,8 +199,26 @@ export const routes: Routes = [
         data: { roles: ['accountant', 'owner-admin'] }
       },
       {
-        path: 'accountant/customers',
-        loadComponent: () => import('./pages/accountant/customers-readonly/customers-readonly').then(m => m.CustomersReadonly),
+        path: 'accountant/payments',
+        loadComponent: () => import('./pages/accountant/payments/payments').then(m => m.PaymentsComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['accountant', 'owner-admin'] }
+      },
+      {
+        path: 'accountant/payments/:id',
+        loadComponent: () => import('./pages/accountant/payment-detail/payment-detail').then(m => m.PaymentDetailComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['accountant', 'owner-admin'] }
+      },
+      {
+        path: 'accountant/expenses',
+        loadComponent: () => import('./pages/accountant/expenses/expenses').then(m => m.ExpensesComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['accountant', 'owner-admin'] }
+      },
+      {
+        path: 'accountant/reports',
+        loadComponent: () => import('./pages/accountant/reports/reports').then(m => m.ReportsComponent),
         canActivate: [roleGuard],
         data: { roles: ['accountant', 'owner-admin'] }
       },

@@ -1,8 +1,12 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, effect, Renderer2, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InvoiceService } from '../../../services/invoice.service';
+import { CrmService } from '../../../services/crm.service';
+import { ContractService } from '../../../services/contract.service';
+import { ClientFinancialService } from '../../../services/client-financial.service';
+import { ThemeService } from '../../../services/theme.service';
 import { PdfGeneratorService, InvoiceData, InvoiceTheme } from '../../../services/pdf-generator.service';
 import { ToastService } from '../../../services/toast.service';
 import { I18nService } from '../../../services/i18n.service';
@@ -13,18 +17,46 @@ import { I18nService } from '../../../services/i18n.service';
   templateUrl: './invoices.html',
   styleUrl: './invoices.css'
 })
-export class Invoices implements OnInit {
+export class Invoices implements OnInit, OnDestroy {
   private invoiceService = inject(InvoiceService);
+  private crmService = inject(CrmService);
+  private contractService = inject(ContractService);
+  private clientService = inject(ClientFinancialService);
+  private themeService = inject(ThemeService);
   private pdfService = inject(PdfGeneratorService);
   private toastService = inject(ToastService);
+  private renderer = inject(Renderer2);
   public i18n = inject(I18nService);
+
+  @ViewChild('modalOverlay') overlayRef!: ElementRef;
+  private overlayMoved = false;
 
   selectedTheme = signal<InvoiceTheme>('rasd');
   searchQuery = signal('');
 
   rawInvoices = signal<any[]>([]);
-
   invoices = signal<any[]>([]);
+  
+  // Modal signals
+  showAddModal = signal(false);
+  isSubmitting = signal(false);
+  showSuccess = signal(false);
+
+  // Modal form fields
+  clients = signal<any[]>([]);
+  selectedClientId = signal<number | null>(null);
+  contracts = signal<any[]>([]);
+  selectedContractId: any = null;
+  totalAmount: number | null = null;
+  dueDate: string = '';
+  invoiceStatus: string = 'Unpaid';
+
+  filteredContracts = computed(() => {
+    const clientId = this.selectedClientId();
+    if (!clientId) return [];
+    return this.contracts().filter(contract => Number(contract.clientId) === Number(clientId));
+  });
+
   stats = signal([
     { label: 'إجمالي الفواتير', value: '$0', color: 'primary', icon: 'fa-file-invoice-dollar' },
     { label: 'مدفوعة', value: '$0', color: 'success', icon: 'fa-circle-check' },
@@ -42,8 +74,56 @@ export class Invoices implements OnInit {
     ];
   }
 
+  get isLightTheme() {
+    return this.themeService.currentTheme() === 'light';
+  }
+
+  constructor() {
+    effect(() => {
+      if (this.showAddModal()) {
+        if (!this.overlayMoved && this.overlayRef?.nativeElement) {
+          this.renderer.appendChild(document.body, this.overlayRef.nativeElement);
+          this.overlayMoved = true;
+        }
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    });
+  }
+
   ngOnInit() {
     this.loadInvoices();
+    this.loadContracts();
+    this.loadClients();
+  }
+
+  ngOnDestroy() {
+    if (this.overlayMoved && this.overlayRef?.nativeElement?.parentNode) {
+      this.renderer.removeChild(document.body, this.overlayRef.nativeElement);
+    }
+  }
+
+  loadClients() {
+    this.clientService.getClients().subscribe({
+      next: (res) => {
+        if (res && res.success && res.data) {
+          this.clients.set(res.data);
+        }
+      },
+      error: (err) => console.error('Failed to load clients', err)
+    });
+  }
+
+  loadContracts() {
+    this.contractService.getContracts().subscribe({
+      next: (res) => {
+        if (res) {
+          this.contracts.set(res);
+        }
+      },
+      error: (err) => console.error('Failed to load contracts', err)
+    });
   }
 
   loadInvoices() {
@@ -103,6 +183,115 @@ export class Invoices implements OnInit {
 
   selectTheme(theme: InvoiceTheme) {
     this.selectedTheme.set(theme);
+  }
+
+  openAddModal() {
+    this.selectedClientId.set(null);
+    this.selectedContractId = null;
+    this.totalAmount = null;
+    this.dueDate = '';
+    this.invoiceStatus = 'Unpaid';
+    this.isSubmitting.set(false);
+    this.showSuccess.set(false);
+    this.showAddModal.set(true);
+  }
+
+  closeAddModal() {
+    this.showAddModal.set(false);
+    this.showSuccess.set(false);
+  }
+
+  onClientChange(clientId: any) {
+    const cid = clientId ? Number(clientId) : null;
+    this.selectedClientId.set(cid);
+    
+    setTimeout(() => {
+      const contracts = this.filteredContracts();
+      if (cid && contracts.length === 0) {
+        this.selectedContractId = 'AUTO_CREATE';
+      } else {
+        this.selectedContractId = null;
+      }
+    }, 50);
+  }
+
+  onSubmit() {
+    if (!this.selectedContractId || !this.totalAmount || !this.dueDate) {
+      this.toastService.warning(
+        this.i18n.currentLang() === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields'
+      );
+      return;
+    }
+
+    this.isSubmitting.set(true);
+
+    if (this.selectedContractId === 'AUTO_CREATE') {
+      // 1. Create a contract automatically
+      const contractPayload = {
+        clientId: Number(this.selectedClientId()),
+        contractTitle: 'Auto Contract',
+        contractType: 'General',
+        currency: 'SAR',
+        contractValue: Number(this.totalAmount),
+        taxPercentage: 0,
+        discount: 0,
+        finalAmount: Number(this.totalAmount),
+        paymentTerms: 'Custom',
+        depositAmount: 0,
+        startDate: new Date().toISOString(),
+        endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+        reminderDays: 30,
+        status: 'Active'
+      };
+
+      this.contractService.createContract(contractPayload).subscribe({
+        next: (res: any) => {
+          if (res && res.id) {
+            const newContractId = res.id;
+            this.loadContracts();
+            this.submitInvoice(newContractId);
+          } else {
+            this.isSubmitting.set(false);
+            this.toastService.error(
+              this.i18n.currentLang() === 'ar' ? 'فشل إنشاء عقد تلقائي للعميل' : 'Failed to create auto-contract'
+            );
+          }
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          this.toastService.error(
+            err.error?.message || (this.i18n.currentLang() === 'ar' ? 'فشل إنشاء عقد تلقائي للعميل' : 'Failed to create auto-contract')
+          );
+        }
+      });
+    } else {
+      this.submitInvoice(Number(this.selectedContractId));
+    }
+  }
+
+  private submitInvoice(contractId: number) {
+    const payload = {
+      contractId: contractId,
+      dealId: 0, // Fallback if still required by DB
+      totalAmount: Number(this.totalAmount),
+      dueDate: new Date(this.dueDate).toISOString(),
+      status: this.invoiceStatus
+    };
+
+    this.invoiceService.createInvoice(payload).subscribe({
+      next: (res) => {
+        this.isSubmitting.set(false);
+        this.showSuccess.set(true);
+        this.loadInvoices();
+        setTimeout(() => this.closeAddModal(), 3000);
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.toastService.error(
+          err.error?.message || (this.i18n.currentLang() === 'ar' ? 'فشل إنشاء الفاتورة' : 'Failed to create invoice')
+        );
+      }
+    });
   }
 
   downloadInvoicePDF(inv: any) {

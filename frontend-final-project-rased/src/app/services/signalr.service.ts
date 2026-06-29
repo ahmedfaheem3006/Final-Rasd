@@ -17,6 +17,9 @@ export class SignalRService implements OnDestroy {
   meetingCreated$ = new Subject<any>();
   meetingUpdated$ = new Subject<any>();
   meetingDeleted$ = new Subject<any>();
+  paymentCreated$ = new Subject<any>();
+  paymentUpdated$ = new Subject<any>();
+  paymentDeleted$ = new Subject<any>();
 
   async startConnection(): Promise<void> {
     if (this.hubConnection && this.hubConnection.state === signalR.HubConnectionState.Connected) {
@@ -27,7 +30,7 @@ export class SignalRService implements OnDestroy {
     if (!token) return;
 
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl('http://localhost:5092/hubs/notifications', {
+      .withUrl('http://localhost:5292/hubs/notifications', {
         accessTokenFactory: () => token
       })
       .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
@@ -47,6 +50,20 @@ export class SignalRService implements OnDestroy {
 
     this.hubConnection.on('MeetingDeleted', (data: any) => {
       this.meetingDeleted$.next(data);
+    });
+
+    this.hubConnection.on('PaymentCreated', (payment: any) => {
+      this.paymentCreated$.next(payment);
+      this.pushPaymentNotification('created', payment);
+    });
+
+    this.hubConnection.on('PaymentUpdated', (payment: any) => {
+      this.paymentUpdated$.next(payment);
+      this.pushPaymentNotification('updated', payment);
+    });
+
+    this.hubConnection.on('PaymentDeleted', (data: any) => {
+      this.paymentDeleted$.next(data);
     });
 
     try {
@@ -112,6 +129,36 @@ export class SignalRService implements OnDestroy {
         },
         ...prev
       ]);
+    }
+  }
+
+  private pushPaymentNotification(type: 'created' | 'updated', payment: any) {
+    const notifId = `payment-${type}-${payment.id}-${Date.now()}`;
+
+    if (type === 'created') {
+      this.notificationService.notifications.update(prev => [{
+        id: notifId,
+        titleAr: `💰 دفعة جديدة: ${payment.referenceNumber || 'مدفوعة'}`,
+        titleEn: `💰 New payment: ${payment.referenceNumber || 'Payment'}`,
+        descriptionAr: `تم تسجيل دفعة بقيمة ${payment.amount?.toLocaleString()} ريال من ${payment.clientName || ''}`,
+        descriptionEn: `Payment of ${payment.amount?.toLocaleString()} SAR recorded from ${payment.clientName || ''}`,
+        timeAr: 'الآن',
+        timeEn: 'Just now',
+        isRead: false,
+        type: 'success'
+      }, ...prev]);
+    } else if (type === 'updated') {
+      this.notificationService.notifications.update(prev => [{
+        id: notifId,
+        titleAr: `✏️ تم تحديث الدفعة: ${payment.referenceNumber || ''}`,
+        titleEn: `✏️ Payment updated: ${payment.referenceNumber || ''}`,
+        descriptionAr: `تم تعديل بيانات الدفعة`,
+        descriptionEn: 'Payment details have been updated',
+        timeAr: 'الآن',
+        timeEn: 'Just now',
+        isRead: false,
+        type: 'info'
+      }, ...prev]);
     }
   }
 
