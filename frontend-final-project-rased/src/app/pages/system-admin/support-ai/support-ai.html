@@ -9,29 +9,64 @@
         {{ i18n.currentLang() === 'ar' ? 'يتم اكتشاف المشاكل في خوادم الشركات تلقائياً ويقوم الـ AI باقتراح حلول مناسبة في انتظار موافقتك لتطبيقها.' : 'Issues are automatically detected in tenant servers, and AI generates instant resolutions waiting your review.' }}
       </p>
     </div>
+    <div class="header-actions">
+      <button class="btn btn-scan" (click)="runScan()" [disabled]="isScanning()">
+        @if (isScanning()) {
+          <span class="scan-spinner"></span>
+          <span>{{ i18n.currentLang() === 'ar' ? 'جاري الفحص...' : 'Scanning...' }}</span>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><circle cx="11" cy="11" r="3"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>{{ i18n.currentLang() === 'ar' ? 'فحص ذكي الآن' : 'Run AI Scan' }}</span>
+        }
+      </button>
+    </div>
   </header>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs card animate-reveal">
+    <button class="tab-btn" [class.active]="activeFilter() === 'All'" (click)="setFilter('All')">
+      {{ i18n.currentLang() === 'ar' ? 'الكل' : 'All' }}
+      <span class="tab-count">{{ issues().length }}</span>
+    </button>
+    <button class="tab-btn tab-pending" [class.active]="activeFilter() === 'Pending'" (click)="setFilter('Pending')">
+      {{ i18n.currentLang() === 'ar' ? 'بانتظار المراجعة' : 'Pending' }}
+      <span class="tab-count">{{ pendingCount() }}</span>
+    </button>
+    <button class="tab-btn tab-approved" [class.active]="activeFilter() === 'Approved'" (click)="setFilter('Approved')">
+      {{ i18n.currentLang() === 'ar' ? 'تم القبول' : 'Approved' }}
+      <span class="tab-count">{{ approvedCount() }}</span>
+    </button>
+    <button class="tab-btn tab-rejected" [class.active]="activeFilter() === 'Rejected'" (click)="setFilter('Rejected')">
+      {{ i18n.currentLang() === 'ar' ? 'تم الرفض' : 'Rejected' }}
+      <span class="tab-count">{{ rejectedCount() }}</span>
+    </button>
+  </div>
 
   @if (isLoading()) {
     <div class="loading-state">
       <div class="spinner"></div>
       <p>{{ i18n.currentLang() === 'ar' ? 'جاري تحميل طلبات الدعم...' : 'Loading support issues...' }}</p>
     </div>
-  } @else if (issues().length === 0) {
+  } @else if (filteredIssues().length === 0 && issues().length === 0) {
     <div class="card empty-card animate-reveal">
       <div class="empty-icon">✓</div>
       <h3>{{ i18n.currentLang() === 'ar' ? 'كل الأنظمة تعمل بكفاءة تامة!' : 'All systems operating normally!' }}</h3>
-      <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد أي مشكلات أو تنبيهات معلقة من خوادم الشركات حالياً.' : 'No warnings or support requests are currently flagged by system monitors.' }}</p>
+      <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد أي مشكلات. اضغط "فحص ذكي الآن" لتشغيل فحص جديد.' : 'No issues found. Click "Run AI Scan" to start a new scan.' }}</p>
+    </div>
+  } @else if (filteredIssues().length === 0) {
+    <div class="card empty-card animate-reveal">
+      <div class="empty-icon filter-empty-icon">—</div>
+      <h3>{{ i18n.currentLang() === 'ar' ? 'لا توجد نتائج لهذا الفلتر' : 'No results for this filter' }}</h3>
     </div>
   } @else {
     <div class="issues-list animate-reveal">
-      @for (issue of issues(); track issue.id) {
+      @for (issue of filteredIssues(); track issue.id) {
         <div class="card issue-card" [class.border-pending]="issue.status === 'Pending'" [class.border-approved]="issue.status === 'Approved'" [class.border-rejected]="issue.status === 'Rejected'">
           <div class="issue-header">
             <div class="company-meta">
               <span class="company-badge">{{ issue.tenantName }}</span>
               <span class="issue-date">{{ issue.createdAt | date:'short' }}</span>
             </div>
-            
             <div class="status-badge-wrapper">
               @if (issue.status === 'Pending') {
                 <span class="badge badge-warning">{{ i18n.currentLang() === 'ar' ? 'بانتظار المراجعة' : 'Pending Review' }}</span>
@@ -47,7 +82,6 @@
             <h4 class="issue-desc-title">{{ i18n.currentLang() === 'ar' ? 'وصف المشكلة المكتشفة:' : 'Detected Issue Description:' }}</h4>
             <p class="issue-desc">{{ issue.issueDescription }}</p>
 
-            <!-- AI Action Details Highlight Card -->
             <div class="ai-action-card">
               <div class="ai-badge">
                 <span class="sparkle">✦</span>

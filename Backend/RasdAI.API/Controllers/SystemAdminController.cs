@@ -21,11 +21,13 @@ public class SystemAdminController : ControllerBase
 {
     private readonly ITenantService _tenantService;
     private readonly AppDbContext _context;
+    private readonly IAiService _aiService;
 
-    public SystemAdminController(ITenantService tenantService, AppDbContext context)
+    public SystemAdminController(ITenantService tenantService, AppDbContext context, IAiService aiService)
     {
         _tenantService = tenantService;
         _context = context;
+        _aiService = aiService;
     }
 
     [HttpGet("tenants")]
@@ -178,6 +180,23 @@ public class SystemAdminController : ControllerBase
             await _context.SaveChangesAsync();
             
             return Ok(new { success = true, message = $"تم إرسال قرار {actionDto.Action} بنجاح لصاحب النظام" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("run-ai-scan")]
+    public async Task<IActionResult> RunAiScan()
+    {
+        try
+        {
+            var newIssues = await _aiService.RunSupportScanAsync();
+            var message = newIssues.Count > 0
+                ? $"تم اكتشاف {newIssues.Count} مشكلة جديدة وإضافتها للمراجعة."
+                : "لم يتم اكتشاف مشكلات جديدة. جميع الأنظمة تعمل بشكل طبيعي.";
+            return Ok(new { success = true, message, data = newIssues, count = newIssues.Count });
         }
         catch (Exception ex)
         {

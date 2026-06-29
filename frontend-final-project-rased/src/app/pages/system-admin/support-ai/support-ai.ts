@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SystemAdminService } from '../../../services/system-admin.service';
 import { ToastService } from '../../../services/toast.service';
@@ -19,6 +19,17 @@ export class SupportAi implements OnInit {
 
   issues = signal<any[]>([]);
   isLoading = signal(false);
+  isScanning = signal(false);
+  activeFilter = signal<'All' | 'Pending' | 'Approved' | 'Rejected'>('All');
+
+  filteredIssues = computed(() => {
+    const f = this.activeFilter();
+    return f === 'All' ? this.issues() : this.issues().filter(i => i.status === f);
+  });
+
+  pendingCount = computed(() => this.issues().filter(i => i.status === 'Pending').length);
+  approvedCount = computed(() => this.issues().filter(i => i.status === 'Approved').length);
+  rejectedCount = computed(() => this.issues().filter(i => i.status === 'Rejected').length);
 
   ngOnInit() {
     this.loadIssues();
@@ -28,13 +39,10 @@ export class SupportAi implements OnInit {
     this.isLoading.set(true);
     this.systemAdminService.getSupportIssues().subscribe({
       next: (res) => {
-        if (res && res.success && res.data) {
-          this.issues.set(res.data);
-        }
+        if (res?.success && res.data) this.issues.set(res.data);
         this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Failed to load support issues', err);
+      error: () => {
         this.toastService.error(
           this.i18n.currentLang() === 'ar' ? 'فشل في تحميل طلبات الدعم.' : 'Failed to load support requests.'
         );
@@ -43,37 +51,62 @@ export class SupportAi implements OnInit {
     });
   }
 
-  takeAction(issueId: string, actionName: string) {
-    this.systemAdminService.resolveIssue(issueId, actionName).subscribe({
+  runScan() {
+    this.isScanning.set(true);
+    this.systemAdminService.runAiScan().subscribe({
       next: (res) => {
-        const arMsg = actionName === 'Approved' ? 'تم الموافقة على إجراء الذكاء الاصطناعي وتطبيقه بنجاح!' : 'تم رفض إجراء الذكاء الاصطناعي وإبلاغ صاحب النظام.';
-        const enMsg = actionName === 'Approved' ? 'AI action approved and executed successfully!' : 'AI action rejected and owner notified.';
-        
-        this.toastService.success(
-          this.i18n.currentLang() === 'ar' ? arMsg : enMsg,
-          this.i18n.currentLang() === 'ar' ? 'قرار النظام' : 'System Decision'
-        );
-        
-        this.loadIssues();
-        
-        // Refresh notifications
-        const user = this.authServiceCurrentUser();
-        if (user) {
-          this.notificationService.loadNotificationsForUser(user.role);
+        this.isScanning.set(false);
+        if (res?.success) {
+          const count = res.count ?? 0;
+          this.toastService.success(
+            res.message ?? (this.i18n.currentLang() === 'ar' ? 'اكتمل الفحص.' : 'Scan complete.'),
+            this.i18n.currentLang() === 'ar' ? 'فحص الذكاء الاصطناعي' : 'AI Scan'
+          );
+          if (count > 0) this.loadIssues();
         }
       },
-      error: (err) => {
-        console.error('Failed to resolve support issue', err);
+      error: () => {
+        this.isScanning.set(false);
         this.toastService.error(
-          this.i18n.currentLang() === 'ar' ? 'فشل في إرسال قرار الإجراء للذكاء الاصطناعي.' : 'Failed to submit action resolution decision.'
+          this.i18n.currentLang() === 'ar' ? 'فشل في تشغيل فحص الذكاء الاصطناعي.' : 'AI scan failed.'
         );
       }
     });
   }
 
-  private authServiceCurrentUser() {
-    // Simple helper to reload sessions
-    const saved = localStorage.getItem('rasd_user_session');
-    return saved ? JSON.parse(saved) : null;
+  takeAction(issueId: string, actionName: string) {
+    // Optimistic update
+    this.issues.update(list =>
+      list.map(i => i.id === issueId ? { ...i, status: actionName } : i)
+    );
+
+    this.systemAdminService.resolveIssue(issueId, actionName).subscribe({
+      next: () => {
+        const ar = actionName === 'Approved'
+          ? 'تم الموافقة على إجراء الذكاء الاصطناعي وتطبيقه بنجاح!'
+          : 'تم رفض إجراء الذكاء الاصطناعي وإبلاغ صاحب النظام.';
+        const en = actionName === 'Approved'
+          ? 'AI action approved and executed successfully!'
+          : 'AI action rejected and owner notified.';
+        this.toastService.success(
+          this.i18n.currentLang() === 'ar' ? ar : en,
+          this.i18n.currentLang() === 'ar' ? 'قرار النظام' : 'System Decision'
+        );
+        const saved = localStorage.getItem('rasd_user_session');
+        const user = saved ? JSON.parse(saved) : null;
+        if (user) this.notificationService.loadNotificationsForUser(user.role);
+      },
+      error: () => {
+        // Revert optimistic update on failure
+        this.loadIssues();
+        this.toastService.error(
+          this.i18n.currentLang() === 'ar' ? 'فشل في إرسال قرار الإجراء.' : 'Failed to submit decision.'
+        );
+      }
+    });
+  }
+
+  setFilter(f: 'All' | 'Pending' | 'Approved' | 'Rejected') {
+    this.activeFilter.set(f);
   }
 }

@@ -52,6 +52,10 @@ export class SystemAdminService {
     return this.http.post<any>(`${this.baseUrl}/issues/${id}/action`, { action });
   }
 
+  runAiScan(): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/run-ai-scan`, {});
+  }
+
   getDashboardStats(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/dashboard-stats`);
   }
