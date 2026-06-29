@@ -1388,6 +1388,40 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .modal-container.modal-sm { max-width: 420px !important; }
+
+/* Premium select inside modals */
+.form-select-modal {
+  width: 100% !important;
+  height: 44px !important;
+  border: 1.5px solid var(--border-light) !important;
+  border-radius: 10px !important;
+  padding: 0 16px !important;
+  background-color: var(--bg-card) !important;
+  color: var(--text-title) !important;
+  font-size: 14px !important;
+  font-family: inherit !important;
+  line-height: 44px !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+  -webkit-appearance: listbox !important; /* Fix Windows Chrome select styles */
+}
+
+.form-select-modal option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-title) !important;
+}
+
+:root.light-theme .form-select-modal {
+  background-color: #ffffff !important;
+}
+
+.form-select-modal:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(92, 77, 255, 0.15) !important;
+}
 .modal-container.modal-lg { max-width: 640px !important; }
 
 /* Light mode overrides */

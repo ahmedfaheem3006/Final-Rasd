@@ -112,24 +112,74 @@
       </button>
     </div>
     <form (ngSubmit)="onSavePricing()">
-      <div class="modal-body">
-        <p style="color: var(--text-body); font-size: 0.9rem; margin-bottom: 12px; font-weight: bold;">
+      <div class="modal-body" style="padding: 20px;">
+        <p style="color: var(--text-body); font-size: 0.9rem; margin-bottom: 16px; font-weight: bold; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 8px;">
           {{ i18n.currentLang() === 'ar' ? 'تعديل الخطة والأسعار لشركة:' : 'Update plan and pricing for company:' }} 
           <strong style="color: var(--primary);">{{ selectedTenantName }}</strong>
         </p>
-        <div class="form-group-modal">
-          <label>{{ i18n.currentLang() === 'ar' ? 'قيمة الاشتراك شهرياً ($)' : 'Monthly Subscription Fee ($)' }}</label>
-          <input type="number" [(ngModel)]="editPrice" name="editPrice" required min="0" />
+        
+        <!-- Pricing Plan Select -->
+        <div class="form-group-modal" style="margin-bottom: 16px;">
+          <label style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">
+            {{ i18n.currentLang() === 'ar' ? 'اختر الباقة المناسبة' : 'Select Plan' }}
+          </label>
+          <select [(ngModel)]="editPrice" name="editPrice" (change)="onPricePlanChange()" required class="form-select-modal">
+            <option [ngValue]="0" disabled selected>
+              {{ i18n.currentLang() === 'ar' ? '-- اختر الباقة المناسبة --' : '-- Select Plan --' }}
+            </option>
+            <option *ngFor="let p of availablePlans()" [ngValue]="p.price">
+              {{ i18n.currentLang() === 'ar' ? p.nameAr : p.nameEn }} - ${{ p.price }}
+            </option>
+          </select>
         </div>
+
+        <!-- AI Limit Input -->
         <div class="form-group-modal">
-          <label>{{ i18n.currentLang() === 'ar' ? 'حد استهلاك الذكاء الاصطناعي (عدد العمليات)' : 'AI Capacity Limit (Requests/mo)' }}</label>
-          <input type="number" [(ngModel)]="editAiLimit" name="editAiLimit" required min="0" />
+          <label style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">
+            {{ i18n.currentLang() === 'ar' ? 'حد استهلاك الذكاء الاصطناعي (عدد العمليات)' : 'AI Capacity Limit (Requests/mo)' }}
+          </label>
+          <div style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="number" [(ngModel)]="editAiLimit" name="editAiLimit" required min="0" style="width: 100%; height: 40px; padding: 0 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; color: #334155; background-color: #f8fafc;" />
+            <span *ngIf="editAiLimit >= 999999" [style.right]="i18n.isRtl() ? 'auto' : '12px'" [style.left]="i18n.isRtl() ? '12px' : 'auto'" style="position: absolute; background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; pointer-events: none; top: 10px;">
+              {{ i18n.currentLang() === 'ar' ? 'غير محدود' : 'Unlimited' }}
+            </span>
+          </div>
         </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 12px;">
         <button type="button" class="btn btn-secondary" (click)="closeEditPricingModal()">{{ i18n.currentLang() === 'ar' ? 'إلغاء' : 'Cancel' }}</button>
         <button type="submit" class="btn btn-primary">{{ i18n.currentLang() === 'ar' ? 'حفظ التغييرات' : 'Save Changes' }}</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" [class.active]="showDeleteConfirmModal()">
+  <div class="modal-container" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3 style="color: #ef4444; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>{{ i18n.currentLang() === 'ar' ? 'تأكيد الحذف النهائي' : 'Confirm Permanent Deletion' }}</span>
+      </h3>
+      <button class="modal-close-btn" (click)="closeDeleteConfirmModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 24px;">
+      <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-title); font-weight: 500; margin: 0; direction: rtl; text-align: right;">
+        {{ i18n.currentLang() === 'ar' ? 'هل أنت متأكد من حذف شركة ' : 'Are you sure you want to permanently delete company ' }}
+        <strong style="color: #ef4444; font-weight: 700;">"${{ tenantNameToDelete }}"</strong>
+        {{ i18n.currentLang() === 'ar' ? ' وكل بياناتها وموظفيها نهائياً من النظام؟ لا يمكن التراجع عن هذا الإجراء.' : ' along with all its data and employees from the system? This action cannot be undone.' }}
+      </p>
+    </div>
+    <div class="modal-footer" style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 12px;">
+      <button type="button" class="btn btn-secondary" (click)="closeDeleteConfirmModal()">
+        {{ i18n.currentLang() === 'ar' ? 'إلغاء' : 'Cancel' }}
+      </button>
+      <button type="button" class="btn btn-danger" (click)="confirmDeleteTenant()" style="background-color: #ef4444; border-color: #ef4444; color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);">
+        {{ i18n.currentLang() === 'ar' ? 'حذف نهائي' : 'Delete Permanently' }}
+      </button>
+    </div>
   </div>
 </div>

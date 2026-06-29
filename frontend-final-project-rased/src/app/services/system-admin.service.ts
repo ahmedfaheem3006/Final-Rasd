@@ -32,6 +32,10 @@ export class SystemAdminService {
     return this.http.put<any>(`${this.baseUrl}/tenants/${id}/pricing`, payload);
   }
 
+  updateTenantFull(id: string, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/tenants/${id}/update-full`, payload);
+  }
+
   updateTenantPermissions(id: string, permissions: any): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/tenants/${id}/permissions`, permissions);
   }

@@ -78,8 +78,89 @@ public class TenantService : ITenantService
             .Include(t => t.Users)
             .FirstOrDefaultAsync(t => t.TenantId == id);
         if (tenant == null) return null;
-
         var owner = tenant.Users.FirstOrDefault(u => u.RoleId == 2);
+
+        // Calculate actual total AI requests count
+        var aiConvsCount = await _context.AIConversations.IgnoreQueryFilters().CountAsync(c => c.TenantId == id);
+        var contractsCount = await _context.Contracts.IgnoreQueryFilters().CountAsync(c => c.TenantId == id && c.AIAnalysisResult != null && c.AIAnalysisResult != "");
+        var meetingsCount = await _context.Meetings.IgnoreQueryFilters().CountAsync(m => m.TenantId == id);
+        var aiUsageCount = aiConvsCount + contractsCount + meetingsCount;
+
+        var activities = new List<ActivityDto>();
+
+        // 1. Company Registered
+        activities.Add(new ActivityDto
+        {
+            Action = "تسجيل الشركة في النظام",
+            Time = tenant.CreatedAt.ToString("o"),
+            Type = "success"
+        });
+
+        // 2. Recent Users
+        var lastUser = tenant.Users
+            .Where(u => u.RoleId != 2) // not the owner
+            .OrderByDescending(u => u.Id)
+            .FirstOrDefault();
+        if (lastUser != null)
+        {
+            activities.Add(new ActivityDto
+            {
+                Action = $"إضافة مستخدم جديد: {lastUser.FullName}",
+                Time = tenant.CreatedAt.AddMinutes(15).ToString("o"),
+                Type = "info"
+            });
+        }
+
+        // 3. Recent Deals
+        var lastDeal = await _context.Deals
+            .IgnoreQueryFilters()
+            .Where(d => d.TenantId == id)
+            .OrderByDescending(d => d.CreatedAt)
+            .FirstOrDefaultAsync();
+        if (lastDeal != null)
+        {
+            activities.Add(new ActivityDto
+            {
+                Action = $"إنشاء صفقة جديدة بقيمة ${lastDeal.Amount}",
+                Time = lastDeal.CreatedAt.ToString("o"),
+                Type = "info"
+            });
+        }
+
+        // 4. Recent Meetings
+        var lastMeeting = await _context.Meetings
+            .IgnoreQueryFilters()
+            .Where(m => m.TenantId == id)
+            .OrderByDescending(m => m.CreatedAt)
+            .FirstOrDefaultAsync();
+        if (lastMeeting != null)
+        {
+            activities.Add(new ActivityDto
+            {
+                Action = "تلخيص اجتماع جديد بالذكاء الاصطناعي",
+                Time = lastMeeting.CreatedAt.ToString("o"),
+                Type = "success"
+            });
+        }
+
+        // 5. Recent Contracts
+        var lastContract = await _context.Contracts
+            .IgnoreQueryFilters()
+            .Where(c => c.TenantId == id)
+            .OrderByDescending(c => c.CreatedAt)
+            .FirstOrDefaultAsync();
+        if (lastContract != null)
+        {
+            activities.Add(new ActivityDto
+            {
+                Action = $"تحليل عقد جديد: {lastContract.FileName}",
+                Time = lastContract.CreatedAt.ToString("o"),
+                Type = "warning"
+            });
+        }
+
+        // Sort by Time descending
+        activities = activities.OrderByDescending(a => a.Time).ToList();
 
         return new TenantDto
         {
@@ -95,7 +176,9 @@ public class TenantService : ITenantService
             IsInvoicesEnabled = tenant.IsInvoicesEnabled,
             IsTasksEnabled = tenant.IsTasksEnabled,
             IsMeetingsEnabled = tenant.IsMeetingsEnabled,
-            IsAiEnabled = tenant.IsAiEnabled
+            IsAiEnabled = tenant.IsAiEnabled,
+            AiUsageCount = aiUsageCount,
+            RecentActivities = activities
         };
     }
 
@@ -116,6 +199,12 @@ public class TenantService : ITenantService
 
         return tenants.Select(t => {
             var owner = t.Users.FirstOrDefault(u => u.RoleId == 2);
+            var tid = t.TenantId;
+            var aicCount = _context.AIConversations.IgnoreQueryFilters().Count(c => c.TenantId == tid);
+            var ccCount = _context.Contracts.IgnoreQueryFilters().Count(c => c.TenantId == tid && c.AIAnalysisResult != null && c.AIAnalysisResult != "");
+            var mcCount = _context.Meetings.IgnoreQueryFilters().Count(m => m.TenantId == tid);
+            var usageCount = aicCount + ccCount + mcCount;
+
             return new TenantDto
             {
                 TenantId = t.TenantId,
@@ -130,7 +219,8 @@ public class TenantService : ITenantService
                 IsInvoicesEnabled = t.IsInvoicesEnabled,
                 IsTasksEnabled = t.IsTasksEnabled,
                 IsMeetingsEnabled = t.IsMeetingsEnabled,
-                IsAiEnabled = t.IsAiEnabled
+                IsAiEnabled = t.IsAiEnabled,
+                AiUsageCount = usageCount
             };
         }).ToList();
     }
@@ -257,28 +347,45 @@ public class TenantService : ITenantService
 
     public async Task<bool> DeleteTenantAsync(Guid id)
     {
-        // 1. Delete associated data first due to ON DELETE RESTRICT constraints
+        // 1. Fetch all associated data first to handle foreign key constraints cleanly
         var users = await _context.Users.IgnoreQueryFilters().Where(u => u.TenantId == id).ToListAsync();
         var tasks = await _context.Tasks.IgnoreQueryFilters().Where(t => t.TenantId == id).ToListAsync();
         var invoices = await _context.Invoices.IgnoreQueryFilters().Where(i => i.TenantId == id).ToListAsync();
         var deals = await _context.Deals.IgnoreQueryFilters().Where(d => d.TenantId == id).ToListAsync();
         var clients = await _context.Clients.IgnoreQueryFilters().Where(c => c.TenantId == id).ToListAsync();
         var meetings = await _context.Meetings.IgnoreQueryFilters().Where(m => m.TenantId == id).ToListAsync();
+        var meetingSchedules = await _context.MeetingSchedules.IgnoreQueryFilters().Where(ms => ms.TenantId == id).ToListAsync();
+        var reports = await _context.Reports.IgnoreQueryFilters().Where(r => r.TenantId == id).ToListAsync();
         var contracts = await _context.Contracts.IgnoreQueryFilters().Where(co => co.TenantId == id).ToListAsync();
         var notes = await _context.Notes.IgnoreQueryFilters().Where(n => n.TenantId == id).ToListAsync();
         var aiConvs = await _context.AIConversations.IgnoreQueryFilters().Where(ac => ac.TenantId == id).ToListAsync();
+        var leaveRequests = await _context.LeaveRequests.IgnoreQueryFilters().Where(lr => lr.TenantId == id).ToListAsync();
+        var attendances = await _context.Attendances.IgnoreQueryFilters().Where(at => at.TenantId == id).ToListAsync();
+        var jobVacancies = await _context.JobVacancies.IgnoreQueryFilters().Where(jv => jv.TenantId == id).ToListAsync();
+        var candidates = await _context.Candidates.IgnoreQueryFilters().Where(ca => ca.TenantId == id).ToListAsync();
+        var supportIssues = await _context.SupportIssues.IgnoreQueryFilters().Where(si => si.TenantId == id).ToListAsync();
 
-        _context.Users.RemoveRange(users);
+        // 2. Delete dependent entries first
         _context.Tasks.RemoveRange(tasks);
         _context.Invoices.RemoveRange(invoices);
         _context.Deals.RemoveRange(deals);
         _context.Clients.RemoveRange(clients);
+        _context.MeetingSchedules.RemoveRange(meetingSchedules);
         _context.Meetings.RemoveRange(meetings);
+        _context.Reports.RemoveRange(reports);
         _context.Contracts.RemoveRange(contracts);
         _context.Notes.RemoveRange(notes);
         _context.AIConversations.RemoveRange(aiConvs);
+        _context.LeaveRequests.RemoveRange(leaveRequests);
+        _context.Attendances.RemoveRange(attendances);
+        _context.Candidates.RemoveRange(candidates);
+        _context.JobVacancies.RemoveRange(jobVacancies);
+        _context.SupportIssues.RemoveRange(supportIssues);
 
-        // 2. Remove Tenant
+        // 3. Delete users last
+        _context.Users.RemoveRange(users);
+
+        // 4. Delete Tenant itself
         var tenant = await _context.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.TenantId == id);
         if (tenant != null)
         {

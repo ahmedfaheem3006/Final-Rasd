@@ -27,6 +27,7 @@
 .progress-bar-fill.primary { background: linear-gradient(90deg, var(--primary), #a78bfa); }
 .progress-bar-fill.info { background: linear-gradient(90deg, var(--secondary), var(--info)); }
 .progress-bar-fill.warning { background: linear-gradient(90deg, var(--warning), #fbbf24); }
+.progress-bar-fill.success { background: linear-gradient(90deg, #10b981, #34d399); }
 .activity-list { display: flex; flex-direction: column; gap: 16px; }
 .activity-item { display: flex; align-items: flex-start; gap: 12px; }
 .activity-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
@@ -50,3 +51,74 @@
 @media (max-width: 320px) {
   .header-info h1 { font-size: 1rem; }
 }
+
+/* Modal styling overrides */
+.form-group-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.form-group-modal label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.form-group-modal input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1.5px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-title);
+  background-color: var(--bg-card);
+  transition: border-color 0.2s;
+}
+
+.form-group-modal input:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.form-row-modal {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row-modal .flex-1 {
+  flex: 1;
+}
+
+.modules-toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  background-color: var(--bg-card) !important;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-light) !important;
+}
+
+.module-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-body) !important;
+  cursor: pointer;
+}
+
+.module-checkbox-label input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.modal-container {
+  max-width: 520px !important;
+  width: 90%;
+}
+
