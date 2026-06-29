@@ -117,7 +117,7 @@ export const routes: Routes = [
         path: 'owner/ai-assistant',
         loadComponent: () => import('./pages/owner-admin/ai-assistant/ai-assistant').then(m => m.AiAssistant),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin'] }
+        data: { roles: ['owner-admin', 'employee-manager'] }
       },
       {
         path: 'owner/analyze-contract',
@@ -141,7 +141,7 @@ export const routes: Routes = [
         path: 'owner/settings',
         loadComponent: () => import('./pages/owner-admin/settings/settings').then(m => m.Settings),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin', 'hr'] }
+        data: { roles: ['owner-admin', 'hr', 'employee-manager'] }
       },
       {
         path: 'meetings',

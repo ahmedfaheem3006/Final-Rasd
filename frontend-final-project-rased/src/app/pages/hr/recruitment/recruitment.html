@@ -230,13 +230,23 @@
           </div>
           <div class="form-group">
             <label>{{ i18n.isRtl() ? 'الوظيفة المتقدم لها' : 'Applying Position' }}</label>
-            <select [(ngModel)]="newCandidateRole" name="newCandidateRole" class="form-select">
-              @for (job of vacancies(); track job.id) {
-                @if (job.status === 'Open') {
-                  <option [value]="job.title">{{ job.title }}</option>
+            @if (hasOpenVacancies()) {
+              <select [(ngModel)]="newCandidateRole" name="newCandidateRole" class="form-select">
+                @for (job of vacancies(); track job.id) {
+                  @if (job.status === 'Open') {
+                    <option [value]="job.title">{{ job.title }}</option>
+                  }
                 }
-              }
-            </select>
+              </select>
+            } @else {
+              <input 
+                type="text" 
+                [(ngModel)]="newCandidateRole" 
+                name="newCandidateRole" 
+                [placeholder]="i18n.isRtl() ? 'اكتب اسم الوظيفة...' : 'Type position title...'" 
+                class="form-input" 
+              />
+            }
           </div>
           <div class="form-group">
             <label>{{ i18n.isRtl() ? 'المرحلة الأولية في التعيين' : 'Initial Hiring Stage' }}</label>

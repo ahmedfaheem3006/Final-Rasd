@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin,HR")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR,EmployeeManager")]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
@@ -85,7 +85,7 @@ public class AuthController : ControllerBase
         });
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin,HR")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR,EmployeeManager")]
     [HttpGet("users")]
     public async Task<IActionResult> GetUsers()
     {

@@ -1,4 +1,4 @@
-﻿<div class="page-container">
+<div class="page-container">
   <header class="page-header animate-fade-in">
     <div class="header-info">
       <div class="breadcrumbs">الموظف / الملف الشخصي</div>
@@ -6,7 +6,7 @@
       <p class="subtitle">عرض وتعديل بياناتك الشخصية ومعلومات حسابك</p>
     </div>
     <div class="header-actions">
-      <button class="btn btn-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> <span>تعديل البيانات</span></button>
+      <button (click)="openModal()" class="btn btn-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> <span>تعديل البيانات</span></button>
     </div>
   </header>
 
@@ -53,6 +53,100 @@
           }
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal-overlay" [class.active]="isModalOpen()" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-badge">
+            <i class="fa-solid fa-user-pen"></i>
+          </div>
+          <div>
+            <h3>تعديل البيانات الشخصية</h3>
+            <p class="modal-subtitle">قم بتحديث معلومات الاتصال الخاصة بك أو تغيير كلمة المرور.</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" (click)="closeModal()" type="button">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form (ngSubmit)="saveProfile()">
+        <div class="modal-body">
+          
+          <!-- Phone Number -->
+          <div class="form-group-modal">
+            <label for="profilePhone">رقم الجوال</label>
+            <div class="input-wrapper">
+              <input type="text" id="profilePhone" name="profilePhone" [(ngModel)]="editPhone" placeholder="مثال: +966 55 123 4567" required />
+              <div class="input-icon">
+                <i class="fa-solid fa-phone"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="form-group-modal">
+            <label for="profileAddress">العنوان السكني</label>
+            <div class="input-wrapper">
+              <input type="text" id="profileAddress" name="profileAddress" [(ngModel)]="editAddress" placeholder="مثال: الرياض، المملكة العربية السعودية" required />
+              <div class="input-icon">
+                <i class="fa-solid fa-location-dot"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- National ID -->
+          <div class="form-group-modal">
+            <label for="profileNationalId">رقم الهوية الوطنية</label>
+            <div class="input-wrapper">
+              <input type="text" id="profileNationalId" name="profileNationalId" [(ngModel)]="editNationalId" placeholder="مثال: 1098XXXXXX" required />
+              <div class="input-icon">
+                <i class="fa-solid fa-id-card"></i>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top: 1px dashed var(--border); margin: 20px 0; padding-top: 15px;">
+            <h4 style="font-size: 0.9rem; color: var(--text-title); margin-bottom: 12px; font-weight: 700;">تغيير كلمة المرور (اختياري)</h4>
+          </div>
+
+          <!-- Current Password -->
+          <div class="form-group-modal">
+            <label for="currentPassword">كلمة المرور الحالية</label>
+            <div class="input-wrapper">
+              <input type="password" id="currentPassword" name="currentPassword" [(ngModel)]="editCurrentPassword" placeholder="••••••••" />
+              <div class="input-icon">
+                <i class="fa-solid fa-lock"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Password -->
+          <div class="form-group-modal">
+            <label for="newPassword">كلمة المرور الجديدة</label>
+            <div class="input-wrapper">
+              <input type="password" id="newPassword" name="newPassword" [(ngModel)]="editNewPassword" placeholder="••••••••" />
+              <div class="input-icon">
+                <i class="fa-solid fa-key"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" (click)="closeModal()">
+            <span>إلغاء</span>
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <button type="submit" class="btn-modal-submit" [disabled]="isSubmitting()">
+            <span>{{ isSubmitting() ? 'جاري الحفظ...' : 'حفظ التغييرات' }}</span>
+            <i class="fa-solid fa-check"></i>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

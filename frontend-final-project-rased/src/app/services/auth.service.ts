@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 export interface User {
+  id?: number;
   name: string;
   email: string;
   role: 'system-admin' | 'owner-admin' | 'accountant' | 'sales-manager' | 'employee-manager' | 'employee' | 'sales-rep' | 'hr';
@@ -29,6 +30,7 @@ export class AuthService {
 
   private mockUsers: Record<string, User> = {
     'admin@rasd.com': {
+      id: 1,
       name: 'محمد عبد الله',
       email: 'admin@rasd.com',
       role: 'system-admin',
@@ -37,6 +39,7 @@ export class AuthService {
       avatarInitials: 'مع'
     },
     'owner@rasd.com': {
+      id: 100,
       name: 'أحمد فهيم',
       email: 'owner@rasd.com',
       role: 'owner-admin',
@@ -45,6 +48,7 @@ export class AuthService {
       avatarInitials: 'أف'
     },
     'accountant@rasd.com': {
+      id: 102,
       name: 'سارة محمود',
       email: 'accountant@rasd.com',
       role: 'accountant',
@@ -53,6 +57,7 @@ export class AuthService {
       avatarInitials: 'سم'
     },
     'salesmgr@rasd.com': {
+      id: 103,
       name: 'خالد منصور',
       email: 'salesmgr@rasd.com',
       role: 'sales-manager',
@@ -61,6 +66,7 @@ export class AuthService {
       avatarInitials: 'خم'
     },
     'empmgr@rasd.com': {
+      id: 6,
       name: 'عمر فاروق',
       email: 'empmgr@rasd.com',
       role: 'employee-manager',
@@ -69,6 +75,7 @@ export class AuthService {
       avatarInitials: 'عف'
     },
     'employee@rasd.com': {
+      id: 7,
       name: 'يوسف حسن',
       email: 'employee@rasd.com',
       role: 'employee',
@@ -77,6 +84,7 @@ export class AuthService {
       avatarInitials: 'يح'
     },
     'sales@rasd.com': {
+      id: 19,
       name: 'رنا علي',
       email: 'sales@rasd.com',
       role: 'sales-rep',
@@ -85,6 +93,7 @@ export class AuthService {
       avatarInitials: 'رع'
     },
     'hr@rasd.com': {
+      id: 8,
       name: 'منى السالم',
       email: 'hr@rasd.com',
       role: 'hr',
@@ -96,6 +105,24 @@ export class AuthService {
 
   constructor() {
     this.loadSession();
+    // Defer execution to next macro-task to prevent circular dependency with authInterceptor
+    setTimeout(() => this.checkAndFillUserId(), 0);
+  }
+
+  private checkAndFillUserId() {
+    const user = this.currentUser();
+    if (user && !user.id) {
+      this.getProfile().subscribe({
+        next: (res) => {
+          if (res && res.success && res.data) {
+            user.id = res.data.id;
+            this.currentUser.set({ ...user });
+            localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(user));
+          }
+        },
+        error: (err) => console.error('Failed to fill user ID from profile', err)
+      });
+    }
   }
 
   private loadSession() {
@@ -122,6 +149,7 @@ export class AuthService {
           // Map API Role to Frontend Role
           const mappedRole = this.mapRole(apiUser.role);
           const mappedUser: User = {
+            id: apiUser.userId || apiUser.id,
             name: apiUser.fullName,
             email: apiUser.email,
             role: mappedRole,
@@ -182,6 +210,10 @@ export class AuthService {
 
   getUsers(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/users`);
+  }
+
+  getProfile(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/profile`);
   }
 
   updateUserRole(userId: number, roleId: number): Observable<any> {

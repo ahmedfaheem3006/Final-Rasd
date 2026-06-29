@@ -151,40 +151,35 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     ADD LEAVE REQUEST MODAL — Premium Enterprise Design
-     ═══════════════════════════════════════════════ -->
-<div #modalOverlay class="premium-modal-overlay" [class.active]="showModal()" [class.light]="isLightTheme" (click)="closeModal()">
-  <div #premiumModal class="premium-modal" [class.active]="showModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="تقديم طلب إجازة جديد">
-
-    <!-- ═══ Header ═══ -->
-    <div class="premium-header">
-      <div class="premium-header-left">
-        <div class="premium-header-icon">
+<div #modalOverlay class="modal-overlay" [class.active]="showModal()" (click)="closeModal()">
+  <div #premiumModal class="modal-container modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-icon-badge">
           <i class="fa-solid fa-file-signature"></i>
         </div>
-        <div class="premium-header-text">
-          <h2 class="premium-title">تقديم طلب إجازة جديد</h2>
-          <p class="premium-subtitle">تسجيل وتوثيق طلب إجازة جديد في النظام</p>
+        <div>
+          <h3>تقديم طلب إجازة جديد</h3>
+          <p class="modal-subtitle">تسجيل وتوثيق طلب إجازة جديد في النظام للموظفين</p>
         </div>
       </div>
-      <button class="premium-close-btn" (click)="closeModal()" type="button">
+      <button class="modal-close-btn" (click)="closeModal()" type="button">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-    <div class="premium-header-divider"></div>
-
     <form (ngSubmit)="onSubmit()">
-      <!-- ═══ Scrollable Body ═══ -->
-      <div class="premium-body">
+      <div class="modal-body">
+        
         <div class="form-row">
-          <div class="form-group" style="flex:1;position:relative">
-            <label>الموظف *</label>
-            <div class="autocomplete-wrapper">
-              @if (loadingEmployees()) {
-                <div class="autocomplete-loading"><span class="spinner"></span><span>جاري التحميل...</span></div>
-              }
-              <input type="text" class="form-control"
+          <!-- Employee Autocomplete -->
+          <div class="form-group-modal" style="position:relative">
+            <label>
+              <i class="fa-solid fa-user"></i>
+              الموظف *
+            </label>
+            <div class="input-wrapper autocomplete-wrapper">
+              <i class="fa-solid fa-search input-icon"></i>
+              <input type="text" class="form-input"
                 [value]="searchTerm() || newEmployee"
                 (input)="onSearchInput($any($event.target).value)"
                 (focus)="onSearchFocus()" (blur)="onSearchBlur()"
@@ -210,46 +205,86 @@
             </div>
             @if (employeeError()) { <div class="employee-error">{{ employeeError() }}</div> }
           </div>
-          <div class="form-group" style="flex:1">
-            <label>المنصب الوظيفي</label>
-            <input type="text" class="form-control" [value]="newRole" readonly style="background:var(--bg-input,var(--bg));color:var(--text-muted);cursor:default">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group" style="flex:1">
-            <label>نوع الإجازة *</label>
-            <select class="form-control" [(ngModel)]="newType">
-              <option>إجازة سنوية</option>
-              <option>إجازة مرضية</option>
-              <option>إجازة طارئة</option>
-              <option>إجازة شخصية</option>
-              <option>إجازة غير مدفوعة</option>
-            </select>
-          </div>
-          <div class="form-group" style="flex:1">
-            <label>من تاريخ *</label>
-            <input type="date" class="form-control" [(ngModel)]="newStartDate">
-          </div>
-          <div class="form-group" style="flex:1">
-            <label>إلى تاريخ *</label>
-            <input type="date" class="form-control" [(ngModel)]="newEndDate">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>سبب الإجازة</label>
-          <input type="text" class="form-control" [(ngModel)]="newReason" placeholder="اكتب سبب الإجازة هنا...">
-        </div>
-      </div>
 
-      <!-- ═══ Sticky Footer ═══ -->
-      <div class="premium-footer">
-        <button type="button" class="premium-btn premium-btn-ghost" (click)="closeModal()">
-          <i class="fa-solid fa-xmark"></i>
+          <!-- Job Role -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-briefcase"></i>
+              المنصب الوظيفي
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user-tag input-icon"></i>
+              <input type="text" [value]="newRole" readonly style="background:rgba(255,255,255,0.02) !important;color:var(--text-muted);cursor:default" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Leave Type -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-plane-departure"></i>
+              نوع الإجازة *
+            </label>
+            <div class="input-wrapper select-wrapper">
+              <i class="fa-solid fa-tag input-icon"></i>
+              <select [(ngModel)]="newType" name="newType" required>
+                <option>إجازة سنوية</option>
+                <option>إجازة مرضية</option>
+                <option>إجازة طارئة</option>
+                <option>إجازة شخصية</option>
+                <option>إجازة غير مدفوعة</option>
+              </select>
+              <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
+          </div>
+
+          <!-- Start Date -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-calendar-days"></i>
+              من تاريخ *
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar-day input-icon"></i>
+              <input type="date" [(ngModel)]="newStartDate" name="newStartDate" required />
+            </div>
+          </div>
+
+          <!-- End Date -->
+          <div class="form-group-modal">
+            <label>
+              <i class="fa-solid fa-calendar-days"></i>
+              إلى تاريخ *
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar-day input-icon"></i>
+              <input type="date" [(ngModel)]="newEndDate" name="newEndDate" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div class="form-group-modal">
+          <label>
+            <i class="fa-solid fa-comment-dots"></i>
+            سبب الإجازة
+          </label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-pen-nib input-icon"></i>
+            <input type="text" [(ngModel)]="newReason" name="newReason" placeholder="اكتب سبب الإجازة هنا..." />
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" (click)="closeModal()">
+          <i class="fa-solid fa-arrow-right"></i>
           إلغاء
         </button>
-        <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
-            <span class="premium-btn-loader"></span>
+            <span class="spinner-sm"></span>
             جاري التقديم...
           } @else {
             <i class="fa-solid fa-paper-plane"></i>

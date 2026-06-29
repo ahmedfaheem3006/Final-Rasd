@@ -1,6 +1,8 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { ToastService } from '../../../services/toast.service';
 
 interface AttendanceRecord {
   id: number;
@@ -27,21 +29,15 @@ interface AttendanceStat {
   templateUrl: './attendance.html',
   styleUrl: './attendance.css'
 })
-export class EmployeeManagerAttendance {
+export class EmployeeManagerAttendance implements OnInit {
+  private http = inject(HttpClient);
+  private toastService = inject(ToastService);
 
   selectedDate = signal('2026-06-15');
   activeFilter = signal<'all' | 'present' | 'late' | 'absent' | 'remote'>('all');
+  loading = signal(false);
 
-  allRecords = signal<AttendanceRecord[]>([
-    { id: 1, employee: 'فهد المطيري', avatar: 'FM', role: 'مندوب مبيعات', checkIn: '8:02 ص', checkOut: '5:15 م', status: 'present', hoursWorked: '9.2', date: '2026-06-15' },
-    { id: 2, employee: 'سارة القحطاني', avatar: 'SQ', role: 'مدير الموارد البشرية', checkIn: '8:55 ص', checkOut: '6:00 م', status: 'late', hoursWorked: '9.1', date: '2026-06-15' },
-    { id: 3, employee: 'خالد الدوسري', avatar: 'KD', role: 'موظف تنفيذي', checkIn: '—', checkOut: '—', status: 'absent', hoursWorked: '0', date: '2026-06-15' },
-    { id: 4, employee: 'نورة السعيد', avatar: 'NS', role: 'مندوب مبيعات', checkIn: '7:58 ص', checkOut: '5:00 م', status: 'present', hoursWorked: '9.0', date: '2026-06-15' },
-    { id: 5, employee: 'عبد الله العتيبي', avatar: 'AA', role: 'محاسب', checkIn: '9:00 ص', checkOut: '5:00 م', status: 'remote', hoursWorked: '8.0', date: '2026-06-15' },
-    { id: 6, employee: 'يوسف حسن', avatar: 'YH', role: 'مسؤول مالي', checkIn: '7:45 ص', checkOut: '4:45 م', status: 'present', hoursWorked: '9.0', date: '2026-06-15' },
-    { id: 7, employee: 'ريم العمري', avatar: 'RA', role: 'موظف خدمة عملاء', checkIn: '8:10 ص', checkOut: '5:10 م', status: 'present', hoursWorked: '9.0', date: '2026-06-15' },
-    { id: 8, employee: 'أحمد البارقي', avatar: 'AB', role: 'مندوب مبيعات', checkIn: '9:32 ص', checkOut: '5:30 م', status: 'late', hoursWorked: '7.9', date: '2026-06-15' },
-  ]);
+  allRecords = signal<AttendanceRecord[]>([]);
 
   filteredRecords = computed(() => {
     const f = this.activeFilter();
@@ -75,6 +71,32 @@ export class EmployeeManagerAttendance {
     { day: 'الخميس', rate: 62 },
   ];
 
+  ngOnInit() {
+    this.loadAttendanceForDate(this.selectedDate());
+  }
+
+  onDateChange(newDate: string) {
+    this.selectedDate.set(newDate);
+    this.loadAttendanceForDate(newDate);
+  }
+
+  loadAttendanceForDate(date: string) {
+    this.loading.set(true);
+    this.http.get<any>(`http://localhost:5092/api/Attendances?date=${date}`).subscribe({
+      next: (res) => {
+        this.loading.set(false);
+        if (res && res.success && res.data) {
+          this.allRecords.set(res.data);
+        }
+      },
+      error: (err) => {
+        this.loading.set(false);
+        console.error('Failed to load attendance records', err);
+        this.toastService.error('فشل تحميل سجلات الحضور');
+      }
+    });
+  }
+
   setFilter(f: 'all' | 'present' | 'late' | 'absent' | 'remote') {
     this.activeFilter.set(f);
   }
@@ -88,5 +110,45 @@ export class EmployeeManagerAttendance {
 
   getBarHeight(rate: number): string {
     return `${Math.round((rate / 100) * 120)}px`;
+  }
+
+  exportReport() {
+    // Generate CSV content
+    const headers = ['الموظف', 'الدور الوظيفي', 'الحالة', 'وقت الدخول', 'وقت الخروج', 'ساعات العمل', 'ملاحظة'];
+    
+    const rows = this.filteredRecords().map(rec => {
+      const statusLabel = this.getStatusLabel(rec.status);
+      let remark = 'في الوقت المحدد';
+      if (rec.status === 'late') remark = 'تأخير عن الدوام';
+      else if (rec.status === 'absent') remark = 'بدون إذن مسبق';
+      else if (rec.status === 'remote') remark = 'يعمل من المنزل';
+
+      return [
+        rec.employee,
+        rec.role,
+        statusLabel,
+        rec.checkIn,
+        rec.checkOut,
+        rec.hoursWorked !== '0' ? `${rec.hoursWorked} ساعة` : '—',
+        remark
+      ];
+    });
+
+    // Add UTF-8 BOM so Excel opens it with Arabic characters correctly
+    let csvContent = '\uFEFF'; 
+    csvContent += [headers.join(','), ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(','))].join('\n');
+
+    // Download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `تقرير_الحضور_${this.selectedDate()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    this.toastService.success('تم تصدير تقرير الحضور بنجاح بصيغة CSV', 'تصدير التقرير');
   }
 }
