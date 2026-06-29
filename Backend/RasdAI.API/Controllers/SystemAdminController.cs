@@ -84,6 +84,46 @@ public class SystemAdminController : ControllerBase
         }
     }
 
+    [HttpPut("tenants/{id}/update-full")]
+    public async Task<IActionResult> UpdateTenantFull(Guid id, [FromBody] UpdateTenantFullDto dto)
+    {
+        try
+        {
+            var tenant = await _context.Tenants
+                .IgnoreQueryFilters()
+                .Include(t => t.Users)
+                .FirstOrDefaultAsync(t => t.TenantId == id);
+                
+            if (tenant == null)
+                return NotFound(new { success = false, message = "الشركة غير موجودة" });
+
+            tenant.Name = dto.Name;
+            tenant.Price = dto.Price;
+            tenant.AiLimit = dto.AiLimit;
+            tenant.IsActive = dto.IsActive;
+            tenant.IsCrmEnabled = dto.IsCrmEnabled;
+            tenant.IsInvoicesEnabled = dto.IsInvoicesEnabled;
+            tenant.IsTasksEnabled = dto.IsTasksEnabled;
+            tenant.IsMeetingsEnabled = dto.IsMeetingsEnabled;
+            tenant.IsAiEnabled = dto.IsAiEnabled;
+
+            // Also update the manager user if exists (RoleId = 2)
+            var owner = tenant.Users.FirstOrDefault(u => u.RoleId == 2);
+            if (owner != null)
+            {
+                owner.FullName = dto.OwnerName;
+                owner.Email = dto.OwnerEmail;
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "تم تحديث بيانات الشركة والمالك بنجاح" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
     [HttpPut("tenants/{id}/permissions")]
     public async Task<IActionResult> UpdateTenantPermissions(Guid id, [FromBody] TenantPermissionsDto permissionsDto)
     {
@@ -337,4 +377,19 @@ public class UpdateTenantPricingDto
 public class IssueActionDto
 {
     public string Action { get; set; } = string.Empty; // Approved or Rejected
+}
+
+public class UpdateTenantFullDto
+{
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int AiLimit { get; set; }
+    public bool IsActive { get; set; }
+    public string OwnerName { get; set; } = string.Empty;
+    public string OwnerEmail { get; set; } = string.Empty;
+    public bool IsCrmEnabled { get; set; }
+    public bool IsInvoicesEnabled { get; set; }
+    public bool IsTasksEnabled { get; set; }
+    public bool IsMeetingsEnabled { get; set; }
+    public bool IsAiEnabled { get; set; }
 }

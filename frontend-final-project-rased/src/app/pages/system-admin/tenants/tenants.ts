@@ -50,6 +50,11 @@ export class Tenants implements OnInit {
   // Modal states
   showCreateModal = signal(false);
   showEditPricingModal = signal(false);
+  showDeleteConfirmModal = signal(false);
+
+  // Delete selection state
+  tenantIdToDelete = '';
+  tenantNameToDelete = '';
 
   // Form Fields - New Company
   newCompanyName = '';
@@ -64,9 +69,46 @@ export class Tenants implements OnInit {
   selectedTenantName = '';
   editPrice = 0;
   editAiLimit = 100;
+  availablePlans = signal<any[]>([]);
 
   ngOnInit() {
     this.loadTenants();
+    this.loadPricingPlans();
+  }
+
+  loadPricingPlans() {
+    this.systemAdminService.getPricingPlans().subscribe({
+      next: (res) => {
+        if (res && res.success && res.data) {
+          this.availablePlans.set(res.data);
+        } else {
+          this.setFallbackPlans();
+        }
+      },
+      error: (err) => {
+        console.warn('Failed to load dynamic pricing plans, using fallbacks.', err);
+        this.setFallbackPlans();
+      }
+    });
+  }
+
+  setFallbackPlans() {
+    this.availablePlans.set([
+      { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 49, aiLimit: 200, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 199, aiLimit: 5000, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 300, aiLimit: 999999, periodAr: 'شهر', periodEn: 'mo' }
+    ]);
+  }
+
+  onPricePlanChange() {
+    const price = Number(this.editPrice);
+    if (price === 49) {
+      this.editAiLimit = 200;
+    } else if (price === 199) {
+      this.editAiLimit = 5000;
+    } else {
+      this.editAiLimit = 999999;
+    }
   }
 
   loadTenants() {
@@ -217,28 +259,39 @@ export class Tenants implements OnInit {
   }
 
   onDeleteTenant(id: string, name: string) {
-    const isAr = this.i18n.currentLang() === 'ar';
-    const confirmMsg = isAr
-      ? `هل أنت متأكد من حذف شركة "${name}" وكل بياناتها وموظفيها نهائياً من النظام؟`
-      : `Are you sure you want to permanently delete company "${name}" along with all its data and employees from the system?`;
+    this.tenantIdToDelete = id;
+    this.tenantNameToDelete = name;
+    this.showDeleteConfirmModal.set(true);
+  }
 
-    if (confirm(confirmMsg)) {
-      this.systemAdminService.deleteTenant(id).subscribe({
-        next: (res) => {
-          this.toastService.success(
-            isAr ? `تم حذف شركة "${name}" بنجاح من النظام.` : `Company "${name}" successfully deleted from the system.`,
-            isAr ? 'حذف شركة' : 'Delete Tenant'
-          );
-          this.loadTenants();
-        },
-        error: (err) => {
-          console.error('Failed to delete tenant', err);
-          this.toastService.error(
-            isAr ? 'فشل في حذف الشركة. قد يكون هناك قيود أمان.' : 'Failed to delete company. There might be safety restrictions.'
-          );
-        }
-      });
-    }
+  confirmDeleteTenant() {
+    const id = this.tenantIdToDelete;
+    const name = this.tenantNameToDelete;
+    const isAr = this.i18n.currentLang() === 'ar';
+
+    this.systemAdminService.deleteTenant(id).subscribe({
+      next: (res) => {
+        this.toastService.success(
+          isAr ? `تم حذف شركة "${name}" بنجاح من النظام.` : `Company "${name}" successfully deleted from the system.`,
+          isAr ? 'حذف شركة' : 'Delete Tenant'
+        );
+        this.loadTenants();
+        this.closeDeleteConfirmModal();
+      },
+      error: (err) => {
+        console.error('Failed to delete tenant', err);
+        this.toastService.error(
+          isAr ? 'فشل في حذف الشركة. قد يكون هناك قيود أمان.' : 'Failed to delete company. There might be safety restrictions.'
+        );
+        this.closeDeleteConfirmModal();
+      }
+    });
+  }
+
+  closeDeleteConfirmModal() {
+    this.showDeleteConfirmModal.set(false);
+    this.tenantIdToDelete = '';
+    this.tenantNameToDelete = '';
   }
 }
 

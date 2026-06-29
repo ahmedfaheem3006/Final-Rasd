@@ -11,4 +11,11 @@ public class AuthResponseDto
     public string Role { get; set; } = string.Empty;
     public Guid TenantId { get; set; }
     public string CompanyName { get; set; } = string.Empty;
+
+    // Tenant Permissions
+    public bool IsCrmEnabled { get; set; } = true;
+    public bool IsInvoicesEnabled { get; set; } = true;
+    public bool IsTasksEnabled { get; set; } = true;
+    public bool IsMeetingsEnabled { get; set; } = true;
+    public bool IsAiEnabled { get; set; } = true;
 }

@@ -11,6 +11,11 @@ export interface User {
   roleLabel: string;
   workspaceName: string;
   avatarInitials: string;
+  isCrmEnabled?: boolean;
+  isInvoicesEnabled?: boolean;
+  isTasksEnabled?: boolean;
+  isMeetingsEnabled?: boolean;
+  isAiEnabled?: boolean;
 }
 
 @Injectable({
@@ -155,7 +160,12 @@ export class AuthService {
             role: mappedRole,
             roleLabel: this.getRoleLabel(mappedRole),
             workspaceName: apiUser.companyName || (mappedRole === 'system-admin' ? 'لوحة التحكم الفنية' : 'مؤسسة رصد لتقنية المعلومات'),
-            avatarInitials: this.getInitials(apiUser.fullName)
+            avatarInitials: this.getInitials(apiUser.fullName),
+            isCrmEnabled: apiUser.isCrmEnabled !== false,
+            isInvoicesEnabled: apiUser.isInvoicesEnabled !== false,
+            isTasksEnabled: apiUser.isTasksEnabled !== false,
+            isMeetingsEnabled: apiUser.isMeetingsEnabled !== false,
+            isAiEnabled: apiUser.isAiEnabled !== false
           };
 
           this.currentUser.set(mappedUser);
