@@ -1,4 +1,6 @@
 import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { SystemAdminService } from './system-admin.service';
 
@@ -44,12 +46,16 @@ export class NotificationService {
 
     if (role === 'system-admin') {
       // 1. System Admin real-data derived notifications
-      this.sysAdminService.getSupportIssues().subscribe({
+      forkJoin({
+        issues: this.sysAdminService.getSupportIssues().pipe(catchError(() => of({ success: false, data: [] }))),
+        tenants: this.sysAdminService.getTenants().pipe(catchError(() => of({ success: false, data: [] })))
+      }).subscribe({
         next: (res) => {
           const items: NotificationItem[] = [];
-          if (res && res.success && res.data) {
-            const issues = res.data;
-            issues.forEach((issue: any) => {
+          
+          // Pending support tickets
+          if (res.issues && res.issues.success && res.issues.data) {
+            res.issues.data.forEach((issue: any) => {
               if (issue.status === 'Pending') {
                 items.push({
                   id: issue.id,
@@ -61,6 +67,25 @@ export class NotificationService {
                   timeEn: 'Active now',
                   isRead: false,
                   type: 'warning'
+                });
+              }
+            });
+          }
+
+          // Pending company approvals (OwnerStatus === 'Pending')
+          if (res.tenants && res.tenants.success && res.tenants.data) {
+            res.tenants.data.forEach((tenant: any) => {
+              if (tenant.ownerStatus === 'Pending') {
+                items.push({
+                  id: `pending-tenant-${tenant.tenantId}`,
+                  titleAr: `محاولة تسجيل لدخول شركة جديدة: ${tenant.name}`,
+                  titleEn: `New company registration attempt: ${tenant.name}`,
+                  descriptionAr: `المالك: ${tenant.ownerName} (${tenant.ownerEmail}) يطلب تفعيل حسابه.`,
+                  descriptionEn: `Owner: ${tenant.ownerName} (${tenant.ownerEmail}) requests activation.`,
+                  timeAr: 'بانتظار الموافقة',
+                  timeEn: 'Pending approval',
+                  isRead: false,
+                  type: 'info'
                 });
               }
             });

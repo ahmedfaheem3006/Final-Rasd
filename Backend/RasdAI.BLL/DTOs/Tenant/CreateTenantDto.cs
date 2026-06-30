@@ -19,4 +19,9 @@ public class CreateTenantDto
     [Required(ErrorMessage = "كلمة المرور للمالك مطلوبة")]
     [MinLength(6, ErrorMessage = "كلمة المرور يجب ألا تقل عن 6 أحرف")]
     public string OwnerPassword { get; set; } = string.Empty;
+
+    public decimal Price { get; set; }
+    public int AiLimit { get; set; }
+    public string? Address { get; set; }
+    public string? Phone { get; set; }
 }

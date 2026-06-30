@@ -12,18 +12,27 @@ namespace RasdAI.API.Controllers;
 public class TenantsController : ControllerBase
 {
     private readonly ITenantService _tenantService;
+    private readonly IPendingRegistrationService _pendingRegistrationService;
 
-    public TenantsController(ITenantService tenantService)
+    public TenantsController(ITenantService tenantService, IPendingRegistrationService pendingRegistrationService)
     {
         _tenantService = tenantService;
+        _pendingRegistrationService = pendingRegistrationService;
     }
 
     [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<IActionResult> RegisterTenant([FromBody] CreateTenantDto createTenantDto)
+    public async Task<IActionResult> RegisterTenant([FromBody] CreatePendingRegistrationDto dto)
     {
-        var result = await _tenantService.RegisterTenantAsync(createTenantDto);
-        return Ok(new { success = true, message = "تم تسجيل الشركة وحساب المالك بنجاح", data = result });
+        try
+        {
+            var result = await _pendingRegistrationService.CreateAsync(dto);
+            return Ok(new { success = true, message = "تم تقديم طلب تسجيل الشركة بنجاح. ينتظر موافقة الإدارة.", data = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     [AllowAnonymous]

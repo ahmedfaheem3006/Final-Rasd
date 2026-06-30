@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RasdAI.DAL;
 
@@ -11,9 +12,11 @@ using RasdAI.DAL;
 namespace RasdAI.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260630025131_AddUserCreatedAt")]
+    partial class AddUserCreatedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,79 +153,19 @@ namespace RasdAI.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("City")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("CommercialRegistration")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("CompanyName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("CompanySize")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Country")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedByUserId")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("CreditLimit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("Governorate")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Industry")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("JobTitle")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Logo")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<decimal?>("OpeningBalance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("OwnerName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("PaymentTerms")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -231,33 +174,8 @@ namespace RasdAI.DAL.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("PostalCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Street")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("TaxNumber")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal?>("TaxPercentage")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
-
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Website")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -273,11 +191,9 @@ namespace RasdAI.DAL.Migrations
                             Id = 100,
                             CreatedAt = new DateTime(2026, 3, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedByUserId = 101,
-                            Currency = "SAR",
                             Email = "contact@arabian.com",
                             Name = "شركة المقاولات العربية",
                             Phone = "01099998888",
-                            Status = "Active",
                             TenantId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
                         },
                         new
@@ -285,11 +201,9 @@ namespace RasdAI.DAL.Migrations
                             Id = 101,
                             CreatedAt = new DateTime(2026, 4, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedByUserId = 101,
-                            Currency = "SAR",
                             Email = "info@alfath.com",
                             Name = "مجموعة الفتح التجارية",
                             Phone = "01288887777",
-                            Status = "Active",
                             TenantId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
                         },
                         new
@@ -297,11 +211,9 @@ namespace RasdAI.DAL.Migrations
                             Id = 102,
                             CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedByUserId = 7,
-                            Currency = "SAR",
                             Email = "info@techco.com",
                             Name = "شركة التقنية المتطورة",
                             Phone = "+966501234567",
-                            Status = "Active",
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9")
                         },
                         new
@@ -309,11 +221,9 @@ namespace RasdAI.DAL.Migrations
                             Id = 103,
                             CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedByUserId = 7,
-                            Currency = "SAR",
                             Email = "contact@logistics.com",
                             Name = "مؤسسة الخدمات اللوجستية",
                             Phone = "+966507654321",
-                            Status = "Active",
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9")
                         });
                 });
@@ -361,112 +271,25 @@ namespace RasdAI.DAL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AIAnalysisResult")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AttachmentsJson")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("ClientId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ContractNumber")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ContractTitle")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("ContractType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("ContractValue")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Currency")
+                    b.Property<string>("FileName")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<decimal>("DepositAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<decimal>("Discount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("FinalAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("PaidAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("PaymentTerms")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("ReferenceNumber")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("RemainingAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ReminderDays")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("TaxPercentage")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedBy")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
-
-                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("TenantId");
 
@@ -564,71 +387,6 @@ namespace RasdAI.DAL.Migrations
                         });
                 });
 
-            modelBuilder.Entity("RasdAI.DAL.Entities.Expense", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("ExpenseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("VendorName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("Expenses", (string)null);
-                });
-
             modelBuilder.Entity("RasdAI.DAL.Entities.Invoice", b =>
                 {
                     b.Property<int>("Id")
@@ -637,59 +395,19 @@ namespace RasdAI.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ContractId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedByUserId")
+                    b.Property<int>("DealId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<int?>("DealId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Discount")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<decimal>("GrandTotal")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("InvoiceNumber")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("IssueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("PaidAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("RemainingBalance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
@@ -699,12 +417,6 @@ namespace RasdAI.DAL.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("ContractId");
-
-                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("DealId");
 
@@ -716,120 +428,60 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 100,
-                            ClientId = 100,
                             CreatedAt = new DateTime(2026, 3, 15, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            Currency = "SAR",
                             DealId = 100,
-                            Discount = 0m,
                             DueDate = new DateTime(2026, 4, 15, 0, 0, 0, 0, DateTimeKind.Utc),
-                            GrandTotal = 150000m,
-                            InvoiceNumber = "INV-100",
-                            IssueDate = new DateTime(2026, 6, 29, 21, 34, 18, 778, DateTimeKind.Utc).AddTicks(1041),
-                            PaidAmount = 150000m,
-                            RemainingBalance = 0m,
                             Status = "Paid",
-                            Subtotal = 0m,
                             TenantId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                             TotalAmount = 150000m
                         },
                         new
                         {
                             Id = 101,
-                            ClientId = 101,
                             CreatedAt = new DateTime(2026, 5, 10, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            Currency = "SAR",
                             DealId = 101,
-                            Discount = 0m,
                             DueDate = new DateTime(2026, 6, 10, 0, 0, 0, 0, DateTimeKind.Utc),
-                            GrandTotal = 75000m,
-                            InvoiceNumber = "INV-101",
-                            IssueDate = new DateTime(2026, 6, 29, 21, 34, 18, 778, DateTimeKind.Utc).AddTicks(4224),
-                            PaidAmount = 75000m,
-                            RemainingBalance = 0m,
                             Status = "Paid",
-                            Subtotal = 0m,
                             TenantId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                             TotalAmount = 75000m
                         },
                         new
                         {
                             Id = 102,
-                            ClientId = 102,
                             CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 7,
-                            Currency = "SAR",
                             DealId = 102,
-                            Discount = 0m,
                             DueDate = new DateTime(2026, 7, 25, 0, 0, 0, 0, DateTimeKind.Utc),
-                            GrandTotal = 200000m,
-                            InvoiceNumber = "JINV-102",
-                            IssueDate = new DateTime(2026, 6, 29, 21, 34, 18, 778, DateTimeKind.Utc).AddTicks(5085),
-                            PaidAmount = 200000m,
-                            RemainingBalance = 0m,
                             Status = "Paid",
-                            Subtotal = 0m,
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9"),
                             TotalAmount = 200000m
                         },
                         new
                         {
                             Id = 103,
-                            ClientId = 102,
                             CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 7,
-                            Currency = "SAR",
                             DealId = 102,
-                            Discount = 0m,
                             DueDate = new DateTime(2026, 7, 10, 0, 0, 0, 0, DateTimeKind.Utc),
-                            GrandTotal = 50000m,
-                            InvoiceNumber = "JINV-103",
-                            IssueDate = new DateTime(2026, 6, 29, 21, 34, 18, 778, DateTimeKind.Utc).AddTicks(5092),
-                            PaidAmount = 0m,
-                            RemainingBalance = 50000m,
                             Status = "Unpaid",
-                            Subtotal = 0m,
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9"),
                             TotalAmount = 50000m
                         },
                         new
                         {
                             Id = 104,
-                            ClientId = 102,
                             CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 7,
-                            Currency = "SAR",
                             DealId = 103,
-                            Discount = 0m,
                             DueDate = new DateTime(2026, 8, 9, 0, 0, 0, 0, DateTimeKind.Utc),
-                            GrandTotal = 85000m,
-                            InvoiceNumber = "JINV-104",
-                            IssueDate = new DateTime(2026, 6, 29, 21, 34, 18, 778, DateTimeKind.Utc).AddTicks(5100),
-                            PaidAmount = 0m,
-                            RemainingBalance = 85000m,
                             Status = "Unpaid",
-                            Subtotal = 0m,
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9"),
                             TotalAmount = 85000m
                         },
                         new
                         {
                             Id = 105,
-                            ClientId = 103,
                             CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 7,
-                            Currency = "SAR",
                             DealId = 104,
-                            Discount = 0m,
                             DueDate = new DateTime(2026, 6, 15, 0, 0, 0, 0, DateTimeKind.Utc),
-                            GrandTotal = 120000m,
-                            InvoiceNumber = "JINV-105",
-                            IssueDate = new DateTime(2026, 6, 29, 21, 34, 18, 778, DateTimeKind.Utc).AddTicks(5105),
-                            PaidAmount = 0m,
-                            RemainingBalance = 120000m,
                             Status = "Overdue",
-                            Subtotal = 0m,
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9"),
                             TotalAmount = 120000m
                         });
@@ -1149,83 +801,6 @@ namespace RasdAI.DAL.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PendingCompanyRegistrations");
-                });
-            modelBuilder.Entity("RasdAI.DAL.Entities.Payment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("BankName")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CreatedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("InvoiceId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ReferenceNumber")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("TransactionNumber")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedBy")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("InvoiceId");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("RasdAI.DAL.Entities.Report", b =>
@@ -1565,9 +1140,6 @@ namespace RasdAI.DAL.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
@@ -1760,11 +1332,6 @@ namespace RasdAI.DAL.Migrations
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RasdAI.DAL.Entities.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("RasdAI.DAL.Entities.Tenant", "Tenant")
                         .WithMany("Contracts")
                         .HasForeignKey("TenantId")
@@ -1772,8 +1339,6 @@ namespace RasdAI.DAL.Migrations
                         .IsRequired();
 
                     b.Navigation("Client");
-
-                    b.Navigation("CreatedByUser");
 
                     b.Navigation("Tenant");
                 });
@@ -1804,58 +1369,19 @@ namespace RasdAI.DAL.Migrations
                     b.Navigation("Tenant");
                 });
 
-            modelBuilder.Entity("RasdAI.DAL.Entities.Expense", b =>
-                {
-                    b.HasOne("RasdAI.DAL.Entities.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("RasdAI.DAL.Entities.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CreatedByUser");
-
-                    b.Navigation("Tenant");
-                });
-
             modelBuilder.Entity("RasdAI.DAL.Entities.Invoice", b =>
                 {
-                    b.HasOne("RasdAI.DAL.Entities.Client", "Client")
-                        .WithMany()
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("RasdAI.DAL.Entities.Contract", "Contract")
-                        .WithMany("Invoices")
-                        .HasForeignKey("ContractId");
-
-                    b.HasOne("RasdAI.DAL.Entities.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("RasdAI.DAL.Entities.Deal", "Deal")
                         .WithMany("Invoices")
                         .HasForeignKey("DealId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("RasdAI.DAL.Entities.Tenant", "Tenant")
                         .WithMany("Invoices")
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Client");
-
-                    b.Navigation("Contract");
-
-                    b.Navigation("CreatedByUser");
 
                     b.Navigation("Deal");
 
@@ -1956,40 +1482,6 @@ namespace RasdAI.DAL.Migrations
                     b.Navigation("Tenant");
                 });
 
-            modelBuilder.Entity("RasdAI.DAL.Entities.Payment", b =>
-                {
-                    b.HasOne("RasdAI.DAL.Entities.Client", "Client")
-                        .WithMany("Payments")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("RasdAI.DAL.Entities.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("RasdAI.DAL.Entities.Invoice", "Invoice")
-                        .WithMany("Payments")
-                        .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("RasdAI.DAL.Entities.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-
-                    b.Navigation("CreatedByUser");
-
-                    b.Navigation("Invoice");
-
-                    b.Navigation("Tenant");
-                });
-
             modelBuilder.Entity("RasdAI.DAL.Entities.Report", b =>
                 {
                     b.HasOne("RasdAI.DAL.Entities.Tenant", "Tenant")
@@ -2059,23 +1551,11 @@ namespace RasdAI.DAL.Migrations
                     b.Navigation("Deals");
 
                     b.Navigation("Notes");
-
-                    b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("RasdAI.DAL.Entities.Contract", b =>
-                {
-                    b.Navigation("Invoices");
                 });
 
             modelBuilder.Entity("RasdAI.DAL.Entities.Deal", b =>
                 {
                     b.Navigation("Invoices");
-                });
-
-            modelBuilder.Entity("RasdAI.DAL.Entities.Invoice", b =>
-                {
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("RasdAI.DAL.Entities.Meeting", b =>

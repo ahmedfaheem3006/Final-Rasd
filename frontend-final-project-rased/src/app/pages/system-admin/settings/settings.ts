@@ -5,6 +5,7 @@ import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
 import { I18nService } from '../../../services/i18n.service';
 import { SystemAdminService } from '../../../services/system-admin.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-settings',
@@ -17,7 +18,11 @@ export class Settings implements OnInit {
   authService = inject(AuthService);
   private toastService = inject(ToastService);
   private systemAdminService = inject(SystemAdminService);
+  public notificationService = inject(NotificationService);
   i18n = inject(I18nService);
+
+  // Tab State
+  activeTab = signal<'profile' | 'password' | 'notifications' | 'tenants'>('profile');
 
   // Form password state
   currentPassword = '';
@@ -28,11 +33,16 @@ export class Settings implements OnInit {
   enableGlobalNotifications = true;
   enableAiSupport = true;
 
+  // Tenant / Corporate Accounts Management
+  tenantsList = signal<any[]>([]);
+  loadingTenants = signal(false);
+
   isSubmitting = signal(false);
   isSavingConfig = signal(false);
 
   ngOnInit() {
     this.loadSettingsConfig();
+    this.loadTenants();
   }
 
   loadSettingsConfig() {
@@ -44,6 +54,49 @@ export class Settings implements OnInit {
         }
       },
       error: (err) => console.error('Failed to load system config settings', err)
+    });
+  }
+
+  loadTenants() {
+    this.loadingTenants.set(true);
+    this.systemAdminService.getTenants().subscribe({
+      next: (res) => {
+        if (res && res.success && res.data) {
+          this.tenantsList.set(res.data);
+        }
+        this.loadingTenants.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load tenants in settings', err);
+        this.loadingTenants.set(false);
+      }
+    });
+  }
+
+  approveOrRejectTenant(tenantId: string, approve: boolean) {
+    this.systemAdminService.approveTenant(tenantId, approve).subscribe({
+      next: (res) => {
+        const msg = approve 
+          ? (this.i18n.currentLang() === 'ar' ? 'تمت الموافقة على الشركة وتفعيل حسابها بنجاح!' : 'Company approved and account activated successfully!')
+          : (this.i18n.currentLang() === 'ar' ? 'تم رفض طلب تسجيل الشركة بنجاح.' : 'Company registration request rejected successfully.');
+        
+        this.toastService.success(msg);
+        this.loadTenants();
+        
+        // Reload admin notifications to update navbar count
+        const currentUser = this.authService.currentUser();
+        if (currentUser) {
+          this.notificationService.loadNotificationsForUser(currentUser.role);
+        }
+      },
+      error: (err) => {
+        console.error('Approve/Reject tenant failed', err);
+        this.toastService.error(
+          this.i18n.currentLang() === 'ar' 
+            ? 'فشل تحديث حالة طلب الشركة.' 
+            : 'Failed to update company request status.'
+        );
+      }
     });
   }
 

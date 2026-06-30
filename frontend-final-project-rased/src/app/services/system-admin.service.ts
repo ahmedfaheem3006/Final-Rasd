@@ -87,4 +87,20 @@ export class SystemAdminService {
   updateSettingsConfig(config: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/settings-config`, config);
   }
+
+  approveTenant(id: string, approve: boolean): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/tenants/${id}/approve?approve=${approve}`, {});
+  }
+
+  getPendingRegistrations(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/pending-registrations`);
+  }
+
+  approvePendingRegistration(id: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/pending-registrations/${id}/approve`, {});
+  }
+
+  rejectPendingRegistration(id: string, reason?: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/pending-registrations/${id}/reject`, { reason });
+  }
 }

@@ -1,7 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RasdAI.DAL;
 using RasdAI.DAL.Entities;
 
@@ -16,6 +18,22 @@ public class ContactController : ControllerBase
     public ContactController(AppDbContext context)
     {
         _context = context;
+    }
+
+    [HttpGet("messages")]
+    public async Task<IActionResult> GetMessages()
+    {
+        try
+        {
+            var messages = await _context.ContactMessages
+                .OrderByDescending(m => m.CreatedAt)
+                .ToListAsync();
+            return Ok(messages);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = "حدث خطأ أثناء جلب الرسائل: " + ex.Message });
+        }
     }
 
     [HttpPost("submit")]
