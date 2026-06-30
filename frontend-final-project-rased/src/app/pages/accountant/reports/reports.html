@@ -1,0 +1,526 @@
+<div class="reports-container" [dir]="i18n.dir()">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.currentLang() === 'ar' ? 'المحاسبة / التقارير المالية' : 'Accounting / Financial Reports' }}</div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'التقارير المالية' : 'Financial Reports' }}</h1>
+      <p class="subtitle">{{ i18n.currentLang() === 'ar' ? 'تقارير الإيرادات والأرباح والتدفق النقدي وبيانات العملاء' : 'Revenue, P&L, cash flow, and client statements' }}</p>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tab-nav animate-reveal">
+    <button class="tab-btn" [class.active]="activeTab() === 'revenue'" (click)="switchTab('revenue')">
+      <i class="fa-solid fa-chart-line"></i>
+      {{ i18n.currentLang() === 'ar' ? 'تقرير الإيرادات' : 'Revenue Report' }}
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'profitloss'" (click)="switchTab('profitloss')">
+      <i class="fa-solid fa-coins"></i>
+      {{ i18n.currentLang() === 'ar' ? 'الأرباح والخسائر' : 'Profit & Loss' }}
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'cashflow'" (click)="switchTab('cashflow')">
+      <i class="fa-solid fa-money-bill-transfer"></i>
+      {{ i18n.currentLang() === 'ar' ? 'التدفق النقدي' : 'Cash Flow' }}
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'clientstatement'" (click)="switchTab('clientstatement')">
+      <i class="fa-solid fa-user"></i>
+      {{ i18n.currentLang() === 'ar' ? 'كشف حساب عميل' : 'Client Statement' }}
+    </button>
+  </div>
+
+  <!-- ==================== REVENUE TAB ==================== -->
+  @if (activeTab() === 'revenue') {
+    <div class="tab-content animate-reveal">
+      <div class="date-range-bar">
+        <div class="date-field">
+          <label>{{ i18n.currentLang() === 'ar' ? 'من' : 'From' }}</label>
+          <input class="input-glass" type="date" [value]="revenueFrom()" (change)="revenueFrom.set($any($event.target).value)" />
+        </div>
+        <div class="date-field">
+          <label>{{ i18n.currentLang() === 'ar' ? 'إلى' : 'To' }}</label>
+          <input class="input-glass" type="date" [value]="revenueTo()" (change)="revenueTo.set($any($event.target).value)" />
+        </div>
+        <button class="btn btn-gradient-primary" (click)="loadRevenue()">
+          <i class="fa-solid fa-rotate"></i>
+          {{ i18n.currentLang() === 'ar' ? 'تحديث' : 'Update' }}
+        </button>
+      </div>
+
+      @if (revenueLoading()) {
+        <div class="stats-grid">
+          @for (_ of [1,2,3,4]; track $index) {
+            <div class="premium-card skeleton-card">
+              <div class="skeleton-line skeleton-line-short"></div>
+              <div class="skeleton-line skeleton-line-long"></div>
+            </div>
+          }
+        </div>
+        <div class="premium-card table-card">
+          <div class="table-wrapper">
+            <table class="vision-table">
+              <thead><tr><th></th><th></th><th></th><th></th></tr></thead>
+              <tbody>
+                @for (_ of [1,2,3,4,5]; track $index) {
+                  <tr class="skeleton-row">
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      } @else if (!revenueData()) {
+        <div class="premium-card">
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <h3>{{ i18n.currentLang() === 'ar' ? 'لا توجد بيانات إيرادات' : 'No Revenue Data' }}</h3>
+            <p>{{ i18n.currentLang() === 'ar' ? 'قم بتعديل نطاق التاريخ لعرض تقرير الإيرادات.' : 'Adjust the date range to view the revenue report.' }}</p>
+          </div>
+        </div>
+      } @else {
+        <div class="stats-grid">
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue' }}</span>
+              <div class="stat-icon primary"><i class="fa-solid fa-circle-dollar"></i></div>
+            </div>
+            <div class="stat-value color-primary">{{ formatCurrency(revenueData()?.totalRevenue) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي الفواتير' : 'Total Invoiced' }}</span>
+              <div class="stat-icon info"><i class="fa-solid fa-file-invoice"></i></div>
+            </div>
+            <div class="stat-value color-info">{{ formatCurrency(revenueData()?.totalInvoiced) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي المحصل' : 'Total Collected' }}</span>
+              <div class="stat-icon success"><i class="fa-solid fa-check-circle"></i></div>
+            </div>
+            <div class="stat-value color-success">{{ formatCurrency(revenueData()?.totalCollected) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'الرصيد المعلق' : 'Outstanding Balance' }}</span>
+              <div class="stat-icon danger"><i class="fa-solid fa-clock"></i></div>
+            </div>
+            <div class="stat-value color-danger">{{ formatCurrency(revenueData()?.outstandingBalance) }}</div>
+          </div>
+        </div>
+
+        <div class="premium-card table-card">
+          <div class="table-header">
+            <h3>{{ i18n.currentLang() === 'ar' ? 'التحليل الشهري' : 'Monthly Breakdown' }}</h3>
+          </div>
+          <div class="table-wrapper">
+            <table class="vision-table">
+              <thead>
+                <tr>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'الشهر' : 'Month' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'الفواتير' : 'Invoiced' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'المحصل' : 'Collected' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'نسبة المعلق' : 'Outstanding %' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of revenueData()?.monthlyBreakdown; track $index) {
+                  <tr>
+                    <td class="fw-bold">{{ getMonthName(row.month) }} {{ row.year || '' }}</td>
+                    <td>{{ formatCurrency(row.invoiced) }}</td>
+                    <td>{{ formatCurrency(row.collected) }}</td>
+                    <td>
+                      <span class="badge-outstanding">{{ outstandingPercent(row.invoiced, row.collected) }}</span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="empty-state">
+                      <i class="fa-solid fa-chart-simple"></i>
+                      {{ i18n.currentLang() === 'ar' ? 'لا توجد بيانات شهرية' : 'No monthly data available' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ==================== PROFIT & LOSS TAB ==================== -->
+  @if (activeTab() === 'profitloss') {
+    <div class="tab-content animate-reveal">
+      <div class="date-range-bar">
+        <div class="date-field">
+          <label>{{ i18n.currentLang() === 'ar' ? 'من' : 'From' }}</label>
+          <input class="input-glass" type="date" [value]="plFrom()" (change)="plFrom.set($any($event.target).value)" />
+        </div>
+        <div class="date-field">
+          <label>{{ i18n.currentLang() === 'ar' ? 'إلى' : 'To' }}</label>
+          <input class="input-glass" type="date" [value]="plTo()" (change)="plTo.set($any($event.target).value)" />
+        </div>
+        <button class="btn btn-gradient-primary" (click)="loadProfitLoss()">
+          <i class="fa-solid fa-rotate"></i>
+          {{ i18n.currentLang() === 'ar' ? 'تحديث' : 'Update' }}
+        </button>
+      </div>
+
+      @if (plLoading()) {
+        <div class="stats-grid">
+          @for (_ of [1,2,3,4]; track $index) {
+            <div class="premium-card skeleton-card">
+              <div class="skeleton-line skeleton-line-short"></div>
+              <div class="skeleton-line skeleton-line-long"></div>
+            </div>
+          }
+        </div>
+        <div class="premium-card table-card">
+          <div class="table-wrapper">
+            <table class="vision-table">
+              <thead><tr><th></th><th></th><th></th></tr></thead>
+              <tbody>
+                @for (_ of [1,2,3,4]; track $index) {
+                  <tr class="skeleton-row"><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell"></div></td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      } @else if (!profitLossData()) {
+        <div class="premium-card">
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fa-solid fa-coins"></i></div>
+            <h3>{{ i18n.currentLang() === 'ar' ? 'لا توجد بيانات أرباح وخسائر' : 'No P&L Data' }}</h3>
+            <p>{{ i18n.currentLang() === 'ar' ? 'قم بتعديل نطاق التاريخ لعرض التقرير.' : 'Adjust the date range to view the report.' }}</p>
+          </div>
+        </div>
+      } @else {
+        <div class="stats-grid">
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue' }}</span>
+              <div class="stat-icon primary"><i class="fa-solid fa-circle-dollar"></i></div>
+            </div>
+            <div class="stat-value color-primary">{{ formatCurrency(profitLossData()?.totalRevenue) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي المصروفات' : 'Total Expenses' }}</span>
+              <div class="stat-icon danger"><i class="fa-solid fa-cart-shopping"></i></div>
+            </div>
+            <div class="stat-value color-danger">{{ formatCurrency(profitLossData()?.totalExpenses) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'صافي الربح' : 'Net Profit' }}</span>
+              <div class="stat-icon" [ngClass]="isPositive(profitLossData()?.netProfit) ? 'success' : 'danger'"><i class="fa-solid fa-scale-balanced"></i></div>
+            </div>
+            <div class="stat-value" [ngClass]="isPositive(profitLossData()?.netProfit) ? 'color-success' : 'color-danger'">{{ formatCurrency(profitLossData()?.netProfit) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'هامش الربح' : 'Profit Margin' }}</span>
+              <div class="stat-icon" [ngClass]="isPositive(profitLossData()?.profitMargin) ? 'success' : 'danger'"><i class="fa-solid fa-percent"></i></div>
+            </div>
+            <div class="stat-value" [ngClass]="profitMarginClass(profitLossData()?.profitMargin ?? 0)">
+              {{ profitLossData()?.profitMargin != null ? (profitLossData()?.profitMargin).toFixed(1) + '%' : '0%' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="premium-card table-card">
+          <div class="table-header">
+            <h3>{{ i18n.currentLang() === 'ar' ? 'مقارنة شهرية' : 'Monthly Comparison' }}</h3>
+          </div>
+          <div class="table-wrapper">
+            <table class="vision-table">
+              <thead>
+                <tr>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'الشهر' : 'Month' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'الإيرادات' : 'Revenue' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'المصروفات' : 'Expenses' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'صافي الربح' : 'Net Profit' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of profitLossData()?.monthlyData; track $index) {
+                  <tr>
+                    <td class="fw-bold">{{ getMonthName(row.month) }} {{ row.year || '' }}</td>
+                    <td>{{ formatCurrency(row.revenue) }}</td>
+                    <td>{{ formatCurrency(row.expenses) }}</td>
+                    <td>
+                      <span [ngClass]="isPositive(row.netProfit) ? 'color-success' : 'color-danger'" class="fw-bold">
+                        {{ formatCurrency(row.netProfit) }}
+                      </span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="empty-state">
+                      <i class="fa-solid fa-table"></i>
+                      {{ i18n.currentLang() === 'ar' ? 'لا توجد بيانات شهرية' : 'No monthly data available' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ==================== CASH FLOW TAB ==================== -->
+  @if (activeTab() === 'cashflow') {
+    <div class="tab-content animate-reveal">
+      <div class="date-range-bar">
+        <div class="date-field">
+          <label>{{ i18n.currentLang() === 'ar' ? 'من' : 'From' }}</label>
+          <input class="input-glass" type="date" [value]="cfFrom()" (change)="cfFrom.set($any($event.target).value)" />
+        </div>
+        <div class="date-field">
+          <label>{{ i18n.currentLang() === 'ar' ? 'إلى' : 'To' }}</label>
+          <input class="input-glass" type="date" [value]="cfTo()" (change)="cfTo.set($any($event.target).value)" />
+        </div>
+        <button class="btn btn-gradient-primary" (click)="loadCashFlow()">
+          <i class="fa-solid fa-rotate"></i>
+          {{ i18n.currentLang() === 'ar' ? 'تحديث' : 'Update' }}
+        </button>
+      </div>
+
+      @if (cashflowLoading()) {
+        <div class="stats-grid">
+          @for (_ of [1,2,3,4]; track $index) {
+            <div class="premium-card skeleton-card">
+              <div class="skeleton-line skeleton-line-short"></div>
+              <div class="skeleton-line skeleton-line-long"></div>
+            </div>
+          }
+        </div>
+        <div class="premium-card table-card">
+          <div class="table-wrapper">
+            <table class="vision-table">
+              <thead><tr><th></th><th></th><th></th></tr></thead>
+              <tbody>
+                @for (_ of [1,2,3,4]; track $index) {
+                  <tr class="skeleton-row"><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell"></div></td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      } @else if (!cashFlowData()) {
+        <div class="premium-card">
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
+            <h3>{{ i18n.currentLang() === 'ar' ? 'لا توجد بيانات تدفق نقدي' : 'No Cash Flow Data' }}</h3>
+            <p>{{ i18n.currentLang() === 'ar' ? 'قم بتعديل نطاق التاريخ لعرض التقرير.' : 'Adjust the date range to view the report.' }}</p>
+          </div>
+        </div>
+      } @else {
+        <div class="stats-grid">
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'الرصيد الافتتاحي' : 'Opening Balance' }}</span>
+              <div class="stat-icon primary"><i class="fa-solid fa-door-open"></i></div>
+            </div>
+            <div class="stat-value color-primary">{{ formatCurrency(cashFlowData()?.openingBalance) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي الوارد' : 'Total Inflows' }}</span>
+              <div class="stat-icon success"><i class="fa-solid fa-arrow-down"></i></div>
+            </div>
+            <div class="stat-value color-success">{{ formatCurrency(cashFlowData()?.totalInflows) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي الصادر' : 'Total Outflows' }}</span>
+              <div class="stat-icon danger"><i class="fa-solid fa-arrow-up"></i></div>
+            </div>
+            <div class="stat-value color-danger">{{ formatCurrency(cashFlowData()?.totalOutflows) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'الرصيد الختامي' : 'Closing Balance' }}</span>
+              <div class="stat-icon info"><i class="fa-solid fa-door-closed"></i></div>
+            </div>
+            <div class="stat-value color-info">{{ formatCurrency(cashFlowData()?.closingBalance) }}</div>
+          </div>
+        </div>
+
+        <div class="premium-card table-card">
+          <div class="table-header">
+            <h3>{{ i18n.currentLang() === 'ar' ? 'ملخص التدفق النقدي الشهري' : 'Monthly Cash Flow Summary' }}</h3>
+          </div>
+          <div class="table-wrapper">
+            <table class="vision-table">
+              <thead>
+                <tr>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'الشهر' : 'Month' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'الوارد' : 'Inflows' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'الصادر' : 'Outflows' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'صافي التدفق' : 'Net Flow' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of cashFlowData()?.monthlySummary; track $index) {
+                  <tr>
+                    <td class="fw-bold">{{ getMonthName(row.month) }} {{ row.year || '' }}</td>
+                    <td>{{ formatCurrency(row.inflows) }}</td>
+                    <td>{{ formatCurrency(row.outflows) }}</td>
+                    <td>
+                      <span [ngClass]="isPositive(row.netFlow) ? 'color-success' : 'color-danger'" class="fw-bold">
+                        {{ formatCurrency(row.netFlow) }}
+                      </span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="empty-state">
+                      <i class="fa-solid fa-water"></i>
+                      {{ i18n.currentLang() === 'ar' ? 'لا توجد بيانات شهرية' : 'No monthly data available' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ==================== CLIENT STATEMENT TAB ==================== -->
+  @if (activeTab() === 'clientstatement') {
+    <div class="tab-content animate-reveal">
+      <div class="client-select-bar">
+        <div class="select-field">
+          <label>{{ i18n.currentLang() === 'ar' ? 'اختر العميل' : 'Select Client' }}</label>
+          <div class="select-glass">
+            <select (change)="onClientSelect($any($event.target).value)">
+              <option value="">{{ i18n.currentLang() === 'ar' ? '-- اختر عميلاً --' : '-- Select a client --' }}</option>
+              @for (c of clients(); track c.id) {
+                <option [value]="c.id">{{ c.name || c.clientName || c.companyName }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+
+      @if (!selectedClientId()) {
+        <div class="premium-card">
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fa-solid fa-user"></i></div>
+            <h3>{{ i18n.currentLang() === 'ar' ? 'اختر عميلاً' : 'Select a Client' }}</h3>
+            <p>{{ i18n.currentLang() === 'ar' ? 'يرجى اختيار عميل من القائمة لعرض كشف الحساب.' : 'Please select a client from the dropdown to view their statement.' }}</p>
+          </div>
+        </div>
+      } @else if (statementLoading()) {
+        <div class="stats-grid">
+          @for (_ of [1,2,3]; track $index) {
+            <div class="premium-card skeleton-card">
+              <div class="skeleton-line skeleton-line-short"></div>
+              <div class="skeleton-line skeleton-line-long"></div>
+            </div>
+          }
+        </div>
+        <div class="premium-card table-card">
+          <div class="table-wrapper">
+            <table class="vision-table">
+              <thead><tr><th></th><th></th><th></th><th></th></tr></thead>
+              <tbody>
+                @for (_ of [1,2,3]; track $index) {
+                  <tr class="skeleton-row"><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell"></div></td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      } @else if (!statementData()) {
+        <div class="premium-card">
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fa-solid fa-file-invoice"></i></div>
+            <h3>{{ i18n.currentLang() === 'ar' ? 'لا توجد بيانات' : 'No Statement Data' }}</h3>
+            <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد معاملات لهذا العميل في الفترة المحددة.' : 'No transactions found for this client.' }}</p>
+          </div>
+        </div>
+      } @else {
+        <div class="stats-grid">
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي الفواتير' : 'Total Invoiced' }}</span>
+              <div class="stat-icon primary"><i class="fa-solid fa-file-invoice"></i></div>
+            </div>
+            <div class="stat-value color-primary">{{ formatCurrency(statementData()?.totalInvoiced) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي المدفوع' : 'Total Paid' }}</span>
+              <div class="stat-icon success"><i class="fa-solid fa-check-circle"></i></div>
+            </div>
+            <div class="stat-value color-success">{{ formatCurrency(statementData()?.totalPaid) }}</div>
+          </div>
+          <div class="premium-card stat-card">
+            <div class="stat-header">
+              <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'الرصيد المستحق' : 'Balance Due' }}</span>
+              <div class="stat-icon" [ngClass]="isPositive(statementData()?.balanceDue) ? 'danger' : 'success'">
+                <i class="fa-solid fa-scale-balanced"></i>
+              </div>
+            </div>
+            <div class="stat-value" [ngClass]="isPositive(statementData()?.balanceDue) ? 'color-danger' : 'color-success'">
+              {{ formatCurrency(statementData()?.balanceDue) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="premium-card table-card">
+          <div class="table-header">
+            <h3>{{ i18n.currentLang() === 'ar' ? 'سجل المعاملات' : 'Transaction History' }}</h3>
+          </div>
+          <div class="table-wrapper">
+            <table class="vision-table">
+              <thead>
+                <tr>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'التاريخ' : 'Date' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'الوصف' : 'Description' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'النوع' : 'Type' }}</th>
+                  <th>{{ i18n.currentLang() === 'ar' ? 'المبلغ' : 'Amount' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (tx of statementData()?.transactions; track $index) {
+                  <tr>
+                    <td class="text-muted">{{ tx.date ? (tx.date | date:'shortDate') : '-' }}</td>
+                    <td>{{ tx.description || '-' }}</td>
+                    <td>
+                      @if (tx.type === 'Invoice' || tx.type === 'invoice') {
+                        <span class="badge badge-info">{{ i18n.currentLang() === 'ar' ? 'فاتورة' : 'Invoice' }}</span>
+                      } @else if (tx.type === 'Payment' || tx.type === 'payment') {
+                        <span class="badge badge-success">{{ i18n.currentLang() === 'ar' ? 'دفعة' : 'Payment' }}</span>
+                      } @else {
+                        <span class="badge badge-secondary">{{ tx.type || '-' }}</span>
+                      }
+                    </td>
+                    <td class="fw-bold">{{ formatCurrency(tx.amount) }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="empty-state">
+                      <i class="fa-solid fa-receipt"></i>
+                      {{ i18n.currentLang() === 'ar' ? 'لا توجد معاملات' : 'No transactions' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

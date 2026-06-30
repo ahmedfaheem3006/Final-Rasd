@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class TenantService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5092/api/Tenants';
+  private baseUrl = 'http://localhost:5292/api/Tenants';
 
   registerTenant(tenant: {
     companyName: string;

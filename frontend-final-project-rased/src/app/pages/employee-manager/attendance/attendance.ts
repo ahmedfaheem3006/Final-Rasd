@@ -82,7 +82,7 @@ export class EmployeeManagerAttendance implements OnInit {
 
   loadAttendanceForDate(date: string) {
     this.loading.set(true);
-    this.http.get<any>(`http://localhost:5092/api/Attendances?date=${date}`).subscribe({
+    this.http.get<any>(`http://localhost:5292/api/Attendances?date=${date}`).subscribe({
       next: (res) => {
         this.loading.set(false);
         if (res && res.success && res.data) {

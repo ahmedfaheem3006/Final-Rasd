@@ -27,7 +27,7 @@ export class AuthService {
 
   private router = inject(Router);
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5092/api/Auth';
+  private baseUrl = 'http://localhost:5292/api/Auth';
 
   currentUser = signal<User | null>(null);
   isAuthenticated = computed(() => this.currentUser() !== null);
@@ -246,6 +246,10 @@ export class AuthService {
 
   getUsers(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/users`);
+  }
+
+  getEmployees(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/employees`);
   }
 
   getProfile(): Observable<any> {

@@ -1,23 +1,29 @@
-import { Component, signal, computed, ViewChild, ElementRef, effect, Renderer2, HostListener, inject } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ThemeService } from '../../../services/theme.service';
+import { CrmService } from '../../../services/crm.service';
+import { AuthService } from '../../../services/auth.service';
 import { I18nService } from '../../../services/i18n.service';
 
 interface Deal {
-  client: string;
-  value: string;
-  agent: string;
-  date: string;
+  id: number;
+  clientId: number;
+  clientName: string;
+  assignedUserId?: number | null;
+  assignedUserName: string;
+  amount: number;
+  status: string;
+  createdAt: string;
 }
 
-interface Stage {
-  name: string;
-  color: string;
-  count: number;
-  value: string;
-  deals: Deal[];
-}
+type ModalMode = 'create' | 'edit' | null;
+
+const STAGES = [
+  { key: 'Proposal',    label: 'عرض سعر',    color: 'primary' },
+  { key: 'Negotiation', label: 'تفاوض',       color: 'warning' },
+  { key: 'Won',         label: 'مكتملة',      color: 'success' },
+  { key: 'Lost',        label: 'خسارة',       color: 'danger'  },
+];
 
 @Component({
   selector: 'app-deals-pipeline',
@@ -25,106 +31,149 @@ interface Stage {
   templateUrl: './deals-pipeline.html',
   styleUrl: './deals-pipeline.css'
 })
-export class SalesManagerDealsPipeline {
+export class SalesManagerDealsPipeline implements OnInit {
   public i18n = inject(I18nService);
-  private renderer = inject(Renderer2);
-  private themeService = inject(ThemeService);
+  private crmService = inject(CrmService);
+  private authService = inject(AuthService);
 
-  isLightTheme = false;
+  deals = signal<Deal[]>([]);
+  clients = signal<any[]>([]);
+  users = signal<any[]>([]);
+  isLoading = signal(true);
+  isSaving = signal(false);
 
-  @ViewChild('premiumModalOverlay', { static: false }) modalOverlayRef!: ElementRef;
-  @ViewChild('premiumModal', { static: false }) premiumModalRef!: ElementRef;
+  modalMode = signal<ModalMode>(null);
+  deleteTargetId = signal<number | null>(null);
+  defaultStage = signal('Proposal');
 
-  showModal = signal(false);
-  isSubmitting = signal(false);
+  stages = STAGES;
 
-  newClient = '';
-  newValue: number | null = null;
-  newDealStatus = 'Proposal';
+  form = {
+    id: 0,
+    clientId: 0,
+    assignedUserId: null as number | null,
+    amount: 0,
+    status: 'Proposal',
+  };
 
-  constructor() {
-    this.isLightTheme = !this.themeService.isDark();
-    effect(() => {
-      if (this.showModal() && this.premiumModalRef?.nativeElement) {
-        this.renderer.appendChild(document.body, this.modalOverlayRef.nativeElement);
-        document.body.style.overflow = 'hidden';
-        setTimeout(() => this.premiumModalRef?.nativeElement?.focus(), 100);
-      } else if (!this.showModal() && this.premiumModalRef?.nativeElement) {
-        document.body.style.overflow = '';
+  // Deals grouped by stage
+  dealsByStage = computed(() => {
+    const all = this.deals();
+    const map: Record<string, Deal[]> = {};
+    STAGES.forEach(s => { map[s.key] = all.filter(d => d.status === s.key); });
+    return map;
+  });
+
+  // Stats
+  stats = computed(() => {
+    const all = this.deals();
+    const total = all.length;
+    const totalValue = all.reduce((s, d) => s + d.amount, 0);
+    const won = all.filter(d => d.status === 'Won');
+    const wonValue = won.reduce((s, d) => s + d.amount, 0);
+    const winRate = total > 0 ? Math.round((won.length / total) * 100) : 0;
+    return { total, totalValue, wonCount: won.length, wonValue, winRate };
+  });
+
+  ngOnInit() {
+    this.loadAll();
+  }
+
+  loadAll() {
+    this.isLoading.set(true);
+    this.crmService.getDeals().subscribe({
+      next: (r: any) => {
+        const list = r?.data ?? r ?? [];
+        this.deals.set(list);
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false)
+    });
+    this.crmService.getClients().subscribe({ next: (r: any) => this.clients.set(r?.data ?? r ?? []) });
+    this.authService.getUsers().subscribe({ next: (r: any) => this.users.set(r?.data ?? r ?? []) });
+  }
+
+  openCreate(stage = 'Proposal') {
+    this.form = { id: 0, clientId: 0, assignedUserId: null, amount: 0, status: stage };
+    this.modalMode.set('create');
+  }
+
+  openEdit(deal: Deal) {
+    this.form = {
+      id: deal.id,
+      clientId: deal.clientId,
+      assignedUserId: deal.assignedUserId ?? null,
+      amount: deal.amount,
+      status: deal.status,
+    };
+    this.modalMode.set('edit');
+  }
+
+  closeModal() { this.modalMode.set(null); }
+
+  save() {
+    if (!this.form.clientId || !this.form.amount) return;
+    this.isSaving.set(true);
+
+    const payload = {
+      clientId: this.form.clientId,
+      assignedUserId: this.form.assignedUserId,
+      amount: +this.form.amount,
+      status: this.form.status,
+    };
+
+    if (this.modalMode() === 'create') {
+      this.crmService.createDeal(payload).subscribe({
+        next: (r: any) => {
+          const d = r?.data ?? r;
+          if (d?.id) this.deals.update(list => [...list, d]);
+          this.isSaving.set(false);
+          this.closeModal();
+        },
+        error: () => this.isSaving.set(false)
+      });
+    } else {
+      this.crmService.updateDeal(this.form.id, payload).subscribe({
+        next: (r: any) => {
+          const d = r?.data ?? r;
+          if (d?.id) this.deals.update(list => list.map(x => x.id === d.id ? d : x));
+          this.isSaving.set(false);
+          this.closeModal();
+        },
+        error: () => this.isSaving.set(false)
+      });
+    }
+  }
+
+  moveStage(deal: Deal, status: string) {
+    this.crmService.updateDealStatus(deal.id, status).subscribe({
+      next: () => this.deals.update(list => list.map(d => d.id === deal.id ? { ...d, status } : d))
+    });
+  }
+
+  confirmDelete(id: number) { this.deleteTargetId.set(id); }
+  cancelDelete() { this.deleteTargetId.set(null); }
+
+  deleteDeal() {
+    const id = this.deleteTargetId();
+    if (!id) return;
+    this.crmService.deleteDeal(id).subscribe({
+      next: () => {
+        this.deals.update(list => list.filter(d => d.id !== id));
+        this.deleteTargetId.set(null);
       }
     });
   }
 
-  @HostListener('document:keydown.escape')
-  onEscape() {
-    if (this.showModal()) this.showModal.set(false);
+  stageColor(key: string): string {
+    return STAGES.find(s => s.key === key)?.color ?? 'primary';
   }
 
-  openModal() {
-    this.showModal.set(true);
+  stageTotal(key: string): number {
+    return (this.dealsByStage()[key] ?? []).reduce((s, d) => s + d.amount, 0);
   }
 
-  closeModal() {
-    this.showModal.set(false);
-    this.newClient = '';
-    this.newValue = null;
-    this.newDealStatus = 'Proposal';
-  }
-
-  addDeal() {
-    if (!this.newClient || !this.newValue) {
-      alert(this.i18n.t('pipeline.alert.validate'));
-      return;
-    }
-    this.isSubmitting.set(true);
-    setTimeout(() => {
-      this.isSubmitting.set(false);
-      this.closeModal();
-    }, 600);
-  }
-
-  stages = signal([
-    {
-      name: 'pipeline.stage_name.leads', color: 'primary', count: 0, value: '$0',
-      deals: [] as Deal[]
-    },
-    {
-      name: 'pipeline.stage_name.negotiation', color: 'warning', count: 0, value: '$0',
-      deals: [] as Deal[]
-    },
-    {
-      name: 'pipeline.stage_name.proposal', color: 'info', count: 0, value: '$0',
-      deals: [] as Deal[]
-    },
-    {
-      name: 'pipeline.stage_name.won', color: 'success', count: 0, value: '$0',
-      deals: [] as Deal[]
-    },
-  ]);
-
-  stagesDisplay = computed(() => this.stages().map(s => ({
-    ...s,
-    displayName: this.i18n.t(s.name),
-    displayCount: this.formatDealCount(s.count)
-  })));
-
-  formatCurrency(amount: number): string {
-    return '$' + Number(amount || 0).toLocaleString('en-US');
-  }
-
-  formatDealCount(count: number): string {
-    if (count === 0) return this.i18n.t('pipeline.count.zero');
-    if (this.i18n.isRtl()) {
-      if (count === 1) return `1 ${this.i18n.t('pipeline.count.singular')}`;
-      return `${count} ${this.i18n.t('pipeline.count.plural')}`;
-    }
-    if (count === 1) return `1 ${this.i18n.t('pipeline.count.singular')}`;
-    return `${count} ${this.i18n.t('pipeline.count.plural')}`;
-  }
-
-  formatLocaleDate(dateStr: string | null): string {
-    if (!dateStr) return this.i18n.t('pipeline.joined.recently');
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  formatAmount(v: number): string {
+    return v.toLocaleString('ar-SA');
   }
 }

@@ -7,15 +7,23 @@ import { Observable } from 'rxjs';
 })
 export class CrmService {
   private http = inject(HttpClient);
-  private customersUrl = 'http://localhost:5092/api/Customers';
-  private dealsUrl = 'http://localhost:5092/api/Deals';
+  private customersUrl = 'http://localhost:5292/api/Customers';
+  private dealsUrl = 'http://localhost:5292/api/Deals';
 
   getClients(): Observable<any> {
     return this.http.get<any>(this.customersUrl);
   }
 
-  createClient(client: { name: string; email: string; phone?: string; companyName?: string }): Observable<any> {
+  createClient(client: { name: string; email?: string; phone?: string; companyName?: string }): Observable<any> {
     return this.http.post<any>(this.customersUrl, client);
+  }
+
+  updateClient(id: number, client: { name: string; email?: string; phone?: string; companyName?: string; status: string }): Observable<any> {
+    return this.http.put<any>(`${this.customersUrl}/${id}`, client);
+  }
+
+  deleteClient(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.customersUrl}/${id}`);
   }
 
   getClientNotes(clientId: number): Observable<any> {
@@ -36,11 +44,19 @@ export class CrmService {
     return this.http.get<any>(this.dealsUrl);
   }
 
-  createDeal(deal: { clientId: number; assignedUserId?: number; amount: number; status: string }): Observable<any> {
+  createDeal(deal: { clientId: number; assignedUserId?: number | null; amount: number; status: string }): Observable<any> {
     return this.http.post<any>(this.dealsUrl, deal);
   }
 
   updateDealStatus(dealId: number, status: string): Observable<any> {
     return this.http.put<any>(`${this.dealsUrl}/${dealId}/status`, { status });
+  }
+
+  updateDeal(dealId: number, deal: { clientId: number; assignedUserId?: number | null; amount: number; status: string }): Observable<any> {
+    return this.http.put<any>(`${this.dealsUrl}/${dealId}`, deal);
+  }
+
+  deleteDeal(dealId: number): Observable<any> {
+    return this.http.delete<any>(`${this.dealsUrl}/${dealId}`);
   }
 }

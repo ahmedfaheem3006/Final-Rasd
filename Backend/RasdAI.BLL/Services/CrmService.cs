@@ -33,11 +33,56 @@ public class CrmService : ICrmService
                 CreatedByUserId = c.CreatedByUserId,
                 CreatedByUserName = c.CreatedByUser.FullName,
                 Name = c.Name,
+                CompanyName = c.CompanyName,
                 Email = c.Email,
                 Phone = c.Phone,
+                Status = c.Status,
                 CreatedAt = c.CreatedAt
             })
             .ToListAsync();
+    }
+
+    public async Task<ClientDto?> UpdateClientAsync(int clientId, UpdateClientDto dto, Guid tenantId)
+    {
+        var client = await _context.Clients
+            .Include(c => c.CreatedByUser)
+            .FirstOrDefaultAsync(c => c.Id == clientId && c.TenantId == tenantId);
+
+        if (client == null) return null;
+
+        client.Name = dto.Name;
+        client.Email = dto.Email ?? string.Empty;
+        client.Phone = dto.Phone ?? string.Empty;
+        client.CompanyName = dto.CompanyName;
+        client.Status = dto.Status;
+
+        await _context.SaveChangesAsync();
+
+        return new ClientDto
+        {
+            Id = client.Id,
+            TenantId = client.TenantId,
+            CreatedByUserId = client.CreatedByUserId,
+            CreatedByUserName = client.CreatedByUser?.FullName ?? string.Empty,
+            Name = client.Name,
+            CompanyName = client.CompanyName,
+            Email = client.Email,
+            Phone = client.Phone,
+            Status = client.Status,
+            CreatedAt = client.CreatedAt
+        };
+    }
+
+    public async Task<bool> DeleteClientAsync(int clientId, Guid tenantId)
+    {
+        var client = await _context.Clients
+            .FirstOrDefaultAsync(c => c.Id == clientId && c.TenantId == tenantId);
+
+        if (client == null) return false;
+
+        _context.Clients.Remove(client);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     public async Task<ClientDto> CreateClientAsync(CreateClientDto createClientDto, Guid tenantId, int userId)
@@ -139,6 +184,54 @@ public class CrmService : ICrmService
         if (deal == null) return false;
 
         deal.Status = status;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<DealDto?> UpdateDealAsync(int dealId, UpdateDealDto dto, Guid tenantId)
+    {
+        var deal = await _context.Deals
+            .Include(d => d.Client)
+            .Include(d => d.AssignedUser)
+            .FirstOrDefaultAsync(d => d.Id == dealId && d.TenantId == tenantId);
+
+        if (deal == null) return null;
+
+        var clientExists = await _context.Clients.AnyAsync(c => c.Id == dto.ClientId && c.TenantId == tenantId);
+        if (!clientExists) throw new KeyNotFoundException("العميل غير موجود");
+
+        deal.ClientId = dto.ClientId;
+        deal.AssignedUserId = dto.AssignedUserId;
+        deal.Amount = dto.Amount;
+        deal.Status = dto.Status;
+        await _context.SaveChangesAsync();
+
+        await _context.Entry(deal).Reference(d => d.Client).LoadAsync();
+        if (deal.AssignedUserId.HasValue)
+            await _context.Entry(deal).Reference(d => d.AssignedUser).LoadAsync();
+
+        return new DealDto
+        {
+            Id = deal.Id,
+            TenantId = deal.TenantId,
+            ClientId = deal.ClientId,
+            ClientName = deal.Client?.Name ?? "",
+            AssignedUserId = deal.AssignedUserId,
+            AssignedUserName = deal.AssignedUser?.FullName ?? "",
+            Amount = deal.Amount,
+            Status = deal.Status,
+            CreatedAt = deal.CreatedAt
+        };
+    }
+
+    public async Task<bool> DeleteDealAsync(int dealId, Guid tenantId)
+    {
+        var deal = await _context.Deals
+            .FirstOrDefaultAsync(d => d.Id == dealId && d.TenantId == tenantId);
+
+        if (deal == null) return false;
+
+        _context.Deals.Remove(deal);
         await _context.SaveChangesAsync();
         return true;
     }

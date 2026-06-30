@@ -29,6 +29,8 @@ public class AppDbContext : DbContext
     public DbSet<SupportIssue> SupportIssues { get; set; } = null!;
     public DbSet<LeaveRequest> LeaveRequests { get; set; } = null!;
     public DbSet<ContactMessage> ContactMessages { get; set; } = null!;
+    public DbSet<Payment> Payments { get; set; } = null!;
+    public DbSet<Expense> Expenses { get; set; } = null!;
     public DbSet<JobVacancy> JobVacancies { get; set; } = null!;
     public DbSet<Candidate> Candidates { get; set; } = null!;
     public DbSet<Attendance> Attendances { get; set; } = null!;
@@ -126,8 +128,28 @@ public class AppDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.CompanyName).HasMaxLength(200);
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.CommercialRegistration).HasMaxLength(100);
+            entity.Property(e => e.TaxNumber).HasMaxLength(100);
+            entity.Property(e => e.Industry).HasMaxLength(100);
+            entity.Property(e => e.Website).HasMaxLength(500);
+            entity.Property(e => e.CompanySize).HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.OwnerName).HasMaxLength(200);
+            entity.Property(e => e.JobTitle).HasMaxLength(200);
+            entity.Property(e => e.Country).HasMaxLength(100);
+            entity.Property(e => e.Governorate).HasMaxLength(100);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.Street).HasMaxLength(200);
+            entity.Property(e => e.PostalCode).HasMaxLength(20);
+            entity.Property(e => e.PaymentTerms).HasMaxLength(200);
+            entity.Property(e => e.Currency).HasMaxLength(10);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.CreditLimit).HasPrecision(18, 2);
+            entity.Property(e => e.OpeningBalance).HasPrecision(18, 2);
+            entity.Property(e => e.TaxPercentage).HasPrecision(5, 2);
 
             entity.HasOne(e => e.Tenant)
                 .WithMany(t => t.Clients)
@@ -167,8 +189,13 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Invoice>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.InvoiceNumber).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Currency).HasMaxLength(10);
             entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+            entity.Property(e => e.GrandTotal).HasPrecision(18, 2);
+            entity.Property(e => e.PaidAmount).HasPrecision(18, 2);
+            entity.Property(e => e.RemainingBalance).HasPrecision(18, 2);
 
             entity.HasOne(e => e.Tenant)
                 .WithMany(t => t.Invoices)
@@ -179,6 +206,73 @@ public class AppDbContext : DbContext
                 .WithMany(d => d.Invoices)
                 .HasForeignKey(e => e.DealId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Client)
+                .WithMany()
+                .HasForeignKey(e => e.ClientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // 6b. Payments configuration
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.ToTable("Payments");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.ReferenceNumber).HasMaxLength(200);
+            entity.Property(e => e.TransactionNumber).HasMaxLength(200);
+            entity.Property(e => e.BankName).HasMaxLength(200);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Invoice)
+                .WithMany(i => i.Payments)
+                .HasForeignKey(e => e.InvoiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Client)
+                .WithMany(c => c.Payments)
+                .HasForeignKey(e => e.ClientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // 6c. Expenses configuration
+        modelBuilder.Entity<Expense>(entity =>
+        {
+            entity.ToTable("Expenses");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Category).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.VendorName).HasMaxLength(200);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Currency).IsRequired().HasMaxLength(10);
+
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // 7. Tasks configuration
@@ -253,6 +347,25 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Contract>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.ContractNumber).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.ContractTitle).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.ContractType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.ReferenceNumber).HasMaxLength(100);
+            entity.Property(e => e.Currency).HasMaxLength(10);
+            
+            entity.Property(e => e.ContractValue).HasPrecision(18, 2);
+            entity.Property(e => e.TaxPercentage).HasPrecision(5, 2);
+            entity.Property(e => e.Discount).HasPrecision(18, 2);
+            entity.Property(e => e.FinalAmount).HasPrecision(18, 2);
+            entity.Property(e => e.DepositAmount).HasPrecision(18, 2);
+            entity.Property(e => e.PaidAmount).HasPrecision(18, 2);
+            entity.Property(e => e.RemainingAmount).HasPrecision(18, 2);
+            
+            entity.Property(e => e.PaymentTerms).HasMaxLength(200);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.AttachmentsJson).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.AIAnalysisResult).HasColumnType("nvarchar(max)");
 
             entity.HasOne(e => e.Tenant)
                 .WithMany(t => t.Contracts)
@@ -263,6 +376,11 @@ public class AppDbContext : DbContext
                 .WithMany(c => c.Contracts)
                 .HasForeignKey(e => e.ClientId)
                 .OnDelete(DeleteBehavior.Cascade);
+                
+            entity.HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // 10. Notes configuration
@@ -422,8 +540,8 @@ public class AppDbContext : DbContext
         );
 
         modelBuilder.Entity<Invoice>().HasData(
-            new Invoice { Id = 100, TenantId = demoTenantId, DealId = 100, TotalAmount = 150000m, Status = "Paid", DueDate = new DateTime(2026, 4, 15, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 3, 15, 0, 0, 0, DateTimeKind.Utc) },
-            new Invoice { Id = 101, TenantId = demoTenantId, DealId = 101, TotalAmount = 75000m, Status = "Paid", DueDate = new DateTime(2026, 6, 10, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 5, 10, 0, 0, 0, DateTimeKind.Utc) }
+            new Invoice { Id = 100, TenantId = demoTenantId, DealId = 100, ClientId = 100, InvoiceNumber = "INV-100", CreatedByUserId = 1, TotalAmount = 150000m, GrandTotal = 150000m, PaidAmount = 150000m, RemainingBalance = 0m, Status = "Paid", DueDate = new DateTime(2026, 4, 15, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 3, 15, 0, 0, 0, DateTimeKind.Utc) },
+            new Invoice { Id = 101, TenantId = demoTenantId, DealId = 101, ClientId = 101, InvoiceNumber = "INV-101", CreatedByUserId = 1, TotalAmount = 75000m, GrandTotal = 75000m, PaidAmount = 75000m, RemainingBalance = 0m, Status = "Paid", DueDate = new DateTime(2026, 6, 10, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 5, 10, 0, 0, 0, DateTimeKind.Utc) }
         );
 
         // ==========================================
@@ -467,10 +585,10 @@ public class AppDbContext : DbContext
         );
 
         modelBuilder.Entity<Invoice>().HasData(
-            new Invoice { Id = 102, TenantId = joeTenantId, DealId = 102, TotalAmount = 200000m, Status = "Paid", DueDate = new DateTime(2026, 7, 25, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc) },
-            new Invoice { Id = 103, TenantId = joeTenantId, DealId = 102, TotalAmount = 50000m, Status = "Unpaid", DueDate = new DateTime(2026, 7, 10, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc) },
-            new Invoice { Id = 104, TenantId = joeTenantId, DealId = 103, TotalAmount = 85000m, Status = "Unpaid", DueDate = new DateTime(2026, 8, 9, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc) },
-            new Invoice { Id = 105, TenantId = joeTenantId, DealId = 104, TotalAmount = 120000m, Status = "Overdue", DueDate = new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc) }
+            new Invoice { Id = 102, TenantId = joeTenantId, DealId = 102, ClientId = 102, InvoiceNumber = "JINV-102", CreatedByUserId = 7, TotalAmount = 200000m, GrandTotal = 200000m, PaidAmount = 200000m, RemainingBalance = 0m, Status = "Paid", DueDate = new DateTime(2026, 7, 25, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc) },
+            new Invoice { Id = 103, TenantId = joeTenantId, DealId = 102, ClientId = 102, InvoiceNumber = "JINV-103", CreatedByUserId = 7, TotalAmount = 50000m, GrandTotal = 50000m, PaidAmount = 0m, RemainingBalance = 50000m, Status = "Unpaid", DueDate = new DateTime(2026, 7, 10, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc) },
+            new Invoice { Id = 104, TenantId = joeTenantId, DealId = 103, ClientId = 102, InvoiceNumber = "JINV-104", CreatedByUserId = 7, TotalAmount = 85000m, GrandTotal = 85000m, PaidAmount = 0m, RemainingBalance = 85000m, Status = "Unpaid", DueDate = new DateTime(2026, 8, 9, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc) },
+            new Invoice { Id = 105, TenantId = joeTenantId, DealId = 104, ClientId = 103, InvoiceNumber = "JINV-105", CreatedByUserId = 7, TotalAmount = 120000m, GrandTotal = 120000m, PaidAmount = 0m, RemainingBalance = 120000m, Status = "Overdue", DueDate = new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc), CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc) }
         );
 
         // Seed SupportIssues

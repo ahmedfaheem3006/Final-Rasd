@@ -1,0 +1,304 @@
+<div class="expenses-container" [dir]="i18n.dir()">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.currentLang() === 'ar' ? 'المحاسبة / المصروفات' : 'Accounting / Expenses' }}</div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'إدارة المصروفات' : 'Expenses Management' }}</h1>
+      <p class="subtitle">{{ i18n.currentLang() === 'ar' ? 'تتبع وإدارة جميع مصروفات الشركة' : 'Track and manage all company expenses' }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-gradient-primary" (click)="openAddModal()">
+        <i class="fa-solid fa-plus"></i>
+        {{ i18n.currentLang() === 'ar' ? 'إضافة مصروف' : 'Add Expense' }}
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="expense-card-grid">
+      @for (_ of [1,2,3,4]; track $index) {
+        <div class="expense-card skeleton-card">
+          <div class="skeleton-line w-50"></div>
+          <div class="skeleton-line w-75 mt-3"></div>
+          <div class="skeleton-line w-25 mt-2"></div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="expense-card-grid animate-reveal">
+      <div class="expense-card stat-card">
+        <div class="stat-header">
+          <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'إجمالي المصروفات' : 'Total Expenses' }}</span>
+          <div class="stat-icon primary"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ formatAmount(totalExpenses()) }}</div>
+          <div class="stat-desc">{{ i18n.currentLang() === 'ar' ? 'جميع المصروفات' : 'All expenses' }}</div>
+        </div>
+      </div>
+
+      <div class="expense-card stat-card">
+        <div class="stat-header">
+          <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'هذا الشهر' : 'This Month' }}</span>
+          <div class="stat-icon warning"><i class="fa-solid fa-calendar"></i></div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ formatAmount(monthlyTotal()) }}</div>
+          <div class="stat-desc">{{ i18n.currentLang() === 'ar' ? 'مصروفات الشهر الحالي' : 'Current month expenses' }}</div>
+        </div>
+      </div>
+
+      <div class="expense-card stat-card">
+        <div class="stat-header">
+          <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'أعلى فئة' : 'Top Category' }}</span>
+          <div class="stat-icon info"><i class="fa-solid fa-layer-group"></i></div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ topCategory()?.category ?? '-' }}</div>
+          <div class="stat-desc">{{ topCategory() ? formatAmount(topCategory()!.total) : (i18n.currentLang() === 'ar' ? 'لا توجد بيانات' : 'No data') }}</div>
+        </div>
+      </div>
+
+      <div class="expense-card stat-card">
+        <div class="stat-header">
+          <span class="stat-title">{{ i18n.currentLang() === 'ar' ? 'التصنيفات' : 'Categories' }}</span>
+          <div class="stat-icon success"><i class="fa-solid fa-tags"></i></div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ categoryCount() }}</div>
+          <div class="stat-desc">{{ i18n.currentLang() === 'ar' ? 'فئة مصروفات نشطة' : 'Active expense categories' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="expense-card category-breakdown animate-reveal">
+      <div class="card-header">
+        <h3>{{ i18n.currentLang() === 'ar' ? 'توزيع المصروفات حسب الفئة' : 'Expense Breakdown by Category' }}</h3>
+      </div>
+      <div class="category-list">
+        @for (cat of categorySummary(); track cat.category) {
+          <div class="category-item">
+            <div class="category-info">
+              <span class="category-badge" [ngClass]="'category-' + (categoryColors[cat.category] || 'dark')">
+                {{ categoryLabel(cat.category) }}
+              </span>
+              <span class="category-amount">{{ formatAmount(cat.total) }}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-fill" [ngClass]="categoryColors[cat.category] || 'dark'"
+                   [style.width.%]="(cat.total / maxCategoryTotal()) * 100">
+              </div>
+            </div>
+            <span class="category-count">{{ cat.count }} {{ i18n.currentLang() === 'ar' ? 'مصروف' : 'expenses' }}</span>
+          </div>
+        } @empty {
+          <div class="category-empty">
+            {{ i18n.currentLang() === 'ar' ? 'لا توجد فئات مصروفات' : 'No expense categories' }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="toolbar card animate-reveal">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text"
+                 [placeholder]="i18n.currentLang() === 'ar' ? 'بحث عن مصروف...' : 'Search expenses...'"
+                 [value]="searchQuery()"
+                 (input)="onSearch($any($event.target).value)" />
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <div class="select-glass">
+          <select [value]="selectedCategory()" (change)="onCategoryChange($any($event.target).value)">
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ cat === 'All' ? (i18n.currentLang() === 'ar' ? 'جميع التصنيفات' : 'All Categories') : categoryLabel(cat) }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card table-card animate-reveal">
+      <div class="table-wrapper">
+        <table class="expense-table vision-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.currentLang() === 'ar' ? 'الوصف' : 'Description' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'الفئة' : 'Category' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'المبلغ' : 'Amount' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'المورد' : 'Vendor' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'التاريخ' : 'Date' }}</th>
+              <th>{{ i18n.t('common.status') }}</th>
+              <th>{{ i18n.t('common.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (exp of filteredExpenses(); track exp.id) {
+              <tr>
+                <td class="fw-bold">{{ exp.description }}</td>
+                <td>
+                  <span class="category-badge" [ngClass]="'category-' + (categoryColors[exp.category] || 'dark')">
+                    {{ categoryLabel(exp.category) }}
+                  </span>
+                </td>
+                <td class="fw-bold">{{ formatAmount(exp.amount) }}</td>
+                <td>{{ exp.vendorName }}</td>
+                <td class="text-muted">{{ formatDate(exp.expenseDate) }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusBadge(exp.status)">{{ statusLabel(exp.status) }}</span>
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <button class="btn-icon-sm" (click)="openEditModal(exp)" [title]="i18n.currentLang() === 'ar' ? 'تعديل' : 'Edit'">
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn-icon-sm btn-gradient-danger-outline" (click)="deleteExpense(exp.id)" [title]="i18n.currentLang() === 'ar' ? 'حذف' : 'Delete'">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="empty-state">
+                  <i class="fa-solid fa-receipt"></i>
+                  {{ i18n.currentLang() === 'ar' ? 'لا توجد مصروفات لعرضها' : 'No expenses to display' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Add/Edit Expense Modal -->
+  <div #modalOverlay class="premium-modal-overlay" [class.active]="showModal()" [class.light]="isLightTheme" (click)="closeModal()">
+    <div #premiumModal class="premium-modal" [class.active]="showModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="premium-header">
+        <div class="premium-header-left">
+          <div class="premium-header-icon"><i class="fa-solid fa-receipt"></i></div>
+          <div class="premium-header-text">
+            <h2 class="premium-title">{{ editMode()
+                ? (i18n.currentLang() === 'ar' ? 'تعديل المصروف' : 'Edit Expense')
+                : (i18n.currentLang() === 'ar' ? 'إضافة مصروف جديد' : 'Add New Expense') }}
+            </h2>
+            <p class="premium-subtitle">{{ editMode()
+                ? (i18n.currentLang() === 'ar' ? 'تحديث بيانات المصروف' : 'Update expense details')
+                : (i18n.currentLang() === 'ar' ? 'إدخال بيانات المصروف الجديد' : 'Enter new expense details') }}
+            </p>
+          </div>
+        </div>
+        <button class="premium-close-btn" (click)="closeModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="premium-header-divider"></div>
+
+      @if (showSuccess()) {
+        <div class="premium-success">
+          <div class="success-particles"><span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span></div>
+          <div class="success-icon-wrap">
+            <div class="success-glow"></div>
+            <div class="success-ring"></div>
+            <div class="success-circle">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"></polyline></svg>
+            </div>
+          </div>
+          <div class="success-badge">{{ i18n.currentLang() === 'ar' ? 'تم بنجاح' : 'Success' }}</div>
+          <h3 class="success-title">{{ editMode()
+              ? (i18n.currentLang() === 'ar' ? 'تم تحديث المصروف' : 'Expense Updated')
+              : (i18n.currentLang() === 'ar' ? 'تم إضافة المصروف' : 'Expense Added') }}
+          </h3>
+          <p class="success-desc">{{ i18n.currentLang() === 'ar' ? 'تم حفظ بيانات المصروف بنجاح.' : 'Expense data has been saved successfully.' }}</p>
+          <div class="success-divider"></div>
+          <div class="success-actions">
+            <button class="success-btn success-btn-primary" (click)="closeModal()"><i class="fa-solid fa-list"></i> {{ i18n.currentLang() === 'ar' ? 'عرض المصروفات' : 'View Expenses' }}</button>
+            <button class="success-btn success-btn-ghost" (click)="closeModal()">{{ i18n.currentLang() === 'ar' ? 'إغلاق' : 'Close' }}</button>
+          </div>
+        </div>
+      } @else {
+        <div class="premium-body">
+          <div class="premium-section">
+            <div class="premium-section-header"><i class="fa-solid fa-file-lines"></i> <span>{{ i18n.currentLang() === 'ar' ? 'تفاصيل المصروف' : 'Expense Details' }}</span></div>
+            <div class="premium-form-grid">
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <input id="eDesc" type="text" [(ngModel)]="formExpense.description" [ngModelOptions]="{standalone: true}" placeholder=" " class="premium-input" />
+                  <i class="fa-solid fa-align-left premium-input-icon"></i>
+                  <label for="eDesc" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'الوصف' : 'Description' }}</label>
+                </div>
+              </div>
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <select id="eCategory" [(ngModel)]="formExpense.category" [ngModelOptions]="{standalone: true}" class="premium-input">
+                    @for (cat of categories; track cat) {
+                      @if (cat !== 'All') {
+                        <option [value]="cat">{{ categoryLabel(cat) }}</option>
+                      }
+                    }
+                  </select>
+                  <i class="fa-solid fa-tag premium-input-icon"></i>
+                  <label for="eCategory" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'الفئة' : 'Category' }}</label>
+                </div>
+              </div>
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <input id="eAmount" type="number" min="0" [(ngModel)]="formExpense.amount" [ngModelOptions]="{standalone: true}" placeholder=" " class="premium-input" />
+                  <i class="fa-solid fa-dollar-sign premium-input-icon"></i>
+                  <label for="eAmount" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'المبلغ' : 'Amount' }}</label>
+                </div>
+              </div>
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <input id="eVendor" type="text" [(ngModel)]="formExpense.vendorName" [ngModelOptions]="{standalone: true}" placeholder=" " class="premium-input" />
+                  <i class="fa-solid fa-building premium-input-icon"></i>
+                  <label for="eVendor" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'المورد' : 'Vendor' }}</label>
+                </div>
+              </div>
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <input id="eDate" type="date" [(ngModel)]="formExpense.expenseDate" [ngModelOptions]="{standalone: true}" placeholder=" " class="premium-input" />
+                  <i class="fa-solid fa-calendar premium-input-icon"></i>
+                  <label for="eDate" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'التاريخ' : 'Date' }}</label>
+                </div>
+              </div>
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <select id="eStatus" [(ngModel)]="formExpense.status" [ngModelOptions]="{standalone: true}" class="premium-input">
+                    @for (s of statusOptions; track s) {
+                      <option [value]="s">{{ statusLabel(s) }}</option>
+                    }
+                  </select>
+                  <i class="fa-solid fa-toggle-on premium-input-icon"></i>
+                  <label for="eStatus" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'الحالة' : 'Status' }}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="premium-section">
+            <div class="premium-section-header"><i class="fa-solid fa-note-sticky"></i> <span>{{ i18n.currentLang() === 'ar' ? 'ملاحظات' : 'Notes' }}</span></div>
+            <div class="premium-field">
+              <div class="premium-input-wrapper">
+                <textarea id="eNotes" [(ngModel)]="formExpense.notes" [ngModelOptions]="{standalone: true}" rows="3" class="premium-input" placeholder=" " style="resize:vertical;min-height:80px;padding-top:20px;padding-right:45px;padding-left:45px;"></textarea>
+                <i class="fa-solid fa-note-sticky premium-input-icon" style="top: 20px;"></i>
+                <label for="eNotes" class="premium-label" style="top:20px">{{ i18n.currentLang() === 'ar' ? 'ملاحظات إضافية (اختياري)' : 'Additional notes (optional)' }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="premium-footer">
+          <button type="button" class="premium-btn premium-btn-ghost" (click)="closeModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.currentLang() === 'ar' ? 'إلغاء' : 'Cancel' }}</button>
+          <button type="button" class="premium-btn premium-btn-primary" (click)="onSubmit()" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="premium-btn-loader"></span> {{ i18n.currentLang() === 'ar' ? 'جاري التحميل...' : 'Loading...' }}
+            } @else {
+              <i class="fa-solid fa-check"></i> {{ editMode() ? (i18n.t('common.save')) : (i18n.t('common.add')) }}
+            }
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

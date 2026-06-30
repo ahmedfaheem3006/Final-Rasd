@@ -1,0 +1,180 @@
+<div #modalOverlay class="premium-modal-overlay active" (click)="closeModal()">
+  <div class="premium-modal active invoice-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" style="max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto;">
+    <div style="position: sticky; top: 0; inset-inline-end: 0; padding: 16px; text-align: end; z-index: 10;">
+      <button class="premium-close-btn" (click)="closeModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="page-container" style="padding: 0 24px 24px; min-height: auto; margin-top: -30px;">
+  @if (loading()) {
+    <div class="loading-state">
+      <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;color:var(--text-muted)"></i>
+      <p style="margin-top:12px;color:var(--text-muted)">{{ i18n.t('common.loading') }}</p>
+    </div>
+  } @else if (client(); as c) {
+    <header class="detail-header animate-fade-in">
+      <div class="breadcrumbs">
+        <a routerLink="/app/accountant/clients"><i class="fa-solid fa-building"></i> {{ i18n.t('sidebar.customers') }}</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>{{ c.companyName }}</span>
+      </div>
+      <div class="detail-title-row">
+        <div class="detail-title-left">
+          <div class="detail-avatar">
+            <i class="fa-solid fa-building"></i>
+          </div>
+          <div>
+            <h1>{{ c.companyName }}</h1>
+            <p class="detail-subtitle">{{ c.ownerName }} • {{ c.email }} • {{ c.phone }}</p>
+          </div>
+        </div>
+        <div class="detail-title-right">
+          @if (c.status === 'Active') {
+            <span class="badge badge-success"><i class="fa-solid fa-circle" style="font-size:6px"></i> {{ i18n.t('users.status.active') }}</span>
+          } @else {
+            <span class="badge badge-secondary"><i class="fa-solid fa-circle" style="font-size:6px"></i> {{ i18n.t('users.status.inactive') }}</span>
+          }
+        </div>
+      </div>
+    </header>
+
+    <div class="overview-cards animate-reveal">
+      <div class="stat-card-sm accent-info">
+        <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="stat-info">
+          <span class="stat-label-sm">{{ i18n.t('client_detail.overview.total_revenue') }}</span>
+          <span class="stat-value-sm">${{ c.totalRevenue?.toLocaleString() || '0' }}</span>
+        </div>
+      </div>
+      <div class="stat-card-sm accent-warning">
+        <div class="stat-icon"><i class="fa-solid fa-credit-card"></i></div>
+        <div class="stat-info">
+          <span class="stat-label-sm">{{ i18n.t('client_detail.overview.outstanding') }}</span>
+          <span class="stat-value-sm">${{ c.outstandingBalance?.toLocaleString() || '0' }}</span>
+        </div>
+      </div>
+      <div class="stat-card-sm accent-primary">
+        <div class="stat-icon"><i class="fa-solid fa-file-invoice"></i></div>
+        <div class="stat-info">
+          <span class="stat-label-sm">{{ i18n.t('client_detail.overview.invoices_count') }}</span>
+          <span class="stat-value-sm">{{ c.invoicesCount || 0 }}</span>
+        </div>
+      </div>
+      <div class="stat-card-sm accent-success">
+        <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+        <div class="stat-info">
+          <span class="stat-label-sm">{{ i18n.t('client_detail.overview.payments') }}</span>
+          <span class="stat-value-sm">{{ c.paymentsReceived || 0 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-tabs animate-reveal">
+      <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+        <i class="fa-solid fa-info-circle"></i> {{ i18n.t('client_detail.tabs.overview') }}
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'contracts'" (click)="setTab('contracts')">
+        <i class="fa-solid fa-file-contract"></i> {{ i18n.currentLang() === 'ar' ? 'العقود' : 'Contracts' }}
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'invoices'" (click)="setTab('invoices')">
+        <i class="fa-solid fa-file-invoice"></i> {{ i18n.t('client_detail.tabs.invoices') }}
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'payments'" (click)="setTab('payments')">
+        <i class="fa-solid fa-hand-holding-dollar"></i> {{ i18n.t('client_detail.tabs.payments') }}
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'deals'" (click)="setTab('deals')">
+        <i class="fa-solid fa-handshake"></i> {{ i18n.t('client_detail.tabs.deals') }}
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'notes'" (click)="setTab('notes')">
+        <i class="fa-solid fa-note-sticky"></i> {{ i18n.t('client_detail.tabs.notes') }}
+      </button>
+    </div>
+
+    <div class="tab-content animate-reveal">
+      @if (activeTab() === 'overview') {
+        <div class="card info-card">
+          <h3>{{ i18n.t('client_detail.overview.company_info') }}</h3>
+          <div class="info-grid">
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.company_name') }}</span><span class="info-value">{{ c.companyName }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.commercial_reg') }}</span><span class="info-value">{{ c.commercialRegistration || '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.tax_number') }}</span><span class="info-value">{{ c.taxNumber || '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.industry') }}</span><span class="info-value">{{ c.industry ? i18n.t('clients.industry.' + c.industry) : '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.website') }}</span><span class="info-value">{{ c.website || '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.company_size') }}</span><span class="info-value">{{ c.companySize ? i18n.t('clients.size.' + c.companySize) : '—' }}</span></div>
+            <div class="info-item" style="grid-column:span 2"><span class="info-label">{{ i18n.t('clients.form.description') }}</span><span class="info-value">{{ c.description || '—' }}</span></div>
+          </div>
+          <h3 style="margin-top:24px">{{ i18n.t('client_detail.overview.contact_info') }}</h3>
+          <div class="info-grid">
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.owner_name') }}</span><span class="info-value">{{ c.ownerName }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('common.email') }}</span><span class="info-value">{{ c.email }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('common.name') }}</span><span class="info-value">{{ c.phone }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.job_title') }}</span><span class="info-value">{{ c.jobTitle || '—' }}</span></div>
+          </div>
+          <h3 style="margin-top:24px">{{ i18n.t('client_detail.overview.address_info') }}</h3>
+          <div class="info-grid">
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.country') }}</span><span class="info-value">{{ c.country || '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.governorate') }}</span><span class="info-value">{{ c.governorate || '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.city') }}</span><span class="info-value">{{ c.city || '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.street') }}</span><span class="info-value">{{ c.street || '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.postal_code') }}</span><span class="info-value">{{ c.postalCode || '—' }}</span></div>
+          </div>
+          <h3 style="margin-top:24px">{{ i18n.t('client_detail.overview.financial_info') }}</h3>
+          <div class="info-grid">
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.credit_limit') }}</span><span class="info-value">{{ c.creditLimit ? '$' + c.creditLimit.toLocaleString() : '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.payment_terms') }}</span><span class="info-value">{{ c.paymentTerms ? i18n.t('clients.payment_terms.' + c.paymentTerms) : '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.currency') }}</span><span class="info-value">{{ c.currency || '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.opening_balance') }}</span><span class="info-value">{{ c.openingBalance ? '$' + c.openingBalance.toLocaleString() : '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('clients.form.tax_percentage') }}</span><span class="info-value">{{ c.taxPercentage != null ? c.taxPercentage + '%' : '—' }}</span></div>
+            <div class="info-item"><span class="info-label">{{ i18n.t('client_detail.overview.created_at') }}</span><span class="info-value">{{ formatDate(c.createdAt) }}</span></div>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'contracts') {
+        <div class="card">
+          <div class="empty-tab">
+            <i class="fa-solid fa-file-contract" style="font-size:2.5rem;color:var(--text-muted)"></i>
+            <p style="color:var(--text-muted);margin-top:12px">{{ i18n.t('client_detail.no_data') }}</p>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'invoices') {
+        <div class="card">
+          <div class="empty-tab">
+            <i class="fa-solid fa-file-invoice" style="font-size:2.5rem;color:var(--text-muted)"></i>
+            <p style="color:var(--text-muted);margin-top:12px">{{ i18n.t('client_detail.no_data') }}</p>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'payments') {
+        <div class="card">
+          <div class="empty-tab">
+            <i class="fa-solid fa-hand-holding-dollar" style="font-size:2.5rem;color:var(--text-muted)"></i>
+            <p style="color:var(--text-muted);margin-top:12px">{{ i18n.t('client_detail.no_data') }}</p>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'deals') {
+        <div class="card">
+          <div class="empty-tab">
+            <i class="fa-solid fa-handshake" style="font-size:2.5rem;color:var(--text-muted)"></i>
+            <p style="color:var(--text-muted);margin-top:12px">{{ i18n.t('client_detail.no_data') }}</p>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'notes') {
+        <div class="card">
+          <div class="empty-tab">
+            <i class="fa-solid fa-note-sticky" style="font-size:2.5rem;color:var(--text-muted)"></i>
+            <p style="color:var(--text-muted);margin-top:12px">{{ i18n.t('client_detail.no_data') }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+    </div>
+  </div>

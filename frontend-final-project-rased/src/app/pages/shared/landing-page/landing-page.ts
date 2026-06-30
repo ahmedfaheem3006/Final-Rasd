@@ -340,7 +340,7 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
     window.addEventListener('scroll', this.scrollHandler, { passive: true });
 
     // Load pricing plans from backend
-    this.http.get<any>('http://localhost:5092/api/SystemAdmin/pricing-plans').subscribe({
+    this.http.get<any>('http://localhost:5292/api/SystemAdmin/pricing-plans').subscribe({
       next: (res) => {
         if (res && res.success && res.data) {
           this.pricingPlans.set(res.data);
@@ -594,7 +594,7 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
       message: this.contactData.message
     };
 
-    this.http.post<any>('http://localhost:5092/api/Contact/submit', payload).subscribe({
+    this.http.post<any>('http://localhost:5292/api/Contact/submit', payload).subscribe({
       next: (res) => {
         this.isSubmittingContact.set(false);
         this.contactFeedbackSuccess.set(true);

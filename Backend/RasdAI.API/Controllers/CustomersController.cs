@@ -46,6 +46,29 @@ public class CustomersController : ControllerBase
         return Ok(new { success = true, message = "تمت إضافة العميل بنجاح", data = result });
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateClient(int id, [FromBody] UpdateClientDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (_tenantContext.TenantId == null)
+            return BadRequest(new { success = false, message = "معرف الشركة غير متوفر في السياق" });
+
+        var result = await _crmService.UpdateClientAsync(id, dto, _tenantContext.TenantId.Value);
+        if (result == null) return NotFound(new { success = false, message = "العميل غير موجود" });
+        return Ok(new { success = true, message = "تم تحديث بيانات العميل بنجاح", data = result });
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteClient(int id)
+    {
+        if (_tenantContext.TenantId == null)
+            return BadRequest(new { success = false, message = "معرف الشركة غير متوفر في السياق" });
+
+        var success = await _crmService.DeleteClientAsync(id, _tenantContext.TenantId.Value);
+        if (!success) return NotFound(new { success = false, message = "العميل غير موجود" });
+        return NoContent();
+    }
+
     [HttpGet("{id}/notes")]
     public async Task<IActionResult> GetNotes(int id)
     {

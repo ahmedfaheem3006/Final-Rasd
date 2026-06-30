@@ -1,0 +1,396 @@
+<div class="payments-wrapper">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>{{ i18n.isRtl() ? 'المدفوعات' : 'Payments' }}</h1>
+      <p class="subtitle">{{ i18n.isRtl() ? 'إدارة وتتبع جميع المدفوعات والفواتير' : 'Manage and track all payments and invoices' }}</p>
+    </div>
+    <button class="btn-primary premium-btn" (click)="openAddModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      {{ i18n.isRtl() ? 'تسجيل دفعة جديدة' : 'New Payment' }}
+    </button>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dashboard-cards">
+    <div class="card card-purple">
+      <div class="card-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 9v6"/><path d="M9 12h6"/>
+        </svg>
+      </div>
+      <div class="card-info">
+        <span class="card-label">{{ i18n.isRtl() ? 'المحصل' : 'Collected' }}</span>
+        <span class="card-value">{{ formatCurrency(totalCollected()) }} <small>{{ i18n.isRtl() ? 'ريال' : 'SAR' }}</small></span>
+      </div>
+    </div>
+    <div class="card card-orange">
+      <div class="card-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div class="card-info">
+        <span class="card-label">{{ i18n.isRtl() ? 'معلق' : 'Pending' }}</span>
+        <span class="card-value">{{ formatCurrency(pendingAmount()) }} <small>{{ i18n.isRtl() ? 'ريال' : 'SAR' }}</small></span>
+      </div>
+    </div>
+    <div class="card card-red">
+      <div class="card-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+        </svg>
+      </div>
+      <div class="card-info">
+        <span class="card-label">{{ i18n.isRtl() ? 'متأخر' : 'Overdue' }}</span>
+        <span class="card-value">{{ formatCurrency(overdueAmount()) }} <small>{{ i18n.isRtl() ? 'ريال' : 'SAR' }}</small></span>
+      </div>
+    </div>
+    <div class="card card-teal">
+      <div class="card-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+        </svg>
+      </div>
+      <div class="card-info">
+        <span class="card-label">{{ i18n.isRtl() ? 'إيرادات الشهر' : 'This Month' }}</span>
+        <span class="card-value">{{ formatCurrency(thisMonthRevenue()) }} <small>{{ i18n.isRtl() ? 'ريال' : 'SAR' }}</small></span>
+      </div>
+    </div>
+    <div class="card card-blue">
+      <div class="card-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+      </div>
+      <div class="card-info">
+        <span class="card-label">{{ i18n.isRtl() ? 'تحصيلات اليوم' : 'Today' }}</span>
+        <span class="card-value">{{ formatCurrency(todayCollections()) }} <small>{{ i18n.isRtl() ? 'ريال' : 'SAR' }}</small></span>
+      </div>
+    </div>
+    <div class="card card-indigo">
+      <div class="card-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <div class="card-info">
+        <span class="card-label">{{ i18n.isRtl() ? 'إجمالي المدفوعات' : 'Payments' }}</span>
+        <span class="card-value">{{ totalPaymentsCount() }} <small>{{ i18n.isRtl() ? 'عملية' : 'ops' }}</small></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-row">
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        [placeholder]="i18n.isRtl() ? 'بحث...' : 'Search...'"
+        [value]="searchQuery()"
+        (input)="onSearch($any($event.target).value)"
+      />
+    </div>
+    <div class="filter-tabs status-tabs">
+      @for (s of statuses; track s) {
+        <button
+          class="tab-btn"
+          [class.active]="statusFilter() === s"
+          (click)="filterByStatus(s)"
+        >{{ s }}</button>
+      }
+    </div>
+    <div class="filter-tabs date-tabs">
+      @for (f of dateFilters; track f) {
+        @if (f !== 'Custom') {
+          <button
+            class="tab-btn"
+            [class.active]="dateFilter() === f"
+            (click)="filterByDate(f)"
+          >{{ i18n.isRtl() ? (f === 'All' ? 'الكل' : f === 'Today' ? 'اليوم' : f === 'ThisWeek' ? 'هذا الأسبوع' : f === 'ThisMonth' ? 'هذا الشهر' : f) : f }}</button>
+        }
+      }
+      @if (dateFilter() === 'Custom') {
+        <div class="custom-date-range">
+          <input type="date" class="date-input" [value]="customFrom()" (change)="customFrom.set($any($event.target).value)" />
+          <span>{{ i18n.isRtl() ? 'إلى' : 'to' }}</span>
+          <input type="date" class="date-input" [value]="customTo()" (change)="customTo.set($any($event.target).value)" />
+          <button class="btn-sm apply-btn" (click)="applyCustomDate()">{{ i18n.isRtl() ? 'تطبيق' : 'Apply' }}</button>
+        </div>
+      }
+      <button
+        class="tab-btn"
+        [class.active]="dateFilter() === 'Custom'"
+        (click)="filterByDate('Custom')"
+      >{{ i18n.isRtl() ? 'مخصص' : 'Custom' }}</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>{{ i18n.isRtl() ? 'جاري تحميل المدفوعات...' : 'Loading payments...' }}</p>
+      </div>
+    } @else if (filteredPayments().length === 0) {
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <p>{{ i18n.isRtl() ? 'لا توجد مدفوعات مسجلة' : 'No payments recorded yet' }}</p>
+        <button class="btn-primary" (click)="openAddModal()">{{ i18n.isRtl() ? 'تسجيل أول دفعة' : 'Record your first payment' }}</button>
+      </div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ i18n.isRtl() ? 'رقم المرجع' : 'Reference' }}</th>
+            <th>{{ i18n.isRtl() ? 'العميل' : 'Client' }}</th>
+            <th>{{ i18n.isRtl() ? 'الفاتورة' : 'Invoice' }}</th>
+            <th>{{ i18n.isRtl() ? 'المبلغ' : 'Amount' }}</th>
+            <th>{{ i18n.isRtl() ? 'المتبقي' : 'Remaining' }}</th>
+            <th>{{ i18n.isRtl() ? 'الطريقة' : 'Method' }}</th>
+            <th>{{ i18n.isRtl() ? 'التاريخ' : 'Date' }}</th>
+            <th>{{ i18n.isRtl() ? 'الحالة' : 'Status' }}</th>
+            <th class="actions-col">{{ i18n.isRtl() ? 'إجراءات' : 'Actions' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of filteredPayments(); track p.id) {
+            <tr class="data-row" (click)="viewPayment(p.id)">
+              <td><span class="ref-badge">{{ p.referenceNumber || '-' }}</span></td>
+              <td>
+                <div class="client-cell">
+                  <span class="client-name">{{ p.clientName }}</span>
+                  @if (p.companyName) {
+                    <span class="company-name">{{ p.companyName }}</span>
+                  }
+                </div>
+              </td>
+              <td>{{ p.invoiceNumber }}</td>
+              <td class="amount-cell">{{ formatCurrency(p.amount) }}</td>
+              <td class="amount-cell">{{ formatCurrency(p.remainingBalance) }}</td>
+              <td>{{ p.paymentMethod }}</td>
+              <td>{{ formatDate(p.paymentDate) }}</td>
+              <td><span class="badge" [class]="getBadgeClass(p.status)">{{ p.status }}</span></td>
+              <td class="actions-cell" (click)="$event.stopPropagation()">
+                <button class="icon-btn" (click)="viewPayment(p.id)" [title]="i18n.isRtl() ? 'عرض' : 'View'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="icon-btn" (click)="printReceipt(p)" [title]="i18n.isRtl() ? 'طباعة' : 'Print'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+                  </svg>
+                </button>
+                <button class="icon-btn icon-danger" (click)="deletePayment(p.id)" [title]="i18n.isRtl() ? 'حذف' : 'Delete'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button class="page-btn" [disabled]="currentPage() <= 1" (click)="goToPage(currentPage() - 1)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          @for (pg of [].constructor(totalPages()); track $index) {
+            <button class="page-btn" [class.active]="currentPage() === $index + 1" (click)="goToPage($index + 1)">
+              {{ $index + 1 }}
+            </button>
+          }
+          <button class="page-btn" [disabled]="currentPage() >= totalPages()" (click)="goToPage(currentPage() + 1)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Overlay -->
+<div #overlayEl class="modal-overlay" [class.open]="showModal()" (click)="closeModal()"></div>
+
+<!-- Modal -->
+<div class="modal premium-modal" [class.open]="showModal()">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-content premium-form">
+      @if (!showSuccess()) {
+        <div class="modal-header">
+          <h2>{{ i18n.isRtl() ? 'تسجيل دفعة جديدة' : 'Record New Payment' }}</h2>
+          <p class="modal-desc">{{ i18n.isRtl() ? 'أدخل تفاصيل الدفعة للفاتورة المحددة' : 'Enter payment details for the selected invoice' }}</p>
+          <button class="close-btn" (click)="closeModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-section">
+            <label class="field-label required">{{ i18n.isRtl() ? 'اختيار فاتورة' : 'Select Invoice' }}</label>
+            <div class="invoice-select-wrapper" (click)="$event.stopPropagation()">
+              <div class="invoice-search-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                  type="text"
+                  [placeholder]="i18n.isRtl() ? 'بحث برقم الفاتورة أو اسم العميل...' : 'Search invoice no or client name...'"
+                  [value]="invoiceSearchQuery()"
+                  (focus)="showInvoiceDropdown.set(true)"
+                  (input)="onInvoiceSearch($any($event.target).value)"
+                />
+                @if (selectedInvoice()) {
+                  <button class="clear-btn" (click)="clearSelectedInvoice()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+              @if (showInvoiceDropdown()) {
+                <div class="invoice-dropdown">
+                  @if (unpaidInvoices().length === 0) {
+                    <div class="dropdown-empty">{{ i18n.isRtl() ? 'لا توجد فواتير غير مدفوعة' : 'No unpaid invoices found' }}</div>
+                  }
+                  @for (inv of unpaidInvoices(); track inv.id) {
+                    <div class="invoice-option" (click)="selectInvoice(inv)">
+                      <div class="inv-header">
+                        <span class="inv-number">{{ inv.invoiceNumber }}</span>
+                        <span class="inv-client">{{ inv.clientName }}</span>
+                      </div>
+                      <div class="inv-details">
+                        <span>{{ i18n.isRtl() ? 'المتبقي' : 'Remaining' }}: <strong>{{ formatCurrency(inv.remainingBalance) }} {{ inv.currency }}</strong></span>
+                        <span>{{ i18n.isRtl() ? 'الاستحقاق' : 'Due' }}: {{ formatDate(inv.dueDate) }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          @if (selectedInvoice(); as inv) {
+            <div class="selected-invoice-summary">
+              <div class="summary-row">
+                <span class="summary-label">{{ i18n.isRtl() ? 'الفاتورة' : 'Invoice' }}</span>
+                <span class="summary-value">{{ inv.invoiceNumber }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">{{ i18n.isRtl() ? 'العميل' : 'Client' }}</span>
+                <span class="summary-value">{{ inv.clientName }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">{{ i18n.isRtl() ? 'إجمالي الفاتورة' : 'Invoice Total' }}</span>
+                <span class="summary-value">{{ formatCurrency(inv.grandTotal) }} {{ inv.currency }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-label">{{ i18n.isRtl() ? 'المبلغ المدفوع سابقاً' : 'Already Paid' }}</span>
+                <span class="summary-value">{{ formatCurrency(inv.paidAmount) }} {{ inv.currency }}</span>
+              </div>
+              <div class="summary-row highlight-row">
+                <span class="summary-label">{{ i18n.isRtl() ? 'المبلغ المتبقي' : 'Remaining Balance' }}</span>
+                <span class="summary-value highlight-value">{{ formatCurrency(inv.remainingBalance) }} {{ inv.currency }}</span>
+              </div>
+            </div>
+          }
+
+          <div class="form-section">
+            <label class="field-label required">{{ i18n.isRtl() ? 'المبلغ' : 'Amount' }}</label>
+            <div class="amount-input-group">
+              <input
+                type="number"
+                class="form-input"
+                [value]="formAmount()"
+                (input)="formAmount.set(parseNumber($any($event.target).value))"
+                [placeholder]="i18n.isRtl() ? 'أدخل المبلغ' : 'Enter amount'"
+                min="0"
+                [max]="remainingBalance"
+                step="0.01"
+              />
+              <span class="input-suffix">{{ selectedInvoiceCurrency }}</span>
+            </div>
+            @if (selectedInvoice()) {
+              <div class="remaining-info">
+                <span>{{ i18n.isRtl() ? 'المتبقي بعد الدفع' : 'Remaining after payment' }}: <strong>{{ formatCurrency(remainingAfterPayment) }} {{ selectedInvoiceCurrency }}</strong></span>
+              </div>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-section">
+              <label class="field-label required">{{ i18n.isRtl() ? 'طريقة الدفع' : 'Payment Method' }}</label>
+              <select class="form-input" [value]="formPaymentMethod()" (change)="formPaymentMethod.set($any($event.target).value)">
+                @for (m of paymentMethods; track m) {
+                  <option [value]="m">{{ m }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-section">
+              <label class="field-label required">{{ i18n.isRtl() ? 'تاريخ الدفع' : 'Payment Date' }}</label>
+              <input type="date" class="form-input" [value]="formPaymentDate()" (change)="formPaymentDate.set($any($event.target).value)" />
+            </div>
+          </div>
+
+          <div class="form-section">
+            <label class="field-label">{{ i18n.isRtl() ? 'رقم المرجع' : 'Reference Number' }}</label>
+            <input type="text" class="form-input" [value]="formReferenceNumber()" (input)="formReferenceNumber.set($any($event.target).value)" [placeholder]="i18n.isRtl() ? 'اختياري' : 'Optional'" />
+          </div>
+
+          @if (formPaymentMethod() === 'Bank Transfer') {
+            <div class="form-row">
+              <div class="form-section">
+                <label class="field-label">{{ i18n.isRtl() ? 'رقم العملية' : 'Transaction Number' }}</label>
+                <input type="text" class="form-input" [value]="formTransactionNumber()" (input)="formTransactionNumber.set($any($event.target).value)" [placeholder]="i18n.isRtl() ? 'اختياري' : 'Optional'" />
+              </div>
+              <div class="form-section">
+                <label class="field-label">{{ i18n.isRtl() ? 'اسم البنك' : 'Bank Name' }}</label>
+                <input type="text" class="form-input" [value]="formBankName()" (input)="formBankName.set($any($event.target).value)" [placeholder]="i18n.isRtl() ? 'اختياري' : 'Optional'" />
+              </div>
+            </div>
+          }
+
+          <div class="form-section">
+            <label class="field-label">{{ i18n.isRtl() ? 'ملاحظات' : 'Notes' }}</label>
+            <textarea class="form-input form-textarea" [value]="formNotes()" (input)="formNotes.set($any($event.target).value)" [placeholder]="i18n.isRtl() ? 'اختياري' : 'Optional'" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeModal()">{{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}</button>
+          <button class="btn-primary btn-submit" [disabled]="!canSubmit || submitting()" (click)="onSubmit()">
+            @if (submitting()) {
+              <div class="spinner-sm"></div>
+            }
+            {{ i18n.isRtl() ? 'تسجيل الدفعة' : 'Record Payment' }}
+          </button>
+        </div>
+      } @else {
+        <div class="success-state">
+          <div class="success-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h3>{{ i18n.isRtl() ? 'تم تسجيل الدفعة بنجاح!' : 'Payment Recorded Successfully!' }}</h3>
+          <p>{{ i18n.isRtl() ? 'سيتم توجيهك إلى صفحة الدفعة...' : 'Redirecting to payment page...' }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>

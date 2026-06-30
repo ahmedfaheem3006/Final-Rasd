@@ -1,19 +1,26 @@
-<div class="page-container">
+<div class="team-container" dir="rtl">
+
   <!-- Header -->
   <header class="page-header animate-fade-in">
     <div class="header-info">
       <div class="breadcrumbs">مدير المبيعات / الفريق</div>
       <h1>فريق المبيعات</h1>
-      <p class="subtitle">إدارة ومتابعة أعضاء فريق المبيعات وأدائهم</p>
+      <p class="subtitle">متابعة أعضاء الفريق وأدائهم بناءً على الصفقات الفعلية</p>
     </div>
     <div class="header-actions">
-      <button class="btn btn-secondary">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>تصدير</span>
+      <button class="btn btn-secondary" (click)="loadAll()" title="تحديث">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             [class.spin]="isLoading()">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
       </button>
-      <button class="btn btn-primary">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span>إضافة مندوب</span>
+      <button class="btn btn-secondary" (click)="exportCSV()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>تصدير CSV</span>
       </button>
     </div>
   </header>
@@ -21,94 +28,146 @@
   <!-- Stats -->
   <div class="stats-grid animate-reveal">
     <div class="stat-card accent-primary">
-      <div class="stat-icon primary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div class="stat-body"><div class="stat-value">6</div><div class="stat-label">إجمالي المندوبين</div></div>
+      <div class="stat-icon primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().total }}</div>
+        <div class="stat-label">إجمالي الفريق</div>
+      </div>
     </div>
     <div class="stat-card accent-success">
-      <div class="stat-icon success"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
-      <div class="stat-body"><div class="stat-value">4</div><div class="stat-label">مندوبون نشطون</div></div>
+      <div class="stat-icon success">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().active }}</div>
+        <div class="stat-label">نشطون</div>
+      </div>
     </div>
     <div class="stat-card accent-info">
-      <div class="stat-icon info"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-      <div class="stat-body"><div class="stat-value">$158,100</div><div class="stat-label">إجمالي الإيرادات</div></div>
+      <div class="stat-icon info">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ formatAmount(stats().totalRevenue) }} ر.س</div>
+        <div class="stat-label">إجمالي الإيراد المحقق</div>
+      </div>
     </div>
     <div class="stat-card accent-warning">
-      <div class="stat-icon warning"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-      <div class="stat-body"><div class="stat-value">77.8%</div><div class="stat-label">متوسط تحقيق الهدف</div></div>
+      <div class="stat-icon warning">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().avgWinRate }}%</div>
+        <div class="stat-label">متوسط نسبة الفوز</div>
+      </div>
     </div>
   </div>
 
   <!-- Table Card -->
   <div class="card table-card animate-reveal">
-    <div class="card-header">
+    <div class="card-header-row">
       <div>
-        <h3>قائمة مندوبي المبيعات</h3>
-        <p class="subtitle">متابعة أداء الفريق ونسب التحقيق</p>
+        <h3>أعضاء فريق المبيعات</h3>
+        <p class="subtitle">{{ filtered().length }} عضو</p>
       </div>
-      <div class="filter-tabs">
-        <button class="filter-tab" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">الكل</button>
-        <button class="filter-tab" [class.active]="activeFilter() === 'active'" (click)="setFilter('active')">نشط</button>
-        <button class="filter-tab" [class.active]="activeFilter() === 'pending'" (click)="setFilter('pending')">معلق</button>
-        <button class="filter-tab" [class.active]="activeFilter() === 'inactive'" (click)="setFilter('inactive')">غير نشط</button>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input class="search-input" type="text" placeholder="بحث بالاسم أو البريد..." [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)">
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab" [class.active]="statusFilter() === 'all'" (click)="statusFilter.set('all')">الكل</button>
+          <button class="filter-tab" [class.active]="statusFilter() === 'Active'" (click)="statusFilter.set('Active')">نشط</button>
+          <button class="filter-tab" [class.active]="statusFilter() === 'Inactive'" (click)="statusFilter.set('Inactive')">غير نشط</button>
+        </div>
       </div>
     </div>
-    <div class="table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>المندوب</th>
-            <th>البريد الإلكتروني</th>
-            <th>الصفقات النشطة</th>
-            <th>الصفقات المغلقة</th>
-            <th>الإيراد</th>
-            <th>تحقيق الهدف</th>
-            <th>الحالة</th>
-            <th>الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (rep of filteredReps(); track rep.email) {
+
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>جاري تحميل الفريق...</p>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <p>لا يوجد أعضاء{{ searchQuery() ? ' بهذا البحث' : '' }}</p>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td>
-                <div class="user-cell">
-                  <span class="user-avatar-sm">{{ rep.avatar }}</span>
-                  <div>
-                    <div class="fw-bold">{{ rep.name }}</div>
-                    <div class="text-muted" style="font-size:0.75rem">انضم: {{ rep.joined }}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="text-muted">{{ rep.email }}</td>
-              <td class="fw-bold text-primary">{{ rep.deals }}</td>
-              <td>{{ rep.closed }}</td>
-              <td class="fw-bold">{{ rep.revenue }}</td>
-              <td>
-                <div class="progress-wrap">
-                  <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" [style.width.%]="rep.target"></div>
-                  </div>
-                  <span class="progress-pct">{{ rep.target }}%</span>
-                </div>
-              </td>
-              <td>
-                @if (rep.status === 'active') { <span class="badge badge-success">نشط</span> }
-                @else if (rep.status === 'pending') { <span class="badge badge-warning">معلق</span> }
-                @else { <span class="badge badge-danger">غير نشط</span> }
-              </td>
-              <td>
-                <div class="action-btns">
-                  <button class="action-btn edit" title="تعديل">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  </button>
-                  <button class="action-btn delete" title="حذف">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-                  </button>
-                </div>
-              </td>
+              <th>العضو</th>
+              <th>الدور</th>
+              <th>الصفقات النشطة</th>
+              <th>الصفقات المكتملة</th>
+              <th>الإيراد المحقق</th>
+              <th>نسبة الفوز</th>
+              <th>الحالة</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (m of filtered(); track m.id) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <span class="user-avatar" [style.background]="m.roleId === 4 ? 'var(--primary-light)' : 'var(--info-light)'"
+                          [style.color]="m.roleId === 4 ? 'var(--primary)' : 'var(--info)'">
+                      {{ initials(m.fullName) }}
+                    </span>
+                    <div>
+                      <div class="fw-bold">{{ m.fullName }}</div>
+                      <div class="text-muted small">{{ m.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="role-badge" [class.role-manager]="m.roleId === 4" [class.role-rep]="m.roleId !== 4">
+                    {{ roleLabel(m.roleId) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="num-badge primary">{{ m.activeDeals }}</span>
+                </td>
+                <td>
+                  <span class="num-badge success">{{ m.wonDeals }}</span>
+                </td>
+                <td class="fw-bold">{{ formatAmount(m.totalRevenue) }} ر.س</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress-bg">
+                      <div class="progress-fill" [style.width.%]="m.winRate" [style.background]="progressColor(m.winRate)"></div>
+                    </div>
+                    <span class="progress-pct">{{ m.winRate }}%</span>
+                  </div>
+                </td>
+                <td>
+                  @if (m.status === 'Active') { <span class="badge badge-success">نشط</span> }
+                  @else { <span class="badge badge-danger">غير نشط</span> }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
+
 </div>

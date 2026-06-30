@@ -17,7 +17,7 @@ export interface ReportRecord {
 })
 export class ReportService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5092/api/Reports';
+  private apiUrl = 'http://localhost:5292/api/Reports';
 
   getReports(): Observable<{ success: boolean; data: ReportRecord[] }> {
     return this.http.get<{ success: boolean; data: ReportRecord[] }>(this.apiUrl);

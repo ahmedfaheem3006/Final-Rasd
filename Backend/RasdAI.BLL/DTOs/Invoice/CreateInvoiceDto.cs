@@ -5,8 +5,12 @@ namespace RasdAI.BLL.DTOs.Invoice;
 
 public class CreateInvoiceDto
 {
-    [Required(ErrorMessage = "الصفقة مطلوبة")]
-    public int DealId { get; set; }
+    public int? DealId { get; set; }
+
+    public int? ContractId { get; set; }
+
+    [Required(ErrorMessage = "العميل مطلوب")]
+    public int ClientId { get; set; }
 
     [Required(ErrorMessage = "المبلغ الإجمالي مطلوب")]
     [Range(0.01, double.MaxValue, ErrorMessage = "المبلغ يجب أن يكون أكبر من صفر")]

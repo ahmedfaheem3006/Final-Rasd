@@ -1,0 +1,156 @@
+<div class="page-container" [attr.data-theme]="isLightTheme ? 'light' : 'dark'">
+  <div class="page-header glass-header">
+    <div class="header-content">
+      <div class="header-titles">
+        <button class="btn-back" (click)="goBack()">
+          <i class="fa-solid fa-arrow-right" *ngIf="i18n.currentLang() === 'ar'"></i>
+          <i class="fa-solid fa-arrow-left" *ngIf="i18n.currentLang() === 'en'"></i>
+        </button>
+        <div class="title-wrapper">
+          <h1 class="gradient-text">{{ i18n.currentLang() === 'ar' ? 'تفاصيل العقد' : 'Contract Details' }}</h1>
+          <p class="subtitle" *ngIf="contract()">{{ contract().idFormatted }} • {{ contract().clientName }}</p>
+        </div>
+      </div>
+      <div class="header-actions" *ngIf="contract()">
+        <span class="status-badge" [ngClass]="'status-' + contract().statusClass">
+          {{ contract().status === 'Active' ? (i18n.currentLang() === 'ar' ? 'نشط' : 'Active') : 
+             contract().status === 'Draft' ? (i18n.currentLang() === 'ar' ? 'مسودة' : 'Draft') : 
+             contract().status === 'Expired' ? (i18n.currentLang() === 'ar' ? 'منتهي' : 'Expired') : contract().status }}
+        </span>
+        
+        <div class="status-actions" *ngIf="contract().status === 'Draft'">
+          <button class="btn-success glow-effect" (click)="updateStatus('Active')">
+            <i class="fa-solid fa-check"></i>
+            {{ i18n.currentLang() === 'ar' ? 'تفعيل العقد' : 'Activate Contract' }}
+          </button>
+        </div>
+        <div class="status-actions" *ngIf="contract().status === 'Active'">
+          <button class="btn-danger glow-effect" (click)="updateStatus('Expired')">
+            <i class="fa-solid fa-times"></i>
+            {{ i18n.currentLang() === 'ar' ? 'إنهاء العقد' : 'Expire Contract' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loader-container" *ngIf="isLoading()">
+    <div class="loader"></div>
+  </div>
+
+  <div class="content-grid" *ngIf="contract() && !isLoading()">
+    <div class="main-content">
+      <div class="glass-card document-card">
+        <div class="document-header">
+          <div class="company-info">
+            <div class="company-logo">
+              <i class="fa-solid fa-file-signature text-primary fa-2x"></i>
+            </div>
+            <div>
+              <h2>شركة رصد للتطوير والاستشارات</h2>
+              <p>منصة رصد الذكية لإدارة الشركات - رصد AI</p>
+            </div>
+          </div>
+          <div class="document-meta">
+            <div class="meta-item">
+              <span class="meta-label">{{ i18n.currentLang() === 'ar' ? 'رقم العقد' : 'Contract No' }}</span>
+              <span class="meta-value">{{ contract().contractNumber }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">{{ i18n.currentLang() === 'ar' ? 'تاريخ البدء' : 'Start Date' }}</span>
+              <span class="meta-value">{{ contract().startDateFormatted }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">{{ i18n.currentLang() === 'ar' ? 'تاريخ الانتهاء' : 'End Date' }}</span>
+              <span class="meta-value">{{ contract().dueDateFormatted }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="client-section">
+          <div class="section-title">
+            <i class="fa-solid fa-user-tie"></i>
+            <h3>{{ i18n.currentLang() === 'ar' ? 'الطرف الثاني (العميل)' : 'Second Party (Client)' }}</h3>
+          </div>
+          <div class="client-details">
+            <h4>{{ contract().clientName }}</h4>
+            <p *ngIf="contract().client?.email"><i class="fa-regular fa-envelope"></i> {{ contract().client?.email }}</p>
+            <p *ngIf="contract().client?.phone"><i class="fa-solid fa-phone"></i> {{ contract().client?.phone }}</p>
+          </div>
+        </div>
+
+        <div class="items-section">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>{{ i18n.currentLang() === 'ar' ? 'عنوان العقد' : 'Contract Title' }}</th>
+                <th>{{ i18n.currentLang() === 'ar' ? 'النوع' : 'Type' }}</th>
+                <th class="text-end">{{ i18n.currentLang() === 'ar' ? 'القيمة الإجمالية' : 'Total Value' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="item-desc">
+                    <span class="item-name">{{ contract().contractTitle }}</span>
+                    <span class="item-notes">{{ contract().description }}</span>
+                  </div>
+                </td>
+                <td>{{ contract().contractType }}</td>
+                <td class="text-end font-monospace">{{ contract().finalAmount | number:'1.2-2' }} {{ contract().currency }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="totals-section">
+          <div class="totals-row">
+            <span>{{ i18n.currentLang() === 'ar' ? 'القيمة الإجمالية' : 'Total Value' }}</span>
+            <span>{{ contract().finalAmount | number:'1.2-2' }} {{ contract().currency }}</span>
+          </div>
+          <div class="totals-row highlight-success">
+            <span>{{ i18n.currentLang() === 'ar' ? 'المبلغ المدفوع' : 'Paid Amount' }}</span>
+            <span>{{ contract().paidAmount | number:'1.2-2' }} {{ contract().currency }}</span>
+          </div>
+          <div class="totals-row highlight-warning" *ngIf="contract().remainingAmount > 0">
+            <span>{{ i18n.currentLang() === 'ar' ? 'المبلغ المتبقي' : 'Remaining Balance' }}</span>
+            <span>{{ contract().remainingAmount | number:'1.2-2' }} {{ contract().currency }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="glass-card info-card">
+        <h3>{{ i18n.currentLang() === 'ar' ? 'معلومات إضافية' : 'Additional Info' }}</h3>
+        
+        <div class="info-list">
+          <div class="info-item">
+            <i class="fa-solid fa-clock text-warning"></i>
+            <div class="info-text">
+              <span class="label">{{ i18n.currentLang() === 'ar' ? 'الأيام المتبقية' : 'Days Remaining' }}</span>
+              <span class="value">{{ contract().daysRemaining }} {{ i18n.currentLang() === 'ar' ? 'يوم' : 'days' }}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class="fa-solid fa-file-invoice text-primary"></i>
+            <div class="info-text">
+              <span class="label">{{ i18n.currentLang() === 'ar' ? 'عدد الفواتير' : 'Invoices Count' }}</span>
+              <span class="value">{{ contract().invoicesCount }}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class="fa-solid fa-user-pen text-success"></i>
+            <div class="info-text">
+              <span class="label">{{ i18n.currentLang() === 'ar' ? 'بواسطة' : 'Created By' }}</span>
+              <span class="value">{{ contract().createdByUserName || 'System' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
