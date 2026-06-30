@@ -28,13 +28,6 @@ namespace RasdAI.DAL.Migrations
                 oldClrType: typeof(int),
                 oldType: "int");
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "CreatedAt",
-                table: "Contracts",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
-
             migrationBuilder.AddColumn<string>(
                 name: "FileName",
                 table: "Contracts",
@@ -49,10 +42,6 @@ namespace RasdAI.DAL.Migrations
         migrationBuilder.DropColumn(
                 name: "CreatedAt",
                 table: "Meetings");
-
-            migrationBuilder.DropColumn(
-                name: "CreatedAt",
-                table: "Contracts");
 
             migrationBuilder.DropColumn(
                 name: "FileName",

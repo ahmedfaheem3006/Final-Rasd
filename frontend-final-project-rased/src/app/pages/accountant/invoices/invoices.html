@@ -1,4 +1,4 @@
-<div class="page-container">
+<div class="page-container" [dir]="i18n.dir()">
   <header class="page-header animate-fade-in">
     <div class="header-info">
       <div class="breadcrumbs">{{ i18n.currentLang() === 'ar' ? 'المحاسبة / الفواتير' : 'Accounting / Invoices' }}</div>
@@ -122,118 +122,116 @@
   </div>
 </div>
 
-<div #modalOverlay class="premium-modal-overlay" [class.active]="showAddModal()" [class.light]="isLightTheme" (click)="closeAddModal()">
-  <div #premiumModal class="premium-modal" [class.active]="showAddModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-    @if (showSuccess()) {
-      <div class="premium-success">
-        <div class="success-particles"><span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span></div>
-        <div class="success-icon-wrap">
-          <div class="success-glow"></div>
-          <div class="success-ring"></div>
-          <div class="success-circle">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8" /></svg>
-          </div>
-        </div>
-        <div class="success-badge">{{ i18n.currentLang() === 'ar' ? 'تم بنجاح' : 'Success' }}</div>
-        <h3 class="success-title">{{ i18n.currentLang() === 'ar' ? 'تم إنشاء الفاتورة بنجاح' : 'Invoice Created Successfully' }}</h3>
-        <p class="success-desc">{{ i18n.currentLang() === 'ar' ? 'تم حفظ بيانات الفاتورة وربطها بالعقد المحدد.' : 'Invoice details saved and linked to the selected contract.' }}</p>
-        <div class="success-divider"></div>
-        <div class="success-actions">
-          <button class="success-btn success-btn-primary" (click)="closeAddModal()">{{ i18n.currentLang() === 'ar' ? 'موافق' : 'OK' }}</button>
+<app-premium-modal [show]="showAddModal()" (close)="closeAddModal()">
+  @if (showSuccess()) {
+    <div class="premium-success">
+      <div class="success-particles"><span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span></div>
+      <div class="success-icon-wrap">
+        <div class="success-glow"></div>
+        <div class="success-ring"></div>
+        <div class="success-circle">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8" /></svg>
         </div>
       </div>
-    } @else {
-      <div class="premium-header">
-        <div class="premium-header-left">
-          <div class="premium-header-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-          <div class="premium-header-text">
-            <h2 class="premium-title">{{ i18n.currentLang() === 'ar' ? 'إصدار فاتورة جديدة' : 'Create New Invoice' }}</h2>
-            <p class="premium-subtitle">{{ i18n.currentLang() === 'ar' ? 'أدخل تفاصيل الفاتورة وحدد العقد المرتبط بها' : 'Enter invoice details and select the associated contract' }}</p>
-          </div>
-        </div>
-        <button class="premium-close-btn" (click)="closeAddModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
+      <div class="success-badge">{{ i18n.currentLang() === 'ar' ? 'تم بنجاح' : 'Success' }}</div>
+      <h3 class="success-title">{{ i18n.currentLang() === 'ar' ? 'تم إنشاء الفاتورة بنجاح' : 'Invoice Created Successfully' }}</h3>
+      <p class="success-desc">{{ i18n.currentLang() === 'ar' ? 'تم حفظ بيانات الفاتورة وربطها بالعقد المحدد.' : 'Invoice details saved and linked to the selected contract.' }}</p>
+      <div class="success-divider"></div>
+      <div class="success-actions">
+        <button class="success-btn success-btn-primary" (click)="closeAddModal()">{{ i18n.currentLang() === 'ar' ? 'موافق' : 'OK' }}</button>
       </div>
-      <div class="premium-header-divider"></div>
+    </div>
+  } @else {
+    <div class="premium-header">
+      <div class="premium-header-left">
+        <div class="premium-header-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+        <div class="premium-header-text">
+          <h2 class="premium-title">{{ i18n.currentLang() === 'ar' ? 'إصدار فاتورة جديدة' : 'Create New Invoice' }}</h2>
+          <p class="premium-subtitle">{{ i18n.currentLang() === 'ar' ? 'أدخل تفاصيل الفاتورة وحدد العقد المرتبط بها' : 'Enter invoice details and select the associated contract' }}</p>
+        </div>
+      </div>
+      <button class="premium-close-btn" (click)="closeAddModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="premium-header-divider"></div>
 
-      <form (ngSubmit)="onSubmit()">
-        <div class="premium-body">
-          <div class="premium-section">
-            <div class="premium-section-header"><i class="fa-solid fa-circle-info"></i> <span>{{ i18n.currentLang() === 'ar' ? 'بيانات الفاتورة' : 'Invoice Information' }}</span></div>
-            <div class="premium-form-grid">
-              
-              <!-- Client Selection -->
-              <div class="premium-field">
-                <div class="premium-input-wrapper">
-                  <select id="iClient" [ngModel]="selectedClientId()" (ngModelChange)="onClientChange($event)" name="selectedClientId" required class="premium-input" style="padding-top:16px;">
-                    <option [value]="null" disabled selected>{{ i18n.currentLang() === 'ar' ? 'اختر العميل...' : 'Select client...' }}</option>
-                    @for (client of clients(); track client.id) {
-                      <option [value]="client.id">{{ client.companyName || client.name }}</option>
-                    }
-                  </select>
-                  <i class="fa-solid fa-building premium-input-icon"></i>
-                </div>
+    <form (ngSubmit)="onSubmit()">
+      <div class="premium-body">
+        <div class="premium-section">
+          <div class="premium-section-header"><i class="fa-solid fa-circle-info"></i> <span>{{ i18n.currentLang() === 'ar' ? 'بيانات الفاتورة' : 'Invoice Information' }}</span></div>
+          <div class="premium-form-grid">
+            
+            <!-- Client Selection -->
+            <div class="premium-field">
+              <div class="premium-input-wrapper">
+                <select id="iClient" [ngModel]="selectedClientId()" (ngModelChange)="onClientChange($event)" name="selectedClientId" required class="premium-input" style="padding-top:16px;">
+                  <option [value]="null" disabled selected>{{ i18n.currentLang() === 'ar' ? 'اختر العميل...' : 'Select client...' }}</option>
+                  @for (client of clients(); track client.id) {
+                    <option [value]="client.id">{{ client.companyName || client.name }}</option>
+                  }
+                </select>
+                <i class="fa-solid fa-building premium-input-icon"></i>
               </div>
-
-              <!-- Contract Selection -->
-              <div class="premium-field">
-                <div class="premium-input-wrapper">
-                  <select id="iContract" [(ngModel)]="selectedContractId" name="selectedContractId" required class="premium-input" style="padding-top:16px;" [disabled]="!selectedClientId()">
-                    <option [value]="null" disabled selected>{{ i18n.currentLang() === 'ar' ? 'اختر عقدًا...' : 'Select a contract...' }}</option>
-                    @for (contract of filteredContracts(); track contract.id) {
-                      <option [value]="contract.id">{{ contract.contractTitle || (i18n.currentLang() === 'ar' ? 'عقد رقم ' : 'Contract #') + contract.id }} - {{ contract.finalAmount | currency }}</option>
-                    }
-                    @if (selectedClientId() && filteredContracts().length === 0) {
-                      <option value="AUTO_CREATE">{{ i18n.currentLang() === 'ar' ? 'إنشاء عقد تلقائي للعميل' : 'Create Auto Contract for Client' }}</option>
-                    }
-                  </select>
-                  <i class="fa-solid fa-file-contract premium-input-icon"></i>
-                </div>
-              </div>
-
-              <!-- Total Amount -->
-              <div class="premium-field">
-                <div class="premium-input-wrapper">
-                  <input id="iAmount" type="number" [(ngModel)]="totalAmount" name="totalAmount" required placeholder=" " class="premium-input" min="0.01" step="0.01" />
-                  <i class="fa-solid fa-dollar-sign premium-input-icon"></i>
-                  <label for="iAmount" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'المبلغ الإجمالي' : 'Total Amount' }}</label>
-                </div>
-              </div>
-
-              <!-- Due Date -->
-              <div class="premium-field">
-                <div class="premium-input-wrapper">
-                  <input id="iDueDate" type="date" [(ngModel)]="dueDate" name="dueDate" required placeholder=" " class="premium-input" style="padding-top:16px;" />
-                  <i class="fa-solid fa-calendar-days premium-input-icon"></i>
-                </div>
-              </div>
-
-              <!-- Status -->
-              <div class="premium-field">
-                <div class="premium-input-wrapper">
-                  <select id="iStatus" [(ngModel)]="invoiceStatus" name="invoiceStatus" required class="premium-input" style="padding-top:16px;">
-                    <option value="Unpaid">{{ i18n.currentLang() === 'ar' ? 'غير مدفوعة / مستحقة' : 'Unpaid / Pending' }}</option>
-                    <option value="Paid">{{ i18n.currentLang() === 'ar' ? 'مدفوعة' : 'Paid' }}</option>
-                    <option value="Overdue">{{ i18n.currentLang() === 'ar' ? 'متأخرة السداد' : 'Overdue' }}</option>
-                  </select>
-                  <i class="fa-solid fa-toggle-on premium-input-icon"></i>
-                </div>
-              </div>
-
             </div>
+
+            <!-- Contract Selection -->
+            <div class="premium-field">
+              <div class="premium-input-wrapper">
+                <select id="iContract" [(ngModel)]="selectedContractId" name="selectedContractId" required class="premium-input" style="padding-top:16px;" [disabled]="!selectedClientId()">
+                  <option [value]="null" disabled selected>{{ i18n.currentLang() === 'ar' ? 'اختر عقدًا...' : 'Select a contract...' }}</option>
+                  @for (contract of filteredContracts(); track contract.id) {
+                    <option [value]="contract.id">{{ contract.contractTitle || (i18n.currentLang() === 'ar' ? 'عقد رقم ' : 'Contract #') + contract.id }} - {{ contract.finalAmount | currency }}</option>
+                  }
+                  @if (selectedClientId() && filteredContracts().length === 0) {
+                    <option value="AUTO_CREATE">{{ i18n.currentLang() === 'ar' ? 'إنشاء عقد تلقائي للعميل' : 'Create Auto Contract for Client' }}</option>
+                  }
+                </select>
+                <i class="fa-solid fa-file-contract premium-input-icon"></i>
+              </div>
+            </div>
+
+            <!-- Total Amount -->
+            <div class="premium-field">
+              <div class="premium-input-wrapper">
+                <input id="iAmount" type="number" [(ngModel)]="totalAmount" name="totalAmount" required placeholder=" " class="premium-input" min="0.01" step="0.01" />
+                <i class="fa-solid fa-dollar-sign premium-input-icon"></i>
+                <label for="iAmount" class="premium-label">{{ i18n.currentLang() === 'ar' ? 'المبلغ الإجمالي' : 'Total Amount' }}</label>
+              </div>
+            </div>
+
+            <!-- Due Date -->
+            <div class="premium-field">
+              <div class="premium-input-wrapper">
+                <input id="iDueDate" type="date" [(ngModel)]="dueDate" name="dueDate" required placeholder=" " class="premium-input" style="padding-top:16px;" />
+                <i class="fa-solid fa-calendar-days premium-input-icon"></i>
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="premium-field">
+              <div class="premium-input-wrapper">
+                <select id="iStatus" [(ngModel)]="invoiceStatus" name="invoiceStatus" required class="premium-input" style="padding-top:16px;">
+                  <option value="Unpaid">{{ i18n.currentLang() === 'ar' ? 'غير مدفوعة / مستحقة' : 'Unpaid / Pending' }}</option>
+                  <option value="Paid">{{ i18n.currentLang() === 'ar' ? 'مدفوعة' : 'Paid' }}</option>
+                  <option value="Overdue">{{ i18n.currentLang() === 'ar' ? 'متأخرة السداد' : 'Overdue' }}</option>
+                </select>
+                <i class="fa-solid fa-toggle-on premium-input-icon"></i>
+              </div>
+            </div>
+
           </div>
         </div>
+      </div>
 
-        <div class="premium-footer">
-          <button type="button" class="premium-btn premium-btn-ghost" (click)="closeAddModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.t('common.cancel') }}</button>
-          <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
-            @if (isSubmitting()) {
-              <span class="premium-btn-loader"></span> {{ i18n.t('common.loading') }}
-            } @else {
-              <i class="fa-solid fa-check"></i> {{ i18n.currentLang() === 'ar' ? 'حفظ وإصدار' : 'Save & Issue' }}
-            }
-          </button>
-        </div>
-      </form>
-    }
-  </div>
-</div>
+      <div class="premium-footer">
+        <button type="button" class="premium-btn premium-btn-ghost" (click)="closeAddModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.t('common.cancel') }}</button>
+        <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="premium-btn-loader"></span> {{ i18n.t('common.loading') }}
+          } @else {
+            <i class="fa-solid fa-check"></i> {{ i18n.currentLang() === 'ar' ? 'حفظ وإصدار' : 'Save & Issue' }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+</app-premium-modal>

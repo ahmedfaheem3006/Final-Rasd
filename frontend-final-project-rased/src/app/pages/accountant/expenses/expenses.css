@@ -649,7 +649,7 @@ textarea.form-control {
 .premium-modal-overlay {
   position: fixed !important;
   inset: 0 !important;
-  background: rgba(0, 0, 0, 0.35) !important;
+  background: var(--bg-overlay) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   z-index: 9999 !important;
@@ -663,8 +663,8 @@ textarea.form-control {
   pointer-events: auto !important;
 }
 
-.premium-modal-overlay.light {
-  background: rgba(255, 255, 255, 0.25) !important;
+:host-context(.light-theme) .premium-modal-overlay {
+  background: var(--bg-overlay) !important;
 }
 
 /* ── Modal Container ── */
@@ -677,9 +677,7 @@ textarea.form-control {
   max-width: 900px !important;
   max-height: 90vh !important;
   border-radius: 24px !important;
-  background: rgba(22, 29, 60, 0.92) !important;
-  backdrop-filter: blur(42px) !important;
-  -webkit-backdrop-filter: blur(42px) !important;
+  background: var(--bg-modal) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   overflow-y: auto !important;
   display: flex !important;
@@ -721,15 +719,13 @@ textarea.form-control {
   pointer-events: none !important;
 }
 
-.premium-modal-overlay.light .premium-modal {
-  background: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  box-shadow:
-    0 30px 80px rgba(15, 23, 42, 0.12),
-    0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+:host-context(.light-theme) .premium-modal {
+  background: var(--bg-modal) !important;
+  border-color: var(--border-modal) !important;
+  box-shadow: var(--shadow-xl) !important;
 }
 
-.premium-modal-overlay.light .premium-modal::before {
+:host-context(.light-theme) .premium-modal::before {
   background: linear-gradient(135deg, rgba(67, 24, 255, 0.25), rgba(67, 24, 255, 0.08), transparent 60%) !important;
 }
 
@@ -945,12 +941,12 @@ textarea.form-control {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.premium-modal-overlay.light .success-btn-ghost {
-  border-color: rgba(0, 0, 0, 0.1);
+:host-context(.light-theme) .success-btn-ghost {
+  border-color: var(--border-modal);
 }
 
-.premium-modal-overlay.light .success-btn-ghost:hover {
-  background: rgba(0, 0, 0, 0.04);
+:host-context(.light-theme) .success-btn-ghost:hover {
+  background: var(--bg-card-hover);
 }
 
 @keyframes premiumFadeUp {
@@ -996,7 +992,7 @@ textarea.form-control {
 
 .premium-header-text {
   padding-top: 4px !important;
-  text-align: right;
+  text-align: start;
 }
 
 .premium-title {
@@ -1019,8 +1015,8 @@ textarea.form-control {
   width: 36px !important;
   height: 36px !important;
   border-radius: 12px !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: var(--bg-input-modal) !important;
+  border: 1px solid var(--border-modal) !important;
   color: var(--text-muted) !important;
   display: flex !important;
   align-items: center !important;
@@ -1037,26 +1033,26 @@ textarea.form-control {
   transform: rotate(90deg) !important;
 }
 
-.premium-modal-overlay.light .premium-close-btn {
-  background: #f1f5f9 !important;
-  border-color: #e2e8f0 !important;
-  color: #64748b !important;
+:host-context(.light-theme) .premium-close-btn {
+  background: var(--bg-input-modal) !important;
+  border-color: var(--border-modal) !important;
+  color: var(--text-muted) !important;
 }
 
-.premium-modal-overlay.light .premium-close-btn:hover {
-  background: #e2e8f0 !important;
-  color: #0f172a !important;
+:host-context(.light-theme) .premium-close-btn:hover {
+  background: var(--bg-card-hover) !important;
+  color: var(--text-title) !important;
 }
 
 .premium-header-divider {
   height: 1px !important;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent) !important;
+  background: var(--border) !important;
   margin: 20px 32px 0 !important;
   flex-shrink: 0 !important;
 }
 
-.premium-modal-overlay.light .premium-header-divider {
-  background: #e2e8f0 !important;
+:host-context(.light-theme) .premium-header-divider {
+  background: var(--border) !important;
   height: 1px !important;
 }
 
@@ -1068,7 +1064,7 @@ textarea.form-control {
   display: flex !important;
   flex-direction: column !important;
   gap: 28px !important;
-  text-align: right;
+  text-align: start;
 }
 
 .premium-body::-webkit-scrollbar {
@@ -1084,8 +1080,8 @@ textarea.form-control {
   border-radius: 10px !important;
 }
 
-.premium-modal-overlay.light .premium-body::-webkit-scrollbar-thumb {
-  background: #cbd5e1 !important;
+:host-context(.light-theme) .premium-body::-webkit-scrollbar-thumb {
+  background: var(--border) !important;
 }
 
 /* ── 2-Column Form Grid ── */
@@ -1138,18 +1134,18 @@ textarea.form-control {
   padding-inline-end: 44px !important;
   font-size: 0.92rem !important;
   border-radius: 16px !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  background: var(--bg-input-modal) !important;
+  border: 1px solid var(--border-modal) !important;
   color: var(--text-title) !important;
   outline: none !important;
   transition: all 0.25s ease !important;
   font-family: inherit !important;
-  text-align: right;
+  text-align: start;
 }
 
 .premium-input:hover {
-  border-color: rgba(255, 255, 255, 0.14) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: var(--border-modal-hover) !important;
+  background: var(--bg-card-hover) !important;
 }
 
 .premium-input:focus {
@@ -1161,31 +1157,31 @@ textarea.form-control {
   transform: scale(1.01) !important;
 }
 
-.premium-modal-overlay.light .premium-input {
-  background: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-  color: #0f172a !important;
+:host-context(.light-theme) .premium-input {
+  background: var(--bg-input-modal) !important;
+  border-color: var(--border-modal) !important;
+  color: var(--text-title) !important;
 }
 
-.premium-modal-overlay.light .premium-input:hover {
-  background: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
+:host-context(.light-theme) .premium-input:hover {
+  background: var(--bg-card-hover) !important;
+  border-color: var(--border-modal-hover) !important;
 }
 
-.premium-modal-overlay.light .premium-input:focus {
-  background: #ffffff !important;
+:host-context(.light-theme) .premium-input:focus {
+  background: var(--bg-modal) !important;
   border-color: #4318ff !important;
   box-shadow:
     0 0 0 3px rgba(67, 24, 255, 0.1),
     0 4px 16px rgba(67, 24, 255, 0.06) !important;
 }
 
-.premium-modal-overlay.light .premium-input-icon {
-  color: #64748b !important;
+:host-context(.light-theme) .premium-input-icon {
+  color: var(--text-muted) !important;
 }
 
-.premium-modal-overlay.light .premium-label {
-  color: #64748b !important;
+:host-context(.light-theme) .premium-label {
+  color: var(--text-muted) !important;
 }
 
 .premium-label {
@@ -1205,7 +1201,7 @@ textarea.form-control {
 .premium-input-wrapper:hover .premium-input {
   border-color: rgba(67, 24, 255, 0.4) !important;
 }
-.premium-modal-overlay.light .premium-input-wrapper:hover .premium-input {
+:host-context(.light-theme) .premium-input-wrapper:hover .premium-input {
   border-color: rgba(67, 24, 255, 0.4) !important;
 }
 .premium-input-wrapper:hover .premium-input-icon {
@@ -1215,11 +1211,11 @@ textarea.form-control {
 .premium-input-wrapper:hover .premium-label {
   color: #4318ff !important;
 }
-.premium-modal-overlay.light .premium-input-wrapper:hover .premium-input-icon {
+:host-context(.light-theme) .premium-input-wrapper:hover .premium-input-icon {
   color: #4318ff !important;
   transform: scale(1.1) !important;
 }
-.premium-modal-overlay.light .premium-input-wrapper:hover .premium-label {
+:host-context(.light-theme) .premium-input-wrapper:hover .premium-label {
   color: #4318ff !important;
 }
 
@@ -1266,14 +1262,14 @@ textarea.form-control {
   align-items: center !important;
   justify-content: space-between !important;
   padding: 16px 32px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
-  background: rgba(0, 0, 0, 0.15) !important;
+  border-top: 1px solid var(--border-modal) !important;
+  background: var(--bg-modal-footer) !important;
   flex-shrink: 0 !important;
 }
 
-.premium-modal-overlay.light .premium-footer {
-  border-top-color: #e2e8f0 !important;
-  background: #f1f5f9 !important;
+:host-context(.light-theme) .premium-footer {
+  border-top-color: var(--border-modal) !important;
+  background: var(--bg-modal-footer) !important;
 }
 
 /* ── Premium Buttons ── */
@@ -1316,22 +1312,22 @@ textarea.form-control {
 .premium-btn-ghost {
   background: transparent !important;
   color: var(--text-muted) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--border-modal) !important;
 }
 
 .premium-btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: var(--bg-card-hover) !important;
   color: var(--text-title) !important;
 }
 
-.premium-modal-overlay.light .premium-btn-ghost {
-  border-color: #e2e8f0 !important;
-  color: #64748b !important;
+:host-context(.light-theme) .premium-btn-ghost {
+  border-color: var(--border-modal) !important;
+  color: var(--text-muted) !important;
 }
 
-.premium-modal-overlay.light .premium-btn-ghost:hover {
-  background: #f1f5f9 !important;
-  color: #0f172a !important;
+:host-context(.light-theme) .premium-btn-ghost:hover {
+  background: var(--bg-card-hover) !important;
+  color: var(--text-title) !important;
 }
 
 .premium-btn-loader {

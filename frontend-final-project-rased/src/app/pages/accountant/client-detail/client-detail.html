@@ -1,4 +1,4 @@
-<div #modalOverlay class="premium-modal-overlay active" (click)="closeModal()">
+<div #modalOverlay class="premium-modal-overlay active" [dir]="i18n.dir()" (click)="closeModal()">
   <div class="premium-modal active invoice-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" style="max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto;">
     <div style="position: sticky; top: 0; inset-inline-end: 0; padding: 16px; text-align: end; z-index: 10;">
       <button class="premium-close-btn" (click)="closeModal()" type="button"><i class="fa-solid fa-xmark"></i></button>

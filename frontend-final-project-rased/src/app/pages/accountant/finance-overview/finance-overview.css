@@ -1,4 +1,4 @@
-.page-container { direction: rtl; display: flex; flex-direction: column; gap: 30px; }
+.page-container { display: flex; flex-direction: column; gap: 30px; }
 .page-header { display: flex; align-items: center; justify-content: space-between; }
 .header-info h1 { font-size: 1.85rem; font-weight: 800; color: var(--text-title); margin: 4px 0; }
 .breadcrumbs { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
@@ -534,7 +534,7 @@
 
 .premium-header-text {
   padding-top: 4px !important;
-  text-align: right;
+  text-align: start;
 }
 
 .premium-title {
@@ -606,7 +606,7 @@
   display: flex !important;
   flex-direction: column !important;
   gap: 28px !important;
-  text-align: right;
+  text-align: start;
 }
 
 .premium-body::-webkit-scrollbar {
@@ -682,7 +682,7 @@
   outline: none !important;
   transition: all 0.25s ease !important;
   font-family: inherit !important;
-  text-align: right;
+  text-align: start;
 }
 
 .premium-input:hover {

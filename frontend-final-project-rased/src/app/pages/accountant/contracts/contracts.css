@@ -34,7 +34,6 @@
 
 /* ── Page Container ── */
 .page-container {
-  direction: rtl;
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -100,7 +99,7 @@
 
 .search-icon {
   position: absolute;
-  right: 14px;
+  inset-inline-start: 14px;
   color: var(--text-muted);
   font-size: 0.9rem;
   pointer-events: none;
@@ -108,7 +107,8 @@
 
 .search-input {
   height: 42px;
-  padding: 0 42px 0 16px;
+  padding-inline-start: 42px;
+  padding-inline-end: 16px;
   border-radius: 12px;
   border: 1.5px solid var(--border);
   background: var(--bg-card, rgba(255,255,255,0.04));
@@ -244,7 +244,7 @@
 .stat-trend-line {
   position: absolute;
   bottom: 0;
-  right: 0;
+  inset-inline-end: 0;
   height: 3px;
   border-radius: 0 0 20px 20px;
   width: 0;
@@ -313,7 +313,7 @@
 .contracts-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: right;
+  text-align: start;
 }
 
 .contracts-table thead tr {

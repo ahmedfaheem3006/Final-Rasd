@@ -1,0 +1,5 @@
+<div #overlayEl class="premium-modal-overlay" [class.active]="show()" (click)="onOverlayClick($event)">
+  <div class="premium-modal" [class.active]="show()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <ng-content></ng-content>
+  </div>
+</div>

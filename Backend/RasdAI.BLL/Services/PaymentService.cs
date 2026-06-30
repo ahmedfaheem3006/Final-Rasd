@@ -422,6 +422,14 @@ public class PaymentService : IPaymentService
             }).ToListAsync();
     }
 
+    public async Task<List<string>> GetPaymentMethodsAsync()
+    {
+        return await Task.FromResult(new List<string>
+        {
+            "Cash", "Bank Transfer", "Credit Card", "Cheque", "Wallet"
+        });
+    }
+
     private string GenerateReferenceNumber()
     {
         return $"PAY-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(100, 999)}";

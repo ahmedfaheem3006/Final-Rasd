@@ -79,13 +79,13 @@
   .app-sidebar-container {
     position: fixed !important;
     top: 0;
-    right: 0;
+    inset-inline-end: 0;
     bottom: 0;
     width: 300px !important;
     min-width: 300px !important;
     height: 100vh !important;
     z-index: 999 !important;
-    transform: translateX(100%);
+    transform: translateX(var(--slide-out-offset, 100%));
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-inline-end: 1px solid var(--border);
     border-bottom: none;
@@ -99,9 +99,9 @@
   }
 
   [dir="ltr"] .app-sidebar-container {
-    right: auto;
-    left: 0;
-    transform: translateX(-100%);
+    inset-inline-end: auto;
+    inset-inline-start: 0;
+    transform: translateX(var(--slide-in-offset, -100%));
   }
 
   [dir="ltr"] .app-sidebar-container.sidebar-open {
@@ -109,9 +109,9 @@
   }
 
   [dir="rtl"] .app-sidebar-container {
-    left: auto;
-    right: 0;
-    transform: translateX(100%);
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+    transform: translateX(var(--slide-out-offset, 100%));
   }
 
   [dir="rtl"] .app-sidebar-container.sidebar-open {

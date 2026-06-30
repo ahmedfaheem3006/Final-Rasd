@@ -128,6 +128,23 @@
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 80px;
   --navbar-height: 68px;
+
+  /* ── Theme Tokens (Dark default) ── */
+  --bg-modal: #0d1b45;
+  --bg-modal-header: linear-gradient(135deg, rgba(67, 24, 255, 0.1) 0%, transparent 70%);
+  --bg-modal-footer: rgba(0, 0, 0, 0.15);
+  --bg-popup: #0b1437;
+  --bg-dropdown: #0b1437;
+  --bg-table-header: rgba(255, 255, 255, 0.05);
+  --bg-table-hover: rgba(67, 24, 255, 0.04);
+  --bg-input-modal: rgba(255, 255, 255, 0.05);
+  --bg-summary-card: rgba(255, 255, 255, 0.04);
+  --bg-role-card: rgba(255, 255, 255, 0.03);
+  --border-modal: rgba(255, 255, 255, 0.08);
+  --border-modal-hover: rgba(255, 255, 255, 0.14);
+  --color-icon-default: #a0aec0;
+  --color-icon-hover: #ffffff;
+  --color-placeholder: rgba(255, 255, 255, 0.25);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -172,6 +189,22 @@
 
   --card-gradient-1: linear-gradient(126.97deg, rgba(255, 255, 255, 0.95) 28.26%, rgba(248, 249, 250, 0.9) 91.2%);
   --card-gradient-2: linear-gradient(126.97deg, rgba(255, 255, 255, 0.9) 28.26%, rgba(248, 249, 250, 0.85) 91.2%);
+
+  --bg-modal: #ffffff;
+  --bg-modal-header: linear-gradient(135deg, rgba(67, 24, 255, 0.04) 0%, transparent 70%);
+  --bg-modal-footer: #f1f5f9;
+  --bg-popup: #ffffff;
+  --bg-dropdown: #ffffff;
+  --bg-table-header: rgba(0, 0, 0, 0.03);
+  --bg-table-hover: rgba(67, 24, 255, 0.03);
+  --bg-input-modal: #f8fafc;
+  --bg-summary-card: #f8fafc;
+  --bg-role-card: #f8fafc;
+  --border-modal: rgba(0, 0, 0, 0.08);
+  --border-modal-hover: rgba(0, 0, 0, 0.12);
+  --color-icon-default: #64748b;
+  --color-icon-hover: #0f172a;
+  --color-placeholder: #cbd5e1;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -183,6 +216,73 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME TRANSITIONS — Smooth Light/Dark switching
+   Only color-related props, applied to themed surfaces only.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Disable all transitions during page load to prevent flash */
+html.preload *,
+html.preload *::before,
+html.preload *::after {
+  transition-duration: 0s !important;
+}
+html.preload {
+  transition-duration: 0s !important;
+}
+
+/* Hint GPU compositing for main surfaces */
+body {
+  will-change: background-color;
+}
+
+/* Key themed surface elements */
+:where(
+  body, .app, .main-content, .page-container,
+  [class*="card"], [class*="stat-"],
+  [class*="sidebar"], [class*="navbar"], [class*="nav-"],
+  .btn, [class*="btn-"],
+  input, select, textarea, [class*="form-"], [class*="search-"],
+  table, th, td, [class*="table"],
+  [class*="modal"], [class*="overlay"],
+  [class*="popup"], [class*="dropdown"], [class*="chosen-"],
+  [class*="badge"], [class*="tab-"],
+  [class*="toast"], [class*="alert"],
+  [class*="avatar"], [class*="progress"], [class*="timeline"],
+  [class*="list-"], [class*="notification"], [class*="skeleton"],
+  [class*="icon"], [class*="chart"],
+  .premium-modal-header, .premium-modal-footer, .premium-modal-body,
+  svg
+) {
+  transition: background-color 180ms ease,
+              color 180ms ease,
+              border-color 180ms ease,
+              box-shadow 180ms ease,
+              fill 180ms ease,
+              stroke 180ms ease;
+}
+
+/* Hover/focus states keep transitions fast but separate */
+:where(
+  body, .app, .main-content, .page-container,
+  [class*="card"], [class*="stat-"],
+  [class*="sidebar"], [class*="navbar"], [class*="nav-"],
+  .btn, [class*="btn-"],
+  input, select, textarea, [class*="form-"], [class*="search-"],
+  table, th, td, [class*="table"],
+  [class*="modal"], [class*="overlay"],
+  [class*="popup"], [class*="dropdown"], [class*="chosen-"],
+  [class*="badge"], [class*="tab-"],
+  [class*="toast"], [class*="alert"],
+  [class*="avatar"], [class*="progress"], [class*="timeline"],
+  [class*="list-"], [class*="notification"], [class*="skeleton"],
+  [class*="icon"], [class*="chart"],
+  .premium-modal-header, .premium-modal-footer, .premium-modal-body,
+  svg
+):hover {
+  transition-duration: 80ms;
 }
 
 html {

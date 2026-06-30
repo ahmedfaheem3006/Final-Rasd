@@ -119,6 +119,14 @@ export class Navbar implements OnInit {
       this.currentTitle = 'sidebar.finance_overview';
     } else if (url.includes('accountant/invoices')) {
       this.currentTitle = 'sidebar.invoices';
+    } else if (url.includes('accountant/contracts')) {
+      this.currentTitle = 'sidebar.contracts';
+    } else if (url.includes('accountant/payments')) {
+      this.currentTitle = 'sidebar.payments';
+    } else if (url.includes('accountant/reports')) {
+      this.currentTitle = 'sidebar.reports';
+    } else if (url.includes('accountant/clients')) {
+      this.currentTitle = 'sidebar.clients';
     } else if (url.includes('accountant/customers')) {
       this.currentTitle = 'sidebar.customers';
     } else if (url.includes('sales-manager/dashboard')) {
@@ -171,6 +179,8 @@ export class Navbar implements OnInit {
       this.currentTitle = 'sidebar.my_tasks_dates';
     } else if (url.includes('sales-rep/ai-assistant')) {
       this.currentTitle = 'sidebar.ai_agent';
+    } else if (url.includes('/meetings')) {
+      this.currentTitle = 'sidebar.meetings';
     } else {
       this.currentTitle = 'sidebar.dashboard';
     }

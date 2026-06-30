@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, HostBinding, HostListener, ViewChild, ElementRef, effect, Renderer2 } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, OnDestroy, ChangeDetectionStrategy, HostBinding, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { ToastService } from '../../../services/toast.service';
 import { SignalRService } from '../../../services/signalr.service';
 import { I18nService } from '../../../services/i18n.service';
 import { ThemeService } from '../../../services/theme.service';
+import { PremiumModalComponent } from '../../../shared/premium-modal/premium-modal';
 
 interface DashboardData {
   totalCollected: number;
@@ -49,24 +50,19 @@ interface UnpaidInvoice {
 @Component({
   selector: 'app-payments',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PremiumModalComponent],
   templateUrl: './payments.html',
   styleUrl: './payments.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PaymentsComponent implements OnInit, AfterViewInit, OnDestroy {
+export class PaymentsComponent implements OnInit, OnDestroy {
   private paymentService = inject(PaymentService);
   private toastService = inject(ToastService);
   private signalR = inject(SignalRService);
   private router = inject(Router);
-  private renderer = inject(Renderer2);
   public i18n = inject(I18nService);
   private themeService = inject(ThemeService);
   private destroy$ = new Subject<void>();
-
-  @ViewChild('premiumModal') premiumModalRef!: ElementRef;
-  @ViewChild('overlayEl') overlayRef!: ElementRef;
-  private overlayMoved = false;
 
   @HostBinding('class.light-theme') get isLightTheme() {
     return this.themeService.currentTheme() === 'light';
@@ -76,6 +72,7 @@ export class PaymentsComponent implements OnInit, AfterViewInit, OnDestroy {
   submitting = signal(false);
   showModal = signal(false);
   showSuccess = signal(false);
+  showAddModal = signal(false);
 
   dashboard = signal<DashboardData | null>(null);
   payments = signal<Payment[]>([]);
@@ -85,6 +82,21 @@ export class PaymentsComponent implements OnInit, AfterViewInit, OnDestroy {
   currentPage = signal(1);
   pageSize = signal(20);
   totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize())));
+
+  openMenuId = signal<number | null>(null);
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.closeMenu();
+  }
+
+  toggleMenu(id: number): void {
+    this.openMenuId.update(current => current === id ? null : id);
+  }
+
+  closeMenu(): void {
+    this.openMenuId.set(null);
+  }
 
   searchQuery = signal('');
   statusFilter = signal('All');
@@ -139,7 +151,7 @@ export class PaymentsComponent implements OnInit, AfterViewInit, OnDestroy {
   statuses = ['All', 'Completed', 'Partial', 'Pending', 'Failed', 'Refunded'];
   dateFilters = ['All', 'Today', 'ThisWeek', 'ThisMonth', 'Custom'];
 
-  paymentMethods = ['Cash', 'Bank Transfer', 'Credit Card', 'Debit Card', 'Cheque', 'Wallet', 'Online Payment'];
+  paymentMethods = signal<string[]>(['Cash', 'Bank Transfer', 'Credit Card', 'Cheque', 'Wallet']);
 
   totalCollected = computed(() => this.dashboard()?.totalCollected ?? 0);
   pendingAmount = computed(() => this.dashboard()?.pendingAmount ?? 0);
@@ -150,23 +162,12 @@ export class PaymentsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   filteredPayments = computed(() => this.payments());
 
-  constructor() {
-    effect(() => {
-      if (this.showModal()) {
-        if (!this.overlayMoved && this.overlayRef?.nativeElement) {
-          this.renderer.appendChild(document.body, this.overlayRef.nativeElement);
-          this.overlayMoved = true;
-        }
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
-    });
-  }
+  constructor() {}
 
   ngOnInit(): void {
     this.loadDashboard();
     this.loadPayments();
+    this.loadPaymentMethods();
 
     this.signalR.paymentCreated$.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.loadPayments();
@@ -182,20 +183,6 @@ export class PaymentsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadPayments();
       this.loadDashboard();
     });
-  }
-
-  ngAfterViewInit() {
-    setTimeout(() => {
-      if (!this.overlayMoved && this.overlayRef?.nativeElement) {
-        this.renderer.appendChild(document.body, this.overlayRef.nativeElement);
-        this.overlayMoved = true;
-      }
-    });
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscape() {
-    if (this.showModal()) this.closeModal();
   }
 
   ngOnDestroy(): void {
@@ -276,14 +263,25 @@ export class PaymentsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.formNotes.set('');
     this.invoiceSearchQuery.set('');
     this.unpaidInvoices.set([]);
-    this.showModal.set(true);
+    this.showInvoiceDropdown.set(false);
+    this.showAddModal.set(true);
     this.loadUnpaidInvoices();
   }
 
   closeModal(): void {
-    this.showModal.set(false);
+    this.showAddModal.set(false);
     this.showSuccess.set(false);
     this.showInvoiceDropdown.set(false);
+  }
+
+  private loadPaymentMethods(): void {
+    this.paymentService.getPaymentMethods().subscribe({
+      next: (res) => {
+        if (res?.success && res.data) {
+          this.paymentMethods.set(res.data);
+        }
+      }
+    });
   }
 
   private loadUnpaidInvoices(search?: string): void {
@@ -348,11 +346,7 @@ export class PaymentsComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         this.submitting.set(false);
         this.showSuccess.set(true);
-        if (res?.data?.id) {
-          setTimeout(() => {
-            this.router.navigate(['/app/accountant/payments', res.data.id]);
-          }, 1500);
-        }
+        setTimeout(() => this.closeModal(), 3000);
         this.loadPayments();
         this.loadDashboard();
       },

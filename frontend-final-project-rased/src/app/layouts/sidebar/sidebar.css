@@ -229,7 +229,7 @@
 .status-indicator {
   position: absolute;
   bottom: -1px;
-  right: -1px;
+  inset-inline-end: -1px;
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -237,8 +237,8 @@
 }
 
 [dir="rtl"] .status-indicator {
-  right: auto;
-  left: -1px;
+  inset-inline-end: auto;
+  inset-inline-start: -1px;
 }
 
 .status-indicator.online {
