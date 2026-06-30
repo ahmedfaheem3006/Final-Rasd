@@ -325,7 +325,7 @@
   background: rgba(2, 4, 12, 0.6);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  z-index: 98;
+  z-index: 101;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.35s ease, visibility 0.35s ease;
@@ -346,16 +346,17 @@
   width: min(320px, 85vw);
   flex-direction: column;
   background: rgba(8, 11, 24, 0.98);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-inline-start: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5);
-  z-index: 99;
+  z-index: 102;
   padding: 20px 22px 28px;
   overflow-y: auto;
   /* hidden off-screen toward the end side */
   transform: translateX(110%);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s;
+  visibility: hidden;
 }
 
 /* RTL: drawer sits on the left and hides toward the left */
@@ -365,6 +366,7 @@
 
 .mobile-menu.open {
   transform: translateX(0);
+  visibility: visible;
 }
 
 /* Drawer header */

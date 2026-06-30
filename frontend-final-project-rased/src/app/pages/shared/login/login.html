@@ -73,9 +73,9 @@
           </div>
         </div>
 
-        @if (errorMessage) {
+        @if (errorMessage()) {
           <div class="error-banner" style="color: var(--danger); font-size: 0.85rem; font-weight: 600; padding: 8px 12px; background-color: var(--danger-light); border-radius: var(--radius-xs);">
-            {{ errorMessage }}
+            {{ errorMessage() }}
           </div>
         }
 
@@ -87,7 +87,12 @@
           </label>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-submit">{{ i18n.t('auth.login.submit') }}</button>
+        <button type="submit" class="btn btn-primary btn-submit" [disabled]="loading()">
+          @if (loading()) {
+          <span class="spinner"></span>
+          }
+          {{ i18n.t('auth.login.submit') }}
+        </button>
       </form>
 
       <div class="form-footer">

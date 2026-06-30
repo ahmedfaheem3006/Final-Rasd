@@ -15,7 +15,6 @@ public class User : ITenantEntity
     public string? OtpCode { get; set; }
     public DateTime? OtpExpiryTime { get; set; }
     public string? PhoneNumber { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string Status { get; set; } = "Active";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

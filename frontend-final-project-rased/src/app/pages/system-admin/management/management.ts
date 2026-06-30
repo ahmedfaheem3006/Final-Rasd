@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SystemAdminService } from '../../../services/system-admin.service';
 import { ToastService } from '../../../services/toast.service';
 import { I18nService } from '../../../services/i18n.service';
+import { CompanyPermissionsService } from '../../../services/company-permissions.service';
 
 @Component({
   selector: 'app-management',
@@ -14,6 +15,7 @@ import { I18nService } from '../../../services/i18n.service';
 export class Management implements OnInit {
   private systemAdminService = inject(SystemAdminService);
   private toastService = inject(ToastService);
+  private companyPermissionsService = inject(CompanyPermissionsService);
   i18n = inject(I18nService);
 
   tenants = signal<any[]>([]);
@@ -79,10 +81,33 @@ export class Management implements OnInit {
     this.selectedTenant.set(tenant);
   }
 
+  /**
+   * Toggle a module permission for the selected tenant
+   */
   onTogglePermission(moduleName: string) {
     const tenant = this.selectedTenant();
     if (!tenant) return;
 
+    // Update tenant object
+    switch (moduleName) {
+      case 'crm':
+        tenant.isCrmEnabled = !tenant.isCrmEnabled;
+        break;
+      case 'accounting':
+        tenant.isInvoicesEnabled = !tenant.isInvoicesEnabled;
+        break;
+      case 'tasks':
+        tenant.isTasksEnabled = !tenant.isTasksEnabled;
+        break;
+      case 'meetings':
+        tenant.isMeetingsEnabled = !tenant.isMeetingsEnabled;
+        break;
+      case 'ai':
+        tenant.isAiEnabled = !tenant.isAiEnabled;
+        break;
+    }
+
+    // Create payload for API call
     const payload = {
       isCrmEnabled: tenant.isCrmEnabled,
       isInvoicesEnabled: tenant.isInvoicesEnabled,
@@ -99,6 +124,19 @@ export class Management implements OnInit {
             : 'Access permissions updated successfully',
           this.i18n.currentLang() === 'ar' ? 'صلاحيات الشركات' : 'Company Permissions'
         );
+        
+        // Update the enabled modules in the service for immediate UI update
+        const modules = [
+          { key: 'crm', label: 'Sales & Customers', enabled: tenant.isCrmEnabled },
+          { key: 'accounting', label: 'Invoices & Accounting', enabled: tenant.isInvoicesEnabled },
+          { key: 'tasks', label: 'Tasks & Kanban', enabled: tenant.isTasksEnabled },
+          { key: 'meetings', label: 'Meetings', enabled: tenant.isMeetingsEnabled },
+          { key: 'ai', label: 'AI Tools', enabled: tenant.isAiEnabled }
+        ];
+        
+        this.companyPermissionsService.updateEnabledModules(tenant.id, modules);
+        
+        // Reload tenants to refresh the UI
         this.loadTenants();
       },
       error: (err) => {

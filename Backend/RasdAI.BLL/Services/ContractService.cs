@@ -25,7 +25,7 @@ public class ContractService : IContractService
             .Include(c => c.Client)
             .Include(c => c.Invoices)
             .Include(c => c.CreatedByUser)
-            .Where(c => c.TenantId == tenantId && !c.IsDeleted)
+            .Where(c => c.TenantId == tenantId && !c.IsDeleted && c.ClientId != null)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
 
@@ -38,7 +38,7 @@ public class ContractService : IContractService
             .Include(c => c.Client)
             .Include(c => c.Invoices)
             .Include(c => c.CreatedByUser)
-            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantId && !c.IsDeleted);
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantId && !c.IsDeleted && c.ClientId != null);
 
         if (contract == null) return null;
         
@@ -151,7 +151,7 @@ public class ContractService : IContractService
 
     public async Task<object> GetContractStatsAsync(Guid tenantId)
     {
-        var query = _context.Contracts.Where(c => c.TenantId == tenantId && !c.IsDeleted);
+        var query = _context.Contracts.Where(c => c.TenantId == tenantId && !c.IsDeleted && c.ClientId != null);
 
         var totalCount = await query.CountAsync();
         var activeCount = await query.CountAsync(c => c.Status == "Active");

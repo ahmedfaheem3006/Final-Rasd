@@ -11,12 +11,11 @@ namespace RasdAI.DAL.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<DateTime>(
-                name: "CreatedAt",
-                table: "Users",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('Users', 'CreatedAt') IS NULL
+BEGIN
+    ALTER TABLE [Users] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+END");
 
             migrationBuilder.UpdateData(
                 table: "Users",
@@ -78,9 +77,11 @@ namespace RasdAI.DAL.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "CreatedAt",
-                table: "Users");
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('Users', 'CreatedAt') IS NOT NULL
+BEGIN
+    ALTER TABLE [Users] DROP COLUMN [CreatedAt];
+END");
         }
     }
 }

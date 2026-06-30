@@ -119,8 +119,8 @@
   --font-size-4xl: 2.5rem;
 
   /* ── Glassmorphism ── */
-  --glass-blur: blur(42px);
-  --glass-blur-sm: blur(20px);
+  --glass-blur: blur(6px);
+  --glass-blur-sm: blur(4px);
   --glass-bg: rgba(22, 29, 60, 0.6);
   --glass-border: rgba(255, 255, 255, 0.075);
 

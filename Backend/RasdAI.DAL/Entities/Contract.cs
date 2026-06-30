@@ -7,8 +7,9 @@ public class Contract : ITenantEntity
 {
     public int Id { get; set; }
     public Guid TenantId { get; set; }
-    public int ClientId { get; set; }
+    public int? ClientId { get; set; }
 
+    public string? FileName { get; set; }
     public string ContractNumber { get; set; } = string.Empty;
     public string ContractTitle { get; set; } = string.Empty;
     public string ContractType { get; set; } = string.Empty; // Sales, Service, Maintenance, Subscription, Rental, Custom
@@ -46,7 +47,7 @@ public class Contract : ITenantEntity
 
     // Navigation properties
     public Tenant Tenant { get; set; } = null!;
-    public Client Client { get; set; } = null!;
+    public Client? Client { get; set; }
     public User? CreatedByUser { get; set; }
     public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 }

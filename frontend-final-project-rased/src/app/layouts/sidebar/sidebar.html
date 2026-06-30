@@ -120,7 +120,7 @@
         <span class="nav-label">{{ i18n.t('sidebar.users') }}</span>
       </a>
 
-      @if (currentUser()?.isCrmEnabled !== false) {
+      @if (isModuleEnabled('crm')) {
         <a routerLink="/app/owner/deals" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
@@ -139,7 +139,7 @@
         }
       </a>
 
-      @if (currentUser()?.isMeetingsEnabled !== false) {
+      @if (isModuleEnabled('meetings')) {
         <a routerLink="/app/meetings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -148,7 +148,7 @@
         </a>
       }
 
-      @if (currentUser()?.isInvoicesEnabled !== false) {
+      @if (isModuleEnabled('accounting')) {
         <a routerLink="/app/owner/reports" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
@@ -157,7 +157,7 @@
         </a>
       }
 
-      @if (currentUser()?.isAiEnabled !== false) {
+      @if (isModuleEnabled('ai')) {
         <div class="nav-group-label">{{ i18n.t('sidebar.smart_tools') }}</div>
 
         <a routerLink="/app/owner/ai-assistant" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
@@ -257,12 +257,14 @@
         <span class="nav-label">{{ i18n.t('sidebar.reports') }}</span>
       </a>
 
-      <a routerLink="/app/meetings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
-        <div class="nav-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        </div>
-        <span class="nav-label">{{ i18n.t('sidebar.meetings') }}</span>
-      </a>
+      @if (isModuleEnabled('meetings')) {
+        <a routerLink="/app/meetings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
+          <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <span class="nav-label">{{ i18n.t('sidebar.meetings') }}</span>
+        </a>
+      }
     }
 
     <!-- 4. SALES MANAGER -->
@@ -276,7 +278,7 @@
         <span class="nav-label">{{ i18n.t('sidebar.sales_dashboard') }}</span>
       </a>
 
-      @if (currentUser()?.isCrmEnabled !== false) {
+      @if (isModuleEnabled('crm')) {
         <a routerLink="/app/sales-manager/team" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
@@ -299,7 +301,7 @@
         </a>
       }
 
-      @if (currentUser()?.isTasksEnabled !== false) {
+      @if (isModuleEnabled('tasks')) {
         <a routerLink="/app/sales-manager/tasks" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -308,7 +310,7 @@
         </a>
       }
 
-      @if (currentUser()?.isMeetingsEnabled !== false) {
+      @if (isModuleEnabled('meetings')) {
         <a routerLink="/app/meetings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -317,7 +319,7 @@
         </a>
       }
 
-      @if (currentUser()?.isAiEnabled !== false) {
+      @if (isModuleEnabled('ai')) {
         <a routerLink="/app/sales-manager/ai-assistant" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
           <div class="nav-icon ai-icon">
             <i class="fa-solid fa-robot"></i>
@@ -352,7 +354,7 @@
         <span class="nav-label">{{ i18n.t('sidebar.team_mgmt') }}</span>
       </a>
 
-      @if (currentUser()?.isTasksEnabled !== false) {
+      @if (isModuleEnabled('tasks')) {
         <a routerLink="/app/emp-manager/tasks" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -361,7 +363,7 @@
         </a>
       }
 
-      @if (currentUser()?.isMeetingsEnabled !== false) {
+      @if (isModuleEnabled('meetings')) {
         <a routerLink="/app/meetings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -396,7 +398,7 @@
         <span class="nav-label">{{ i18n.t('sidebar.request_leave') }}</span>
       </a>
 
-      @if (currentUser()?.isAiEnabled !== false) {
+      @if (isModuleEnabled('ai')) {
         <div class="nav-group-label">{{ i18n.isRtl() ? 'أدوات الذكاء الاصطناعي والإعدادات' : 'AI Tools & Settings' }}</div>
 
         <a routerLink="/app/owner/ai-assistant" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
@@ -447,7 +449,7 @@
         <span class="nav-label">{{ i18n.t('sidebar.hr_recruitment') }}</span>
       </a>
 
-      @if (currentUser()?.isInvoicesEnabled !== false) {
+      @if (isModuleEnabled('accounting')) {
         <a routerLink="/app/hr/reports" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
@@ -465,7 +467,7 @@
         <span class="nav-label">{{ i18n.t('sidebar.request_leave') }}</span>
       </a>
 
-      @if (currentUser()?.isMeetingsEnabled !== false) {
+      @if (isModuleEnabled('meetings')) {
         <a routerLink="/app/meetings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
@@ -475,7 +477,7 @@
         </a>
       }
 
-      @if (currentUser()?.isAiEnabled !== false) {
+      @if (isModuleEnabled('ai')) {
         <div class="nav-group-label">{{ i18n.isRtl() ? 'أدوات الذكاء الاصطناعي والإعدادات' : 'AI Tools & Settings' }}</div>
 
         <a routerLink="/app/owner/analyze-contract" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
@@ -505,7 +507,7 @@
     @if (role() === 'employee') {
       <div class="nav-group-label">{{ i18n.t('sidebar.employee') }}</div>
 
-      @if (currentUser()?.isTasksEnabled !== false) {
+      @if (isModuleEnabled('tasks')) {
         <a routerLink="/app/employee/tasks" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -528,7 +530,7 @@
         <span class="nav-label">{{ i18n.t('sidebar.request_leave') }}</span>
       </a>
 
-      @if (currentUser()?.isMeetingsEnabled !== false) {
+      @if (isModuleEnabled('meetings')) {
         <a routerLink="/app/meetings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -549,7 +551,7 @@
     @if (role() === 'sales-rep') {
       <div class="nav-group-label">{{ i18n.t('sidebar.sales_rep') }}</div>
 
-      @if (currentUser()?.isCrmEnabled !== false) {
+      @if (isModuleEnabled('crm')) {
         <a routerLink="/app/sales-rep/dashboard" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -572,7 +574,7 @@
         </a>
       }
 
-      @if (currentUser()?.isTasksEnabled !== false) {
+      @if (isModuleEnabled('tasks')) {
         <a routerLink="/app/sales-rep/tasks" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -581,7 +583,7 @@
         </a>
       }
 
-      @if (currentUser()?.isMeetingsEnabled !== false) {
+      @if (isModuleEnabled('meetings')) {
         <a routerLink="/app/meetings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <div class="nav-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -590,7 +592,7 @@
         </a>
       }
 
-      @if (currentUser()?.isAiEnabled !== false) {
+      @if (isModuleEnabled('ai')) {
         <a routerLink="/app/sales-rep/ai-assistant" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
           <div class="nav-icon ai-icon">
             <i class="fa-solid fa-robot"></i>

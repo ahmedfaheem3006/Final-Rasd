@@ -11,7 +11,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
   const token = localStorage.getItem('rasd_jwt_token');
 
-  const publicUrls = ['/api/auth/login', '/api/auth/forgot-password', '/api/auth/verify-otp', '/api/auth/reset-password'];
+  const publicUrls = [
+    '/api/auth/login',
+    '/api/auth/forgot-password',
+    '/api/auth/verify-otp',
+    '/api/auth/reset-password',
+    '/api/auth/register'
+  ];
   const isPublic = publicUrls.some(url => req.url.toLowerCase().includes(url.toLowerCase()));
 
   if (token && !isPublic) {
@@ -23,10 +29,22 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(authReq).pipe(
       catchError((err: HttpErrorResponse) => {
         if (err.status === 401 && !req.url.toLowerCase().includes('/login')) {
-          localStorage.removeItem('rasd_jwt_token');
-          localStorage.removeItem('rasd_user_session');
-          toast.error('انتهت صلاحية الجلسة. الرجاء تسجيل الدخول مرة أخرى.', 'انتهت الجلسة');
-          router.navigate(['/login']);
+          // CRITICAL: Check if the token used for THIS request still matches
+          // the one currently in localStorage. If a new login happened in
+          // the meantime (e.g. stale refreshPermissions() call), the tokens
+          // will differ and we must NOT clear the new session.
+          const currentToken = localStorage.getItem('rasd_jwt_token');
+          const requestToken = authReq.headers.get('Authorization')?.replace('Bearer ', '');
+
+          if (currentToken === requestToken) {
+            // Token hasn't changed — session is genuinely expired
+            authService.clearSession();
+            toast.error('انتهت صلاحية الجلسة. الرجاء تسجيل الدخول مرة أخرى.', 'انتهت الجلسة');
+            if (router.url !== '/login' && !router.url.startsWith('/login')) {
+              router.navigate(['/login']);
+            }
+          }
+          // If tokens differ, a newer login has occurred — ignore this stale 401
         }
         return throwError(() => err);
       })
