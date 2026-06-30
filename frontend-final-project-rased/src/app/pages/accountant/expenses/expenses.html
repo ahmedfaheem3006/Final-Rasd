@@ -173,9 +173,9 @@
     </div>
   }
 
-  <!-- Add/Edit Expense Modal -->
-  <div #modalOverlay class="premium-modal-overlay" [class.active]="showModal()" [class.light]="isLightTheme" (click)="closeModal()">
-    <div #premiumModal class="premium-modal" [class.active]="showModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+  <!-- Expense Modal — only rendered when open -->
+  <app-premium-modal [show]="showModal()" (close)="closeModal()">
+    @if (showModal()) {
       <div class="premium-header">
         <div class="premium-header-left">
           <div class="premium-header-icon"><i class="fa-solid fa-receipt"></i></div>
@@ -299,6 +299,6 @@
           </button>
         </div>
       }
-    </div>
-  </div>
+    }
+  </app-premium-modal>
 </div>

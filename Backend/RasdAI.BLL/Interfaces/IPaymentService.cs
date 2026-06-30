@@ -15,4 +15,5 @@ public interface IPaymentService
     Task<PaymentDashboardDto> GetPaymentDashboardAsync(Guid tenantId);
     Task<PaymentReceiptDto?> GetPaymentReceiptAsync(int id, Guid tenantId);
     Task<List<UnpaidInvoiceDto>> GetUnpaidInvoicesAsync(Guid tenantId, string? search = null);
+    Task<List<string>> GetPaymentMethodsAsync();
 }

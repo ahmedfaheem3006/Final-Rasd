@@ -1,7 +1,8 @@
-import { Component, signal, computed, inject, OnInit, AfterViewInit, ChangeDetectionStrategy, HostBinding, HostListener, ViewChild, ElementRef, effect, Renderer2 } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, ChangeDetectionStrategy, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { PremiumModalComponent } from '../../../shared/premium-modal/premium-modal';
 import { ExpenseService } from '../../../services/expense.service';
 import { ToastService } from '../../../services/toast.service';
 import { I18nService } from '../../../services/i18n.service';
@@ -28,21 +29,15 @@ export interface DashboardData {
 @Component({
   selector: 'app-expenses',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PremiumModalComponent],
   templateUrl: './expenses.html',
   styleUrl: './expenses.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExpensesComponent implements OnInit, AfterViewInit {
+export class ExpensesComponent implements OnInit {
   private expenseService = inject(ExpenseService);
-  private toastService = inject(ToastService);
   public i18n = inject(I18nService);
   private themeService = inject(ThemeService);
-  private renderer = inject(Renderer2);
-
-  @ViewChild('premiumModal') premiumModalRef!: ElementRef;
-  @ViewChild('modalOverlay') overlayRef!: ElementRef;
-  private overlayMoved = false;
 
   @HostBinding('class.light-theme') get isLightTheme() {
     return this.themeService.currentTheme() === 'light';
@@ -53,20 +48,6 @@ export class ExpensesComponent implements OnInit, AfterViewInit {
   showModal = signal(false);
   showSuccess = signal(false);
   editMode = signal(false);
-
-  constructor() {
-    effect(() => {
-      if (this.showModal()) {
-        if (!this.overlayMoved && this.overlayRef?.nativeElement) {
-          this.renderer.appendChild(document.body, this.overlayRef.nativeElement);
-          this.overlayMoved = true;
-        }
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
-    });
-  }
 
   dashboard = signal<DashboardData | null>(null);
   expenses = signal<Expense[]>([]);
@@ -119,20 +100,6 @@ export class ExpensesComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.loadData();
-  }
-
-  ngAfterViewInit() {
-    setTimeout(() => {
-      if (!this.overlayMoved && this.overlayRef?.nativeElement) {
-        this.renderer.appendChild(document.body, this.overlayRef.nativeElement);
-        this.overlayMoved = true;
-      }
-    });
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscape() {
-    if (this.showModal()) this.closeModal();
   }
 
   private loadData(): void {

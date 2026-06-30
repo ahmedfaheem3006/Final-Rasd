@@ -1,13 +1,13 @@
-<div class="page-container">
+<div class="page-container" [dir]="i18n.dir()">
   <header class="page-header animate-fade-in">
-    <div class="header-info"><div class="breadcrumbs">المحاسبة / النظرة المالية</div><h1>النظرة المالية العامة</h1><p class="subtitle">ملخص شامل للوضع المالي والتدفقات النقدية</p></div>
-    <button class="btn btn-primary" (click)="openExportModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> تصدير التقرير</button>
+    <div class="header-info"><div class="breadcrumbs">{{ i18n.t('finance.breadcrumbs') }}</div><h1>{{ i18n.t('finance.title') }}</h1><p class="subtitle">{{ i18n.t('finance.subtitle') }}</p></div>
+    <button class="btn btn-primary" (click)="openExportModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> {{ i18n.t('finance.export_btn') }}</button>
   </header>
 
   @if (loading()) {
     <div style="text-align: center; padding: 100px; color: var(--text-muted);">
       <i class="fa-solid fa-spinner fa-spin fa-2x" style="margin-bottom: 12px; display: block; color: var(--primary);"></i>
-      {{ i18n.currentLang() === 'ar' ? 'جاري تحميل البيانات المالية...' : 'Loading financial overview...' }}
+      {{ i18n.t('finance.loading') }}
     </div>
   } @else {
     <div class="stats-grid animate-reveal">
@@ -33,7 +33,7 @@
     </div>
     <div class="content-grid animate-reveal">
       <div class="card chart-card glow-border-animate">
-        <h3>تحليل التدفق النقدي</h3>
+        <h3>{{ i18n.t('finance.chart_title') }}</h3>
         <svg viewBox="0 0 800 200" fill="none" class="finance-chart">
           <g opacity="0.05" stroke="#000" stroke-width="1"><line x1="0" y1="50" x2="800" y2="50"/><line x1="0" y1="100" x2="800" y2="100"/><line x1="0" y1="150" x2="800" y2="150"/></g>
           @if (revenuePath()) {
@@ -46,10 +46,10 @@
             <text [attr.x]="50 + $index * (650 / (chartMonths().length - 1 || 1))" y="195" fill="var(--text-muted)" font-size="10" text-anchor="middle">{{ m }}</text>
           }
         </svg>
-        <div class="chart-legend"><span class="legend-item"><span class="dot success"></span> الإيرادات</span><span class="legend-item"><span class="dot danger"></span> المصروفات</span></div>
+        <div class="chart-legend"><span class="legend-item"><span class="dot success"></span> {{ i18n.t('finance.chart_revenue') }}</span><span class="legend-item"><span class="dot danger"></span> {{ i18n.t('finance.chart_expenses') }}</span></div>
       </div>
       <div class="card transactions-card">
-        <h3>آخر المعاملات المالية</h3>
+        <h3>{{ i18n.t('finance.transactions_title') }}</h3>
         <div class="txn-list">
           @for (tx of transactions(); track tx.desc) {
             <div class="txn-item">
@@ -60,7 +60,7 @@
           } @empty {
             <div style="text-align: center; padding: 40px; color: var(--text-muted);">
               <i class="fa-solid fa-receipt" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i>
-              {{ i18n.currentLang() === 'ar' ? 'لا توجد معاملات مسجلة حديثاً.' : 'No recent transactions recorded.' }}
+              {{ i18n.t('finance.no_data') }}
             </div>
           }
         </div>
@@ -80,12 +80,12 @@
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"></polyline></svg>
             </div>
           </div>
-          <div class="success-badge">{{ i18n.currentLang() === 'ar' ? 'تم بنجاح' : 'Success' }}</div>
-          <h3 class="success-title">{{ i18n.currentLang() === 'ar' ? 'تم تصدير التقرير' : 'Report Exported' }}</h3>
-          <p class="success-desc">{{ i18n.currentLang() === 'ar' ? 'تم تجهيز التقرير المالي وسيتم تحميله الآن.' : 'The financial report has been prepared and will download now.' }}</p>
+          <div class="success-badge">{{ i18n.t('clients.success_title') }}</div>
+          <h3 class="success-title">{{ i18n.t('finance.success_title') }}</h3>
+          <p class="success-desc">{{ i18n.t('finance.success_desc') }}</p>
           <div class="success-divider"></div>
           <div class="success-actions">
-            <button class="success-btn success-btn-primary" (click)="closeExportModal()">{{ i18n.currentLang() === 'ar' ? 'إغلاق' : 'Close' }}</button>
+            <button class="success-btn success-btn-primary" (click)="closeExportModal()">{{ i18n.t('finance.success_close') }}</button>
           </div>
         </div>
       } @else {
@@ -93,8 +93,8 @@
           <div class="premium-header-left">
             <div class="premium-header-icon"><i class="fa-solid fa-file-export"></i></div>
             <div class="premium-header-text">
-              <h2 class="premium-title">{{ i18n.currentLang() === 'ar' ? 'تصدير التقرير المالي' : 'Export Financial Report' }}</h2>
-              <p class="premium-subtitle">{{ i18n.currentLang() === 'ar' ? 'حدد خيارات التصدير المفضلة' : 'Select preferred export options' }}</p>
+              <h2 class="premium-title">{{ i18n.t('finance.modal_title') }}</h2>
+              <p class="premium-subtitle">{{ i18n.t('finance.modal_subtitle') }}</p>
             </div>
           </div>
           <button class="premium-close-btn" (click)="closeExportModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
@@ -107,8 +107,8 @@
               <div class="premium-field">
                 <div class="premium-input-wrapper">
                   <select class="premium-input" style="padding-top:16px;">
-                    <option value="pdf">{{ i18n.currentLang() === 'ar' ? 'تقرير بصيغة PDF' : 'PDF Report' }}</option>
-                    <option value="excel">{{ i18n.currentLang() === 'ar' ? 'تقرير بصيغة Excel' : 'Excel Report' }}</option>
+                    <option value="pdf">{{ i18n.t('finance.modal_pdf') }}</option>
+                    <option value="excel">{{ i18n.t('finance.modal_excel') }}</option>
                   </select>
                   <i class="fa-solid fa-file-lines premium-input-icon"></i>
                 </div>
@@ -118,12 +118,12 @@
         </div>
         
         <div class="premium-footer">
-          <button type="button" class="premium-btn premium-btn-ghost" (click)="closeExportModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.currentLang() === 'ar' ? 'إلغاء' : 'Cancel' }}</button>
+          <button type="button" class="premium-btn premium-btn-ghost" (click)="closeExportModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.t('finance.modal_cancel') }}</button>
           <button type="button" class="premium-btn premium-btn-primary" (click)="exportReport()" [disabled]="exporting()">
             @if (exporting()) {
-              <span class="premium-btn-loader"></span> {{ i18n.currentLang() === 'ar' ? 'جاري التحضير...' : 'Preparing...' }}
+              <span class="premium-btn-loader"></span> {{ i18n.t('finance.modal_preparing') }}
             } @else {
-              <i class="fa-solid fa-download"></i> {{ i18n.currentLang() === 'ar' ? 'تصدير الآن' : 'Export Now' }}
+              <i class="fa-solid fa-download"></i> {{ i18n.t('finance.modal_export_now') }}
             }
           </button>
         </div>

@@ -58,6 +58,14 @@ public class PaymentsController : ControllerBase
     }
 
     [Authorize(Roles = "Accountant,Owner")]
+    [HttpGet("payment-methods")]
+    public async Task<IActionResult> GetPaymentMethods()
+    {
+        var result = await _paymentService.GetPaymentMethodsAsync();
+        return Ok(new { success = true, data = result });
+    }
+
+    [Authorize(Roles = "Accountant,Owner")]
     [HttpGet("unpaid-invoices")]
     public async Task<IActionResult> GetUnpaidInvoices([FromQuery] string? search)
     {

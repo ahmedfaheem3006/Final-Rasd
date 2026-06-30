@@ -11,6 +11,7 @@ namespace RasdAI.DAL.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Schema already created by EnsureCreated
             migrationBuilder.DropForeignKey(
                 name: "FK_Invoices_Deals_DealId",
                 table: "Invoices");

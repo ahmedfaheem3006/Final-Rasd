@@ -8,9 +8,23 @@
   <link class="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script>
-    if (localStorage.getItem('theme') === 'dark') {
-      document.documentElement.classList.add('dark-theme');
-    }
+    (function() {
+      var theme = localStorage.getItem('rasd_theme');
+      if (theme === 'light') {
+        document.documentElement.classList.add('light-theme');
+      }
+      var lang = localStorage.getItem('rasd_lang');
+      if (lang === 'en') {
+        document.documentElement.dir = 'ltr';
+      } else {
+        document.documentElement.dir = 'rtl';
+      }
+      // Block transitions during initial render to prevent flash
+      document.documentElement.classList.add('preload');
+      requestAnimationFrame(function() {
+        document.documentElement.classList.remove('preload');
+      });
+    })();
   </script>
 </head>
 <body>

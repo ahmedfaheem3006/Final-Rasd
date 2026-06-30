@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit, ViewChild, ElementRef, effect, Renderer2, OnDestroy } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -10,10 +10,11 @@ import { ThemeService } from '../../../services/theme.service';
 import { PdfGeneratorService, InvoiceData, InvoiceTheme } from '../../../services/pdf-generator.service';
 import { ToastService } from '../../../services/toast.service';
 import { I18nService } from '../../../services/i18n.service';
+import { PremiumModalComponent } from '../../../shared/premium-modal/premium-modal';
 
 @Component({
   selector: 'app-invoices',
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PremiumModalComponent],
   templateUrl: './invoices.html',
   styleUrl: './invoices.css'
 })
@@ -25,11 +26,7 @@ export class Invoices implements OnInit, OnDestroy {
   private themeService = inject(ThemeService);
   private pdfService = inject(PdfGeneratorService);
   private toastService = inject(ToastService);
-  private renderer = inject(Renderer2);
   public i18n = inject(I18nService);
-
-  @ViewChild('modalOverlay') overlayRef!: ElementRef;
-  private overlayMoved = false;
 
   selectedTheme = signal<InvoiceTheme>('rasd');
   searchQuery = signal('');
@@ -74,23 +71,7 @@ export class Invoices implements OnInit, OnDestroy {
     ];
   }
 
-  get isLightTheme() {
-    return this.themeService.currentTheme() === 'light';
-  }
-
-  constructor() {
-    effect(() => {
-      if (this.showAddModal()) {
-        if (!this.overlayMoved && this.overlayRef?.nativeElement) {
-          this.renderer.appendChild(document.body, this.overlayRef.nativeElement);
-          this.overlayMoved = true;
-        }
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
-    });
-  }
+  constructor() {}
 
   ngOnInit() {
     this.loadInvoices();
@@ -98,11 +79,7 @@ export class Invoices implements OnInit, OnDestroy {
     this.loadClients();
   }
 
-  ngOnDestroy() {
-    if (this.overlayMoved && this.overlayRef?.nativeElement?.parentNode) {
-      this.renderer.removeChild(document.body, this.overlayRef.nativeElement);
-    }
-  }
+  ngOnDestroy() {}
 
   loadClients() {
     this.clientService.getClients().subscribe({

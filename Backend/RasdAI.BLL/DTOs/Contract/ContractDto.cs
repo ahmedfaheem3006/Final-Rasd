@@ -6,7 +6,7 @@ public class ContractDto
 {
     public int Id { get; set; }
     public Guid TenantId { get; set; }
-    public int ClientId { get; set; }
+    public int? ClientId { get; set; }
     public string ClientName { get; set; } = string.Empty;
 
     public string ContractNumber { get; set; } = string.Empty;

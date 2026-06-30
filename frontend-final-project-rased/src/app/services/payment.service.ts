@@ -26,6 +26,10 @@ export class PaymentService {
     return this.http.get<any>(`${this.baseUrl}/dashboard`);
   }
 
+  getPaymentMethods(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/payment-methods`);
+  }
+
   getUnpaidInvoices(search?: string): Observable<any> {
     let params = new HttpParams();
     if (search) params = params.set('search', search);

@@ -1,6 +1,5 @@
 /* Invoice Detail Styles */
 .page-container {
-  direction: rtl;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -189,7 +188,7 @@
   color: var(--text-muted);
   background: var(--border-light);
   border-bottom: 1px solid var(--border);
-  text-align: right;
+  text-align: start;
 }
 
 .inv-table tbody td {

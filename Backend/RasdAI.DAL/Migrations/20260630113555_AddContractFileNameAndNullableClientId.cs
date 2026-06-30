@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RasdAI.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class AddJobVacancies : Migration
+    public partial class AddContractFileNameAndNullableClientId : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Tables already created by AddRecruitment migration
+            // Changes already applied by AddAiHistoryFields and EnsureCreated
         }
 
         /// <inheritdoc />

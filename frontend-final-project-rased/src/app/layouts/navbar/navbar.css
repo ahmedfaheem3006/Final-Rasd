@@ -145,7 +145,7 @@
 .notification-btn .notification-dot {
   position: absolute;
   top: 6px;
-  right: 6px;
+  inset-inline-end: 6px;
   width: 8px;
   height: 8px;
   background: var(--danger);
@@ -154,8 +154,8 @@
 }
 
 :host-context([dir="rtl"]) .notification-btn .notification-dot {
-  right: auto;
-  left: 6px;
+  inset-inline-end: auto;
+  inset-inline-start: 6px;
 }
 
 /* ── Mobile Menu Trigger ── */
@@ -325,7 +325,7 @@
 .notifications-dropdown {
   position: absolute;
   top: calc(100% + 10px);
-  right: 0;
+  inset-inline-end: 0;
   width: 320px;
   max-height: 400px;
   background: var(--bg-card-solid);
@@ -343,8 +343,8 @@
 }
 
 :host-context([dir="rtl"]) .notifications-dropdown {
-  right: auto;
-  left: 0;
+  inset-inline-end: auto;
+  inset-inline-start: 0;
 }
 
 .notifications-dropdown.active {
@@ -404,11 +404,11 @@
   transition: background 0.2s;
   cursor: pointer;
   border-inline-start: 3px solid transparent;
-  text-align: right;
+  text-align: start;
 }
 
 :host-context([dir="ltr"]) .notification-item {
-  text-align: left;
+  text-align: start;
 }
 
 .notification-item:hover {
@@ -454,7 +454,7 @@
 .user-dropdown {
   position: absolute;
   top: calc(100% + 10px);
-  right: 0;
+  inset-inline-end: 0;
   width: 240px;
   background: var(--bg-card-solid);
   border: 1px solid var(--border);
@@ -472,8 +472,8 @@
 }
 
 :host-context([dir="rtl"]) .user-dropdown {
-  right: auto;
-  left: 0;
+  inset-inline-end: auto;
+  inset-inline-start: 0;
 }
 
 .user-dropdown.active {
@@ -492,7 +492,7 @@
 }
 
 :host-context([dir="rtl"]) .user-dropdown-header {
-  text-align: right;
+  text-align: start;
 }
 
 .user-dropdown-name {
@@ -593,7 +593,7 @@
 }
 
 :host-context([dir="rtl"]) .user-dropdown-item {
-  text-align: right;
+  text-align: start;
   flex-direction: row;
 }
 
