@@ -1,0 +1,452 @@
+<div class="contracts-page" dir="rtl">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-right">
+      <a routerLink="/app/sales-manager/dashboard" class="back-link">
+        <i class="fas fa-arrow-right"></i> الرجوع للوحة التحكم
+      </a>
+      <h1 class="page-title"><i class="fas fa-file-contract"></i> إدارة العقود</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn-export" (click)="exportCSV()" title="تصدير CSV">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+      <button class="btn-export" (click)="exportExcel()" title="تصدير Excel">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn-export" (click)="exportPDF()" title="تصدير PDF">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <i class="fas fa-plus"></i> إضافة عقد
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  @if (stats()) {
+    <div class="stats-grid">
+      <div class="stat-card stat-total">
+        <div class="stat-icon"><i class="fas fa-file-contract"></i></div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats().totalContracts }}</div>
+          <div class="stat-label">إجمالي العقود</div>
+        </div>
+      </div>
+      <div class="stat-card stat-active">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats().activeContracts }}</div>
+          <div class="stat-label">العقود النشطة</div>
+        </div>
+      </div>
+      <div class="stat-card stat-expiring">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats().expiringSoon }}</div>
+          <div class="stat-label">تنتهي قريباً</div>
+        </div>
+      </div>
+      <div class="stat-card stat-value-card">
+        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats().totalContractValue | number:'1.0-0' }}</div>
+          <div class="stat-label">إجمالي القيمة</div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Filter + Search -->
+  <div class="filter-bar">
+    <div class="status-tabs">
+      @for (tab of statusTabs; track tab) {
+        <button class="tab-btn" [class.active]="statusFilter() === tab" (click)="statusFilter.set(tab)">
+          {{ tab === 'all' ? 'الكل' : tab }}
+        </button>
+      }
+    </div>
+    <div class="search-wrap">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="search-input" placeholder="بحث برقم العقد أو العنوان أو العميل..."
+             [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)">
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري تحميل العقود...</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading()) {
+    @if (filteredContracts().length === 0) {
+      <div class="empty-state">
+        <i class="fas fa-file-contract empty-icon"></i>
+        <p>لا توجد عقود</p>
+        <button class="btn btn-primary" (click)="openCreate()">إضافة أول عقد</button>
+      </div>
+    } @else {
+      <div class="card table-wrap">
+        <table class="contracts-table">
+          <thead>
+            <tr>
+              <th>رقم العقد</th>
+              <th>العنوان</th>
+              <th>الطرف الآخر</th>
+              <th>النوع</th>
+              <th>القيمة النهائية</th>
+              <th>شروط الدفع</th>
+              <th>تاريخ البداية</th>
+              <th>تاريخ الانتهاء</th>
+              <th>الحالة</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of filteredContracts(); track c.id) {
+              <tr>
+                <td class="contract-num">{{ c.contractNumber }}</td>
+                <td class="contract-title" (click)="openView(c)">{{ c.contractTitle }}</td>
+                <td>{{ c.clientName || '—' }}</td>
+                <td><span class="type-badge">{{ partyLabel(c.contractType) }}</span></td>
+                <td class="amount">{{ c.finalAmount | number:'1.0-2' }} {{ c.currency }}</td>
+                <td>{{ c.paymentTerms }}</td>
+                <td>{{ c.startDate | date:'yyyy-MM-dd' }}</td>
+                <td [class.expiring]="c.daysRemaining >= 0 && c.daysRemaining <= 30">
+                  {{ c.endDate | date:'yyyy-MM-dd' }}
+                  @if (c.daysRemaining >= 0 && c.daysRemaining <= 30) {
+                    <span class="expiry-badge">{{ c.daysRemaining }}د</span>
+                  }
+                </td>
+                <td><span class="status-chip" [ngClass]="statusColors[c.status] || 'status-draft'">{{ c.status }}</span></td>
+                <td class="actions">
+                  <button class="action-btn view-btn" (click)="openView(c)" title="عرض">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn edit-btn" (click)="openEdit(c)" title="تعديل">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn archive-btn" (click)="archiveContract(c.id)" title="أرشفة">
+                    <i class="fas fa-archive"></i>
+                  </button>
+                  <button class="action-btn delete-btn" (click)="confirmDelete(c.id)" title="حذف">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     Create / Edit Modal
+════════════════════════════════════════════════════ -->
+@if (modalMode()) {
+  <div class="modal-backdrop" (click)="closeModal()"></div>
+  <div class="modal-panel" dir="rtl">
+    <div class="modal-header">
+      <h2>{{ modalMode() === 'create' ? 'إضافة عقد جديد' : 'تعديل العقد' }}</h2>
+      <button class="modal-close" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Party Type -->
+      <div class="form-section">
+        <h3 class="section-title"><i class="fas fa-handshake"></i> طرف العقد</h3>
+        <div class="party-type-grid">
+          <button class="party-type-btn" [class.selected]="partyType() === 'company'" (click)="partyType.set('company')">
+            <i class="fas fa-building"></i>
+            <span>شركة</span>
+          </button>
+          <button class="party-type-btn" [class.selected]="partyType() === 'individual'" (click)="partyType.set('individual')">
+            <i class="fas fa-user"></i>
+            <span>عميل فردي</span>
+          </button>
+          <button class="party-type-btn" [class.selected]="partyType() === 'employee'" (click)="partyType.set('employee')">
+            <i class="fas fa-user-tie"></i>
+            <span>موظف داخلي</span>
+          </button>
+        </div>
+
+        @if (partyType() !== 'employee') {
+          <div class="form-group">
+            <label>العميل <span class="req">*</span></label>
+            <select [(ngModel)]="form.clientId" class="form-control">
+              <option [value]="0">-- اختر العميل --</option>
+              @for (cl of clients(); track cl.id) {
+                <option [value]="cl.id">{{ cl.name }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        @if (partyType() === 'employee') {
+          <div class="form-group">
+            <label>الموظف <span class="req">*</span></label>
+            <select [(ngModel)]="form.employeeId" class="form-control">
+              <option [ngValue]="null">-- اختر الموظف --</option>
+              @for (u of users(); track u.id) {
+                <option [value]="u.id">{{ u.fullName }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+
+      <!-- Contract Info -->
+      <div class="form-section">
+        <h3 class="section-title"><i class="fas fa-file-alt"></i> تفاصيل العقد</h3>
+        <div class="form-row">
+          <div class="form-group col-2">
+            <label>عنوان العقد <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="form.contractTitle" class="form-control" placeholder="عنوان العقد">
+          </div>
+          <div class="form-group col-1">
+            <label>نوع العقد</label>
+            <select [(ngModel)]="form.contractType" class="form-control" [disabled]="partyType() === 'employee'">
+              <option value="Sales">مبيعات</option>
+              <option value="Service">خدمات</option>
+              <option value="Maintenance">صيانة</option>
+              <option value="Subscription">اشتراك</option>
+              <option value="Rental">إيجار</option>
+              <option value="Custom">مخصص</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-1">
+            <label>الرقم المرجعي</label>
+            <input type="text" [(ngModel)]="form.referenceNumber" class="form-control" placeholder="رقم مرجعي اختياري">
+          </div>
+          <div class="form-group col-1">
+            <label>العملة</label>
+            <select [(ngModel)]="form.currency" class="form-control">
+              <option value="SAR">ريال سعودي (SAR)</option>
+              <option value="USD">دولار أمريكي (USD)</option>
+              <option value="EUR">يورو (EUR)</option>
+              <option value="EGP">جنيه مصري (EGP)</option>
+              <option value="AED">درهم إماراتي (AED)</option>
+            </select>
+          </div>
+          <div class="form-group col-1">
+            <label>الحالة</label>
+            <select [(ngModel)]="form.status" class="form-control">
+              <option value="Draft">مسودة</option>
+              <option value="Sent">مُرسل</option>
+              <option value="Signed">موقّع</option>
+              <option value="Active">نشط</option>
+              <option value="Pending Approval">قيد المراجعة</option>
+              <option value="Expired">منتهي</option>
+              <option value="Cancelled">ملغى</option>
+              <option value="Archived">مؤرشف</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>الوصف / الملاحظات</label>
+          <textarea [(ngModel)]="form.description" class="form-control form-textarea" rows="3" placeholder="وصف أو ملاحظات إضافية..."></textarea>
+        </div>
+      </div>
+
+      <!-- Financial Info -->
+      <div class="form-section">
+        <h3 class="section-title"><i class="fas fa-coins"></i> القيم المالية</h3>
+        <div class="form-row">
+          <div class="form-group col-1">
+            <label>قيمة العقد <span class="req">*</span></label>
+            <input type="number" [(ngModel)]="form.contractValue" class="form-control" placeholder="0.00" (ngModelChange)="recalcFinal()" min="0">
+          </div>
+          <div class="form-group col-1">
+            <label>نسبة الضريبة %</label>
+            <input type="number" [(ngModel)]="form.taxPercentage" class="form-control" placeholder="15" (ngModelChange)="recalcFinal()" min="0" max="100">
+          </div>
+          <div class="form-group col-1">
+            <label>الخصم</label>
+            <input type="number" [(ngModel)]="form.discount" class="form-control" placeholder="0.00" (ngModelChange)="recalcFinal()" min="0">
+          </div>
+          <div class="form-group col-1">
+            <label>المبلغ النهائي</label>
+            <input type="number" [ngModel]="form.finalAmount" class="form-control final-amount" readonly>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-1">
+            <label>الدفعة الأولى (العربون)</label>
+            <input type="number" [(ngModel)]="form.depositAmount" class="form-control" placeholder="0.00" min="0">
+          </div>
+          <div class="form-group col-1">
+            <label>شروط الدفع</label>
+            <select [(ngModel)]="form.paymentTerms" class="form-control">
+              <option value="Monthly">شهري</option>
+              <option value="Quarterly">ربع سنوي</option>
+              <option value="Semi Annual">نصف سنوي</option>
+              <option value="Annual">سنوي</option>
+              <option value="Custom">مخصص</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="form-section">
+        <h3 class="section-title"><i class="fas fa-calendar-alt"></i> التواريخ</h3>
+        <div class="form-row">
+          <div class="form-group col-1">
+            <label>تاريخ البداية <span class="req">*</span></label>
+            <input type="date" [(ngModel)]="form.startDate" class="form-control">
+          </div>
+          <div class="form-group col-1">
+            <label>تاريخ الانتهاء <span class="req">*</span></label>
+            <input type="date" [(ngModel)]="form.endDate" class="form-control">
+          </div>
+          <div class="form-group col-1">
+            <label>تذكير قبل (يوم)</label>
+            <select [(ngModel)]="form.reminderDays" class="form-control">
+              <option [value]="7">7 أيام</option>
+              <option [value]="15">15 يوم</option>
+              <option [value]="30">30 يوم</option>
+              <option [value]="60">60 يوم</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeModal()">إلغاء</button>
+      <button class="btn-save" (click)="save()" [disabled]="isSaving()">
+        @if (isSaving()) { <span class="mini-spinner"></span> }
+        {{ isSaving() ? 'جاري الحفظ...' : (modalMode() === 'create' ? 'إنشاء العقد' : 'حفظ التعديلات') }}
+      </button>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════
+     View Modal
+════════════════════════════════════════════════════ -->
+@if (viewContract()) {
+  <div class="modal-backdrop" (click)="closeView()"></div>
+  <div class="modal-panel view-modal" dir="rtl">
+    <div class="modal-header">
+      <h2><i class="fas fa-file-contract"></i> {{ viewContract()!.contractTitle }}</h2>
+      <button class="modal-close" (click)="closeView()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="view-grid">
+        <div class="view-row">
+          <span class="view-label">رقم العقد</span>
+          <span class="view-value contract-num-view">{{ viewContract()!.contractNumber }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">الطرف الآخر</span>
+          <span class="view-value">{{ viewContract()!.clientName || '—' }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">النوع</span>
+          <span class="view-value">{{ partyLabel(viewContract()!.contractType) }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">الحالة</span>
+          <span class="status-chip" [ngClass]="statusColors[viewContract()!.status] || 'status-draft'">{{ viewContract()!.status }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">قيمة العقد</span>
+          <span class="view-value">{{ viewContract()!.contractValue | number:'1.0-2' }} {{ viewContract()!.currency }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">الضريبة</span>
+          <span class="view-value">{{ viewContract()!.taxPercentage }}%</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">الخصم</span>
+          <span class="view-value">{{ viewContract()!.discount | number:'1.0-2' }} {{ viewContract()!.currency }}</span>
+        </div>
+        <div class="view-row highlight">
+          <span class="view-label">المبلغ النهائي</span>
+          <span class="view-value final-val">{{ viewContract()!.finalAmount | number:'1.0-2' }} {{ viewContract()!.currency }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">المدفوع</span>
+          <span class="view-value">{{ viewContract()!.paidAmount | number:'1.0-2' }} {{ viewContract()!.currency }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">المتبقي</span>
+          <span class="view-value">{{ viewContract()!.remainingAmount | number:'1.0-2' }} {{ viewContract()!.currency }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">شروط الدفع</span>
+          <span class="view-value">{{ viewContract()!.paymentTerms }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">العربون</span>
+          <span class="view-value">{{ viewContract()!.depositAmount | number:'1.0-2' }} {{ viewContract()!.currency }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">تاريخ البداية</span>
+          <span class="view-value">{{ viewContract()!.startDate | date:'yyyy-MM-dd' }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">تاريخ الانتهاء</span>
+          <span class="view-value">{{ viewContract()!.endDate | date:'yyyy-MM-dd' }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">أيام متبقية</span>
+          <span class="view-value" [class.red-text]="viewContract()!.daysRemaining <= 30">
+            {{ viewContract()!.daysRemaining > 0 ? viewContract()!.daysRemaining + ' يوم' : 'منتهي' }}
+          </span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">الرقم المرجعي</span>
+          <span class="view-value">{{ viewContract()!.referenceNumber || '—' }}</span>
+        </div>
+        @if (viewContract()!.description) {
+          <div class="view-row full">
+            <span class="view-label">الوصف</span>
+            <span class="view-value">{{ viewContract()!.description }}</span>
+          </div>
+        }
+        <div class="view-row">
+          <span class="view-label">أنشئ بواسطة</span>
+          <span class="view-value">{{ viewContract()!.createdByUserName || '—' }}</span>
+        </div>
+        <div class="view-row">
+          <span class="view-label">تاريخ الإنشاء</span>
+          <span class="view-value">{{ viewContract()!.createdAt | date:'yyyy-MM-dd HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeView()">إغلاق</button>
+      <button class="btn-save" (click)="closeView(); openEdit(viewContract()!)">
+        <i class="fas fa-edit"></i> تعديل
+      </button>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════
+     Delete Confirm Dialog
+════════════════════════════════════════════════════ -->
+@if (deleteTargetId()) {
+  <div class="modal-backdrop" (click)="cancelDelete()"></div>
+  <div class="confirm-dialog" dir="rtl">
+    <div class="confirm-icon"><i class="fas fa-trash-alt"></i></div>
+    <h3>تأكيد الحذف</h3>
+    <p>هل أنت متأكد من حذف هذا العقد؟ لا يمكن التراجع عن هذا الإجراء.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" (click)="cancelDelete()">إلغاء</button>
+      <button class="btn-delete-confirm" (click)="deleteContract()">نعم، احذف</button>
+    </div>
+  </div>
+}

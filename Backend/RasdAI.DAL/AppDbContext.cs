@@ -34,6 +34,7 @@ public class AppDbContext : DbContext
     public DbSet<JobVacancy> JobVacancies { get; set; } = null!;
     public DbSet<Candidate> Candidates { get; set; } = null!;
     public DbSet<Attendance> Attendances { get; set; } = null!;
+    public DbSet<PendingCompanyRegistration> PendingCompanyRegistrations { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +78,25 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.TenantId);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Price).HasPrecision(18, 2);
+            entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+        });
+
+        // 2b. PendingCompanyRegistration configuration
+        modelBuilder.Entity<PendingCompanyRegistration>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CompanyName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Price).HasPrecision(18, 2);
+            entity.Property(e => e.SubscriptionPlan).HasMaxLength(100);
+            entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.OwnerFirstName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.OwnerLastName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.OwnerEmail).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.OwnerPhone).HasMaxLength(50);
+            entity.Property(e => e.OwnerPasswordHash).IsRequired();
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.RejectionReason).HasMaxLength(500);
         });
 
         // 3. Users configuration (Self-referential relation for Manager)

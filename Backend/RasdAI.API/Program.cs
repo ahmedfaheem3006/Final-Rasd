@@ -45,6 +45,7 @@ builder.Services.AddScoped<IClientFinancialService, ClientFinancialService>();
 builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
 builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IRecruitmentService, RecruitmentService>();
+builder.Services.AddScoped<IPendingRegistrationService, PendingRegistrationService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

@@ -27,6 +27,9 @@
         <div class="form-group">
           <label>{{ i18n.currentLang() === 'ar' ? 'قيمة الاشتراك الشهري ($)' : 'Monthly Subscription ($)' }}</label>
           <select [(ngModel)]="price" name="price" (change)="onPricePlanChange()" required>
+            <option [ngValue]="undefined" disabled selected>
+              {{ i18n.currentLang() === 'ar' ? '-- اختر الباقة المناسبة --' : '-- Select Plan --' }}
+            </option>
             <option *ngFor="let p of availablePlans" [ngValue]="p.price">
               {{ i18n.currentLang() === 'ar' ? p.nameAr : p.nameEn }} - ${{ p.price }} / {{ i18n.currentLang() === 'ar' ? p.periodAr : p.periodEn }}
             </option>

@@ -248,6 +248,10 @@ export class AuthService {
     return this.http.get<any>(`${this.baseUrl}/users`);
   }
 
+  getEmployees(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/employees`);
+  }
+
   getProfile(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/profile`);
   }

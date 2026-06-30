@@ -39,6 +39,11 @@ export class PricingMgmt implements OnInit {
   isLoading = signal(false);
   isSaving = signal(false);
 
+  showAddFeatureModal = signal(false);
+  newFeatureAr = '';
+  newFeatureEn = '';
+  private targetPlanIndex = -1;
+
   ngOnInit() {
     this.loadPricingPlans();
   }
@@ -52,8 +57,7 @@ export class PricingMgmt implements OnInit {
         }
         this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Failed to load pricing plans', err);
+      error: () => {
         this.toastService.error(
           this.i18n.currentLang() === 'ar' ? 'فشل في تحميل خطط الأسعار' : 'Failed to load pricing plans'
         );
@@ -62,14 +66,29 @@ export class PricingMgmt implements OnInit {
     });
   }
 
-  addFeature(planIndex: number) {
+  openAddFeatureModal(planIndex: number) {
+    this.targetPlanIndex = planIndex;
+    this.newFeatureAr = '';
+    this.newFeatureEn = '';
+    this.showAddFeatureModal.set(true);
+  }
+
+  closeAddFeatureModal() {
+    this.showAddFeatureModal.set(false);
+    this.targetPlanIndex = -1;
+  }
+
+  confirmAddFeature() {
+    if (!this.newFeatureAr.trim() || !this.newFeatureEn.trim() || this.targetPlanIndex < 0) return;
+
     const currentPlans = [...this.plans()];
-    currentPlans[planIndex].features.push({
-      textAr: '',
-      textEn: '',
+    currentPlans[this.targetPlanIndex].features.push({
+      textAr: this.newFeatureAr.trim(),
+      textEn: this.newFeatureEn.trim(),
       included: true
     });
     this.plans.set(currentPlans);
+    this.closeAddFeatureModal();
   }
 
   removeFeature(planIndex: number, featureIndex: number) {
@@ -81,15 +100,14 @@ export class PricingMgmt implements OnInit {
   savePricing() {
     this.isSaving.set(true);
     this.systemAdminService.updatePricingPlans(this.plans()).subscribe({
-      next: (res) => {
+      next: () => {
         this.toastService.success(
           this.i18n.currentLang() === 'ar' ? 'تم حفظ الأسعار والخطط بنجاح!' : 'Pricing plans updated successfully!',
           this.i18n.currentLang() === 'ar' ? 'إدارة الأسعار' : 'Pricing Settings'
         );
         this.isSaving.set(false);
       },
-      error: (err) => {
-        console.error('Failed to save pricing plans', err);
+      error: () => {
         this.toastService.error(
           this.i18n.currentLang() === 'ar' ? 'فشل في حفظ التعديلات' : 'Failed to save changes'
         );

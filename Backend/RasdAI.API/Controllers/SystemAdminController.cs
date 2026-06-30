@@ -22,12 +22,14 @@ public class SystemAdminController : ControllerBase
     private readonly ITenantService _tenantService;
     private readonly AppDbContext _context;
     private readonly IAiService _aiService;
+    private readonly IPendingRegistrationService _pendingRegistrationService;
 
-    public SystemAdminController(ITenantService tenantService, AppDbContext context, IAiService aiService)
+    public SystemAdminController(ITenantService tenantService, AppDbContext context, IAiService aiService, IPendingRegistrationService pendingRegistrationService)
     {
         _tenantService = tenantService;
         _context = context;
         _aiService = aiService;
+        _pendingRegistrationService = pendingRegistrationService;
     }
 
     [HttpGet("tenants")]
@@ -108,6 +110,8 @@ public class SystemAdminController : ControllerBase
             tenant.IsTasksEnabled = dto.IsTasksEnabled;
             tenant.IsMeetingsEnabled = dto.IsMeetingsEnabled;
             tenant.IsAiEnabled = dto.IsAiEnabled;
+            tenant.Address = dto.Address;
+            tenant.Phone = dto.Phone;
 
             // Also update the manager user if exists (RoleId = 2)
             var owner = tenant.Users.FirstOrDefault(u => u.RoleId == 2);
@@ -119,6 +123,45 @@ public class SystemAdminController : ControllerBase
 
             await _context.SaveChangesAsync();
             return Ok(new { success = true, message = "تم تحديث بيانات الشركة والمالك بنجاح" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPut("tenants/{id}/approve")]
+    public async Task<IActionResult> ApproveTenant(Guid id, [FromQuery] bool approve)
+    {
+        try
+        {
+            var tenant = await _context.Tenants
+                .IgnoreQueryFilters()
+                .Include(t => t.Users)
+                .FirstOrDefaultAsync(t => t.TenantId == id);
+                
+            if (tenant == null)
+                return NotFound(new { success = false, message = "الشركة غير موجودة" });
+
+            var owner = tenant.Users.FirstOrDefault(u => u.RoleId == 2);
+            if (owner == null)
+                return NotFound(new { success = false, message = "مالك الشركة غير موجود" });
+
+            if (approve)
+            {
+                tenant.IsActive = true;
+                owner.Status = "Active";
+            }
+            else
+            {
+                tenant.IsActive = false;
+                owner.Status = "Rejected";
+            }
+
+            await _context.SaveChangesAsync();
+            
+            var statusStr = approve ? "مقبول" : "مرفوض";
+            return Ok(new { success = true, message = $"تم تحديث حالة طلب الشركة بنجاح إلى: {statusStr}" });
         }
         catch (Exception ex)
         {
@@ -147,6 +190,48 @@ public class SystemAdminController : ControllerBase
         {
             var success = await _tenantService.DeleteTenantAsync(id);
             return Ok(new { success = true, message = "تم حذف الشركة وكل بياناتها التابعة بنجاح" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet("pending-registrations")]
+    public async Task<IActionResult> GetPendingRegistrations()
+    {
+        try
+        {
+            var result = await _pendingRegistrationService.GetAllAsync();
+            return Ok(new { success = true, data = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("pending-registrations/{id}/approve")]
+    public async Task<IActionResult> ApprovePendingRegistration(Guid id)
+    {
+        try
+        {
+            var result = await _pendingRegistrationService.ApproveAsync(id);
+            return Ok(new { success = true, message = "تمت الموافقة على طلب التسجيل وإنشاء الشركة والمالك بنجاح", data = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("pending-registrations/{id}/reject")]
+    public async Task<IActionResult> RejectPendingRegistration(Guid id, [FromBody] RejectRegistrationDto dto)
+    {
+        try
+        {
+            var result = await _pendingRegistrationService.RejectAsync(id, dto?.Reason);
+            return Ok(new { success = true, message = "تم رفض طلب التسجيل", data = result });
         }
         catch (Exception ex)
         {
@@ -259,10 +344,10 @@ public class SystemAdminController : ControllerBase
     {
         try
         {
-            var totalCompanies = await _context.Tenants.CountAsync();
-            var chatAiRequests = await _context.AIConversations.CountAsync();
-            var contractAiRequests = await _context.Contracts.CountAsync();
-            var meetingAiRequests = await _context.Meetings.CountAsync();
+            var totalCompanies = await _context.Tenants.IgnoreQueryFilters().CountAsync();
+            var chatAiRequests = await _context.AIConversations.IgnoreQueryFilters().CountAsync();
+            var contractAiRequests = await _context.Contracts.IgnoreQueryFilters().CountAsync();
+            var meetingAiRequests = await _context.Meetings.IgnoreQueryFilters().CountAsync();
             var totalAiRequests = chatAiRequests + contractAiRequests + meetingAiRequests;
 
             // Simulated dynamic diagnostics
@@ -271,6 +356,7 @@ public class SystemAdminController : ControllerBase
             var ram = Math.Round(7.5 + rand.NextDouble() * 1.5, 2);  // 7.5 GB to 9.0 GB
 
             var recentTenants = await _context.Tenants
+                .IgnoreQueryFilters()
                 .OrderByDescending(t => t.CreatedAt)
                 .Take(5)
                 .ToListAsync();
@@ -453,6 +539,11 @@ public class BulkIssueActionDto
     public string Action { get; set; } = string.Empty; // Approved or Rejected
 }
 
+public class RejectRegistrationDto
+{
+    public string? Reason { get; set; }
+}
+
 public class UpdateTenantFullDto
 {
     public string Name { get; set; } = string.Empty;
@@ -466,4 +557,6 @@ public class UpdateTenantFullDto
     public bool IsTasksEnabled { get; set; }
     public bool IsMeetingsEnabled { get; set; }
     public bool IsAiEnabled { get; set; }
+    public string? Address { get; set; }
+    public string? Phone { get; set; }
 }

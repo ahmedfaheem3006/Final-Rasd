@@ -96,19 +96,19 @@ export class TenantDetail implements OnInit {
           const t = res.data;
           const isAr = this.i18n.currentLang() === 'ar';
           
-          const savedPhone = localStorage.getItem(`tenant_phone_${this.tenantId}`) || '+966 11 000 0000';
-          const savedLocation = localStorage.getItem(`tenant_location_${this.tenantId}`) || (isAr ? 'الرياض، المملكة العربية السعودية' : 'Riyadh, Saudi Arabia');
+          const phone = t.phone || localStorage.getItem(`tenant_phone_${this.tenantId}`) || '+966 11 000 0000';
+          const location = t.address || localStorage.getItem(`tenant_location_${this.tenantId}`) || (isAr ? 'الرياض، المملكة العربية السعودية' : 'Riyadh, Saudi Arabia');
 
           this.tenant.set({
             name: t.name,
             owner: t.ownerName || (isAr ? 'غير محدد' : 'Not Set'),
             email: t.ownerEmail || '...',
-            phone: savedPhone,
+            phone: phone,
             plan: this.mapPriceToPlan(t.price),
             status: t.isActive ? 'active' : 'suspended',
             users: 1,
             date: new Date(t.createdAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-            location: savedLocation,
+            location: location,
             modules: this.getActiveModules(t),
             price: t.price,
             aiLimit: t.aiLimit,
@@ -121,7 +121,9 @@ export class TenantDetail implements OnInit {
 
           // 1. AI requests progress calculation
           const isUnlimited = t.aiLimit >= 999999;
-          const aiLimitText = isUnlimited ? (isAr ? 'غير محدود' : 'Unlimited') : t.aiLimit.toString();
+          const aiLimitText = isUnlimited 
+            ? (isAr ? 'غير محدود' : 'Unlimited') 
+            : `${t.aiLimit} (${isAr ? 'محدودة' : 'Limited'})`;
           const aiPercent = isUnlimited ? 0 : Math.min(100, Math.round((t.aiUsageCount / t.aiLimit) * 100));
 
           // 2. Billing cycle progress calculation (based on CreatedAt registration date modulo 30 days)
@@ -155,7 +157,11 @@ export class TenantDetail implements OnInit {
 
           if (t.recentActivities && t.recentActivities.length > 0) {
             const mappedActivities = t.recentActivities.map((act: any) => {
-              const dt = new Date(act.time);
+              let timeStr = act.time;
+              if (timeStr && !timeStr.endsWith('Z') && !timeStr.includes('+') && !timeStr.includes('-')) {
+                timeStr += 'Z';
+              }
+              const dt = new Date(timeStr);
               const relativeTime = this.getRelativeTimeString(dt);
               return {
                 action: act.action,
@@ -276,12 +282,14 @@ export class TenantDetail implements OnInit {
       isInvoicesEnabled: this.editIsInvoicesEnabled,
       isTasksEnabled: this.editIsTasksEnabled,
       isMeetingsEnabled: this.editIsMeetingsEnabled,
-      isAiEnabled: this.editIsAiEnabled
+      isAiEnabled: this.editIsAiEnabled,
+      address: this.editLocation,
+      phone: this.editPhone
     };
 
     this.systemAdminService.updateTenantFull(this.tenantId, payload).subscribe({
       next: (res) => {
-        // Save Phone and Location locally since they aren't part of the core database schema
+        // Save Phone and Location locally as fallback/cache
         localStorage.setItem(`tenant_phone_${this.tenantId}`, this.editPhone);
         localStorage.setItem(`tenant_location_${this.tenantId}`, this.editLocation);
 

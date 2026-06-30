@@ -124,5 +124,32 @@
         "included": true
       }
     ]
+  },
+  {
+    "id": "free",
+    "nameAr": "الباقة المجانية",
+    "nameEn": "Free Trial",
+    "price": 0,
+    "periodAr": "3 أيام",
+    "periodEn": "3 days",
+    "taglineAr": "فترة تجريبية مجانية كاملة الميزات صالحة للاستخدام لمدة 3 أيام فقط.",
+    "taglineEn": "Full-featured free trial valid for 3 days only.",
+    "features": [
+      {
+        "textAr": "الوصول الكامل للميزات كـ Owner",
+        "textEn": "Full Owner Features Access",
+        "included": true
+      },
+      {
+        "textAr": "100 طلب ذكاء اصطناعي إجمالاً",
+        "textEn": "100 AI Queries total",
+        "included": true
+      },
+      {
+        "textAr": "صالحة لمدة 3 أيام فقط",
+        "textEn": "Valid for 3 days only",
+        "included": true
+      }
+    ]
   }
 ]

@@ -81,6 +81,18 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['system-admin'] }
       },
+      {
+        path: 'sys-admin/pending-registrations',
+        loadComponent: () => import('./pages/system-admin/pending-registrations/pending-registrations').then(m => m.PendingRegistrations),
+        canActivate: [roleGuard],
+        data: { roles: ['system-admin'] }
+      },
+      {
+        path: 'sys-admin/messages',
+        loadComponent: () => import('./pages/system-admin/messages/messages').then(m => m.MessagesComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['system-admin'] }
+      },
 
       // ── Owner / Admin ─────────────────────────────────────────────────────
       {
@@ -265,6 +277,18 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/sales-manager/ai-assistant/ai-assistant').then(m => m.SalesManagerAiAssistant),
         canActivate: [roleGuard],
         data: { roles: ['sales-manager', 'owner-admin'] }
+      },
+      {
+        path: 'sales-manager/analyze-contract',
+        loadComponent: () => import('./pages/sales-manager/analyze-contract/analyze-contract').then(m => m.SmAnalyzeContract),
+        canActivate: [roleGuard],
+        data: { roles: ['sales-manager', 'owner-admin'] }
+      },
+      {
+        path: 'sales-manager/contracts',
+        loadComponent: () => import('./pages/sales-manager/contracts/contracts').then(m => m.SmContracts),
+        canActivate: [roleGuard],
+        data: { roles: ['sales-manager'] }
       },
 
       // ── Employee Manager ──────────────────────────────────────────────────

@@ -14,6 +14,11 @@ public class TenantDto
     // Owner Details
     public string OwnerName { get; set; } = string.Empty;
     public string OwnerEmail { get; set; } = string.Empty;
+    public string OwnerStatus { get; set; } = string.Empty;
+
+    // Additional Registration Fields
+    public string? Address { get; set; }
+    public string? Phone { get; set; }
 
     // Feature Toggles
     public bool IsCrmEnabled { get; set; } = true;

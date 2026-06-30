@@ -1,0 +1,192 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        {{ i18n.currentLang() === 'ar' ? 'المشرف العام / طلبات التسجيل المعلقة' : 'System Admin / Pending Registrations' }}
+      </div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'طلبات تسجيل الشركات' : 'Pending Company Registrations' }}</h1>
+      <p class="subtitle">
+        {{ i18n.currentLang() === 'ar' ? 'مراجعة وقبول أو رفض طلبات تسجيل الشركات الجديدة' : 'Review, approve or reject new company registration requests.' }}
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="loadPendingRegistrations()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        <span>{{ i18n.currentLang() === 'ar' ? 'تحديث' : 'Refresh' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="stats-grid animate-reveal">
+    @for (s of stats(); track s.label) {
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">{{ s.label }}</span>
+          <div class="stat-icon" [ngClass]="s.color">
+            @if (s.color === 'warning') {
+              <i class="fa-solid fa-clock"></i>
+            } @else if (s.color === 'success') {
+              <i class="fa-solid fa-circle-check"></i>
+            } @else if (s.color === 'danger') {
+              <i class="fa-solid fa-circle-xmark"></i>
+            } @else {
+              <i class="fa-solid fa-building"></i>
+            }
+          </div>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ s.value }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner-lg"></div>
+      <p>{{ i18n.currentLang() === 'ar' ? 'جاري تحميل الطلبات...' : 'Loading requests...' }}</p>
+    </div>
+  } @else if (registrations().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      </div>
+      <h3>{{ i18n.currentLang() === 'ar' ? 'لا توجد طلبات معلقة' : 'No Pending Requests' }}</h3>
+      <p>{{ i18n.currentLang() === 'ar' ? 'جميع طلبات التسجيل تمت معالجتها' : 'All registration requests have been processed.' }}</p>
+    </div>
+  } @else {
+    <div class="card table-card animate-reveal">
+      <div class="card-header">
+        <h3>{{ i18n.currentLang() === 'ar' ? 'قائمة الطلبات المعلقة' : 'Pending Requests List' }}</h3>
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" [placeholder]="i18n.currentLang() === 'ar' ? 'ابحث عن شركة...' : 'Search company...'" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.currentLang() === 'ar' ? 'اسم الشركة' : 'Company Name' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'المالك' : 'Owner' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'رقم الهاتف' : 'Phone' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'الباقة' : 'Plan' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'الحد الذكاء الاصطناعي' : 'AI Limit' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'تاريخ التقديم' : 'Date' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'الحالة' : 'Status' }}</th>
+              <th>{{ i18n.currentLang() === 'ar' ? 'الإجراءات' : 'Actions' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of filteredRegistrations(); track r.id) {
+              <tr>
+                <td class="fw-bold">{{ r.companyName }}</td>
+                <td>{{ r.ownerFullName }}</td>
+                <td>{{ r.ownerEmail }}</td>
+                <td>{{ r.ownerPhone || '-' }}</td>
+                <td><span class="plan-tag">{{ r.subscriptionPlan }}</span></td>
+                <td>{{ r.aiLimit >= 99999 ? (i18n.currentLang() === 'ar' ? 'غير محدود' : 'Unlimited') : r.aiLimit }}</td>
+                <td class="text-muted">{{ r.createdAt | date: 'mediumDate' }}</td>
+                <td>
+                  @if (r.status === 'Pending') {
+                    <span class="badge badge-warning">{{ i18n.currentLang() === 'ar' ? 'معلق' : 'Pending' }}</span>
+                  } @else if (r.status === 'Approved') {
+                    <span class="badge badge-success">{{ i18n.currentLang() === 'ar' ? 'مقبول' : 'Approved' }}</span>
+                  } @else {
+                    <span class="badge badge-danger">{{ i18n.currentLang() === 'ar' ? 'مرفوض' : 'Rejected' }}</span>
+                  }
+                </td>
+                <td>
+                  @if (r.status === 'Pending') {
+                    <div class="actions-group">
+                      <button class="btn btn-sm btn-success" (click)="onApprove(r)" [title]="i18n.currentLang() === 'ar' ? 'موافقة' : 'Approve'">
+                        <i class="fa-solid fa-check"></i>
+                        <span>{{ i18n.currentLang() === 'ar' ? 'موافقة' : 'Approve' }}</span>
+                      </button>
+                      <button class="btn btn-sm btn-danger" (click)="openRejectModal(r)" [title]="i18n.currentLang() === 'ar' ? 'رفض' : 'Reject'">
+                        <i class="fa-solid fa-times"></i>
+                        <span>{{ i18n.currentLang() === 'ar' ? 'رفض' : 'Reject' }}</span>
+                      </button>
+                    </div>
+                  } @else {
+                    <span class="text-muted" style="font-size: 0.8rem;">{{ r.processedAt | date: 'mediumDate' }}</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Approve Confirmation Modal -->
+<div class="modal-overlay" [class.active]="showApproveModal()">
+  <div class="modal-container" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3 style="color: var(--success, #22c55e); display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>{{ i18n.currentLang() === 'ar' ? 'تأكيد الموافقة' : 'Confirm Approval' }}</span>
+      </h3>
+      <button class="modal-close-btn" (click)="closeApproveModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 24px;">
+      <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-title); font-weight: 500; margin: 0;">
+        {{ i18n.currentLang() === 'ar' 
+           ? 'هل أنت متأكد من الموافقة على طلب تسجيل شركة ' 
+           : 'Are you sure you want to approve the registration of ' }}
+        <strong style="color: var(--accent-color); font-weight: 700;">"{{ selectedRegistration?.companyName }}"</strong>؟
+      </p>
+      <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-body); margin-top: 12px;">
+        {{ i18n.currentLang() === 'ar' 
+           ? 'سيتم إنشاء حساب الشركة وتعيين المالك مباشرة مع تفعيل الحساب فوراً.' 
+           : 'The company account and owner will be created and activated immediately.' }}
+      </p>
+    </div>
+    <div class="modal-footer" style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 12px;">
+      <button type="button" class="btn btn-secondary" (click)="closeApproveModal()">{{ i18n.currentLang() === 'ar' ? 'إلغاء' : 'Cancel' }}</button>
+      <button type="button" class="btn btn-success" (click)="confirmApprove()" style="box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);">
+        {{ i18n.currentLang() === 'ar' ? 'تأكيد الموافقة' : 'Confirm Approval' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" [class.active]="showRejectModal()">
+  <div class="modal-container" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3 style="color: #ef4444; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-ban"></i>
+        <span>{{ i18n.currentLang() === 'ar' ? 'رفض الطلب' : 'Reject Request' }}</span>
+      </h3>
+      <button class="modal-close-btn" (click)="closeRejectModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 24px;">
+      <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-title); font-weight: 500; margin-bottom: 16px;">
+        {{ i18n.currentLang() === 'ar' 
+           ? 'هل أنت متأكد من رفض طلب تسجيل شركة ' 
+           : 'Are you sure you want to reject the registration of ' }}
+        <strong style="color: #ef4444;">"{{ selectedRegistration?.companyName }}"</strong>؟
+      </p>
+      <div class="form-group-modal">
+        <label style="font-size: 11px; font-weight: 700; color: var(--text-muted-custom); margin-bottom: 6px; display: block;">
+          {{ i18n.currentLang() === 'ar' ? 'سبب الرفض (اختياري)' : 'Rejection Reason (optional)' }}
+        </label>
+        <textarea [(ngModel)]="rejectionReason" rows="3" style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-title); background-color: var(--bg-card-solid); resize: vertical; outline: none;" [placeholder]="i18n.currentLang() === 'ar' ? 'أدخل سبب الرفض...' : 'Enter rejection reason...'"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding: 15px 20px; display: flex; justify-content: flex-end; gap: 12px;">
+      <button type="button" class="btn btn-secondary" (click)="closeRejectModal()">{{ i18n.currentLang() === 'ar' ? 'إلغاء' : 'Cancel' }}</button>
+      <button type="button" class="btn btn-danger" (click)="confirmReject()" style="box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);">
+        {{ i18n.currentLang() === 'ar' ? 'تأكيد الرفض' : 'Confirm Reject' }}
+      </button>
+    </div>
+  </div>
+</div>

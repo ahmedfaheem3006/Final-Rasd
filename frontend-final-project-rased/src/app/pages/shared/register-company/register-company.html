@@ -50,70 +50,192 @@
     </div>
 
     <div class="form-body animate-fade-in">
-      <h2>{{ i18n.t('auth.register.title') }}</h2>
-      <p class="subtitle">{{ i18n.t('auth.register.subtitle') }}</p>
+      <h2>{{ i18n.currentLang() === 'ar' ? 'تسجيل شركة جديدة' : 'Register New Company' }}</h2>
+      <p class="subtitle">{{ i18n.currentLang() === 'ar' ? 'أنشئ حساب شركتك في خطوتين سريعتين' : 'Create your company account in two quick steps' }}</p>
+
+      <!-- Stepper / Progress Indicator -->
+      <div class="stepper">
+        <div class="step" [class.active]="currentStep() === 1" [class.completed]="currentStep() > 1">
+          <div class="step-circle">
+            @if (currentStep() > 1) {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            } @else {
+              <span>1</span>
+            }
+          </div>
+          <div class="step-label">{{ i18n.currentLang() === 'ar' ? 'معلومات الشركة' : 'Company Info' }}</div>
+        </div>
+        <div class="step-connector" [class.active]="currentStep() > 1">
+          <div class="connector-line"></div>
+        </div>
+        <div class="step" [class.active]="currentStep() === 2" [class.completed]="currentStep() > 2">
+          <div class="step-circle">
+            @if (currentStep() > 2) {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            } @else {
+              <span>2</span>
+            }
+          </div>
+          <div class="step-label">{{ i18n.currentLang() === 'ar' ? 'معلومات المالك' : 'Owner Info' }}</div>
+        </div>
+      </div>
 
       <form class="register-form" (ngSubmit)="onSubmit()">
-        <div class="input-grid">
+        <!-- Step 1: Company Information -->
+        <div class="step-content" [class.step-visible]="currentStep() === 1" [class.step-hidden]="currentStep() !== 1">
           <div class="input-group">
-            <label for="owner-name">{{ i18n.t('auth.register.name') }}</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              <input type="text" id="owner-name" name="ownerFullName" [(ngModel)]="ownerFullName" [placeholder]="i18n.currentLang() === 'ar' ? 'أدخل اسمك الكامل' : 'Enter full name'" required>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label for="company-name">{{ i18n.t('auth.register.company') }}</label>
+            <label for="company-name">{{ i18n.currentLang() === 'ar' ? 'اسم الشركة' : 'Company Name' }}</label>
             <div class="input-wrapper">
               <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
               <input type="text" id="company-name" name="companyName" [(ngModel)]="companyName" [placeholder]="i18n.currentLang() === 'ar' ? 'مؤسسة رصد لتقنية المعلومات' : 'e.g. RASD IT Corp'" required>
             </div>
+            @if (fieldErrors()['companyName']) {
+              <span class="field-error">{{ fieldErrors()['companyName'] }}</span>
+            }
           </div>
+
+          <div class="input-group">
+            <label for="subscription-plan">{{ i18n.currentLang() === 'ar' ? 'باقة الاشتراك' : 'Subscription Plan' }}</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <select id="subscription-plan" name="selectedPlanId" [ngModel]="selectedPlanId()" (ngModelChange)="selectedPlanId.set($event)" required>
+                <option value="" disabled>{{ i18n.currentLang() === 'ar' ? '-- اختر الباقة --' : '-- Select Plan --' }}</option>
+                <option *ngFor="let plan of pricingPlans()" [value]="plan.id">
+                  {{ i18n.currentLang() === 'ar' ? plan.nameAr : plan.nameEn }} ({{ plan.price }}{{ i18n.currentLang() === 'ar' ? '$ / ' + plan.periodAr : '$ / ' + plan.periodEn }})
+                </option>
+              </select>
+            </div>
+            @if (fieldErrors()['subscriptionPlan']) {
+              <span class="field-error">{{ fieldErrors()['subscriptionPlan'] }}</span>
+            }
+          </div>
+
+          <div class="input-group">
+            <label for="ai-limit">{{ i18n.currentLang() === 'ar' ? 'الحد الأدنى للذكاء الاصطناعي' : 'Minimum AI Limit' }}</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+              <input type="text" id="ai-limit" [value]="computedAiLimitDisplay()" readonly class="input-readonly">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="address">{{ i18n.currentLang() === 'ar' ? 'العنوان' : 'Address' }}</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <input type="text" id="address" name="address" [(ngModel)]="address" [placeholder]="i18n.currentLang() === 'ar' ? 'مثال: الرياض، السعودية' : 'e.g. Riyadh, KSA'">
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary btn-next" (click)="goToStep2()">
+            {{ i18n.currentLang() === 'ar' ? 'التالي' : 'Next' }}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
         </div>
 
-        <div class="input-group">
-          <label for="email">{{ i18n.t('auth.register.email') }}</label>
-          <div class="input-wrapper">
-            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-            <input type="email" id="email" name="ownerEmail" [(ngModel)]="ownerEmail" [placeholder]="i18n.t('auth.login.email.placeholder')" required>
+        <!-- Step 2: Owner Information -->
+        <div class="step-content" [class.step-visible]="currentStep() === 2" [class.step-hidden]="currentStep() !== 2">
+          <div class="input-grid">
+            <div class="input-group">
+              <label for="first-name">{{ i18n.currentLang() === 'ar' ? 'الاسم الأول' : 'First Name' }}</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <input type="text" id="first-name" name="ownerFirstName" [(ngModel)]="ownerFirstName" [placeholder]="i18n.currentLang() === 'ar' ? 'أحمد' : 'e.g. Ahmed'" required>
+              </div>
+              @if (fieldErrors()['ownerFirstName']) {
+                <span class="field-error">{{ fieldErrors()['ownerFirstName'] }}</span>
+              }
+            </div>
+
+            <div class="input-group">
+              <label for="last-name">{{ i18n.currentLang() === 'ar' ? 'الاسم الأخير' : 'Last Name' }}</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <input type="text" id="last-name" name="ownerLastName" [(ngModel)]="ownerLastName" [placeholder]="i18n.currentLang() === 'ar' ? 'فهيم' : 'e.g. Faheem'" required>
+              </div>
+              @if (fieldErrors()['ownerLastName']) {
+                <span class="field-error">{{ fieldErrors()['ownerLastName'] }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="input-grid">
+            <div class="input-group">
+              <label for="phone">{{ i18n.currentLang() === 'ar' ? 'رقم الهاتف' : 'Phone Number' }}</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <input type="tel" id="phone" name="ownerPhone" [(ngModel)]="ownerPhone" [placeholder]="i18n.currentLang() === 'ar' ? '0501234567' : 'e.g. 0501234567'" required>
+              </div>
+              @if (fieldErrors()['ownerPhone']) {
+                <span class="field-error">{{ fieldErrors()['ownerPhone'] }}</span>
+              }
+            </div>
+
+            <div class="input-group">
+              <label for="email">{{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email Address' }}</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <input type="email" id="email" name="ownerEmail" [(ngModel)]="ownerEmail" [placeholder]="i18n.currentLang() === 'ar' ? 'example@domain.com' : 'example@domain.com'" required>
+              </div>
+              @if (fieldErrors()['ownerEmail']) {
+                <span class="field-error">{{ fieldErrors()['ownerEmail'] }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="password">{{ i18n.currentLang() === 'ar' ? 'كلمة المرور' : 'Password' }}</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              <input type="password" id="password" name="ownerPassword" [(ngModel)]="ownerPassword" (input)="onPasswordChange()" [placeholder]="i18n.currentLang() === 'ar' ? 'أدخل كلمة المرور' : 'Enter your password'" required>
+            </div>
+            @if (fieldErrors()['ownerPassword']) {
+              <span class="field-error">{{ fieldErrors()['ownerPassword'] }}</span>
+            }
+          </div>
+
+          @if (passwordStrength) {
+            <div class="password-strength-bar">
+              <div class="strength-track">
+                <div class="strength-fill" [style.width.%]="passwordStrength.percent" [class.weak]="passwordStrength.level === 'weak'" [class.medium]="passwordStrength.level === 'medium'" [class.strong]="passwordStrength.level === 'strong'"></div>
+              </div>
+              <span class="strength-label" [class.weak]="passwordStrength.level === 'weak'" [class.medium]="passwordStrength.level === 'medium'" [class.strong]="passwordStrength.level === 'strong'">
+                {{ i18n.currentLang() === 'ar' ? passwordStrength.labelAr : passwordStrength.labelEn }}
+              </span>
+            </div>
+          }
+
+          <div class="terms-agree">
+            <label class="checkbox-container">
+              <input type="checkbox" [(ngModel)]="termsAccepted" name="terms" [ngModelOptions]="{standalone: true}">
+              <span class="checkmark"></span>
+              <span class="checkbox-label">
+                {{ i18n.currentLang() === 'ar' ? 'أوافق على' : 'I agree to the' }} 
+                <a href="#" class="terms-link">{{ i18n.currentLang() === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</a> 
+                {{ i18n.currentLang() === 'ar' ? 'و' : 'and' }} 
+                <a href="#" class="terms-link">{{ i18n.currentLang() === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</a>
+              </span>
+            </label>
+          </div>
+
+          @if (errorMessage) {
+            <div class="error-banner">
+              {{ errorMessage }}
+            </div>
+          }
+
+          <div class="step-actions">
+            <button type="button" class="btn btn-secondary btn-back" (click)="goToStep1()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              {{ i18n.currentLang() === 'ar' ? 'رجوع' : 'Back' }}
+            </button>
+            <button type="submit" class="btn btn-primary btn-submit" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="spinner"></span>
+              }
+              {{ i18n.currentLang() === 'ar' ? 'تأكيد التسجيل' : 'Submit Registration' }}
+            </button>
           </div>
         </div>
-
-        <div class="input-group">
-          <label for="password">{{ i18n.t('auth.register.password') }}</label>
-          <div class="input-wrapper">
-            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            <input type="password" id="password" name="ownerPassword" [(ngModel)]="ownerPassword" [placeholder]="i18n.t('auth.login.password.placeholder')" required>
-          </div>
-        </div>
-
-        @if (errorMessage) {
-          <div class="error-banner" style="color: var(--danger); font-size: 0.85rem; font-weight: 600; padding: 8px 12px; background-color: var(--danger-light); border-radius: var(--radius-xs); margin-bottom: 15px;">
-            {{ errorMessage }}
-          </div>
-        }
-
-        @if (successMessage) {
-          <div class="success-banner" style="color: var(--success); font-size: 0.85rem; font-weight: 600; padding: 8px 12px; background-color: var(--success-light); border-radius: var(--radius-xs); margin-bottom: 15px;">
-            {{ successMessage }}
-          </div>
-        }
-
-        <div class="terms-agree">
-          <label class="checkbox-container">
-            <input type="checkbox" required checked>
-            <span class="checkmark"></span>
-            <span class="checkbox-label">
-              {{ i18n.currentLang() === 'ar' ? 'أوافق على' : 'I agree to the' }} 
-              <a href="#" class="terms-link">{{ i18n.currentLang() === 'ar' ? 'شروط الخدمة' : 'Terms of Service' }}</a> 
-              {{ i18n.currentLang() === 'ar' ? 'و' : 'and' }} 
-              <a href="#" class="terms-link">{{ i18n.currentLang() === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</a>
-            </span>
-          </label>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-submit">{{ i18n.t('auth.register.submit') }}</button>
       </form>
 
       <div class="form-footer">
@@ -131,12 +253,44 @@
       <h3>{{ i18n.currentLang() === 'ar' ? 'أنشئ بيئة عملك في دقائق' : 'Build Your Workspace in Minutes' }}</h3>
       <p>{{ i18n.currentLang() === 'ar' ? 'نظام رصد يسهل عليك هيكلة أدوار الموظفين، إدارة الفواتير، ومتابعة التقدم البيعي لشركتك من شاشة واحدة فقط.' : 'RASD facilitates team structuring, billing management, and pipeline tracking all from a single unified control center.' }}</p>
       
-      <!-- Mini dashboard card floating inside decor -->
       <div class="floating-card">
         <div class="card-title">{{ i18n.currentLang() === 'ar' ? 'إحصاء العملاء المتوقعين' : 'Incoming Leads Tracker' }}</div>
         <div class="card-value">+150</div>
         <div class="card-footer-text">{{ i18n.currentLang() === 'ar' ? 'تمت إضافتها بنجاح هذا الشهر' : 'added successfully this month' }}</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Pending Approval Success Modal -->
+<div class="success-modal-backdrop" *ngIf="showApprovalModal()">
+  <div class="success-modal">
+    <div class="success-icon-wrapper">
+      <div class="success-icon-circle">
+        <svg class="success-check" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+    </div>
+
+    <h3 class="success-modal-title">
+      {{ i18n.currentLang() === 'ar' ? 'تم تقديم طلب التسجيل بنجاح!' : 'Registration Submitted Successfully!' }}
+    </h3>
+
+    <p class="success-modal-text">
+      {{ i18n.currentLang() === 'ar'
+         ? 'تم إرسال طلب تسجيل شركتك إلى مسؤول النظام للمراجعة. سيتم تفعيل حسابك بعد الموافقة على الطلب. سنقوم بإعلامك عند اكتمال التفعيل.'
+         : 'Your company registration request has been sent to the administrator for review. Your account will become active once it has been approved. You will be notified after approval.' }}
+    </p>
+
+    <button class="success-modal-btn" (click)="closeApprovalModal()">
+      {{ i18n.currentLang() === 'ar' ? 'الذهاب إلى تسجيل الدخول' : 'Go to Login' }}
+    </button>
+
+    <p class="redirect-hint">
+      {{ i18n.currentLang() === 'ar'
+         ? 'سيتم إعادة توجيهك إلى صفحة تسجيل الدخول خلال ' + redirectCountdown() + ' ثوانٍ...'
+         : 'Redirecting to the login page in ' + redirectCountdown() + ' seconds...' }}
+    </p>
   </div>
 </div>

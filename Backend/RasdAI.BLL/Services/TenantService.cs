@@ -42,7 +42,12 @@ public class TenantService : ITenantService
         {
             TenantId = Guid.NewGuid(),
             Name = createTenantDto.CompanyName,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            IsActive = false, // Locked until admin approval
+            Price = createTenantDto.Price,
+            AiLimit = createTenantDto.AiLimit,
+            Address = createTenantDto.Address,
+            Phone = createTenantDto.Phone
         };
 
         _context.Tenants.Add(tenant);
@@ -57,7 +62,9 @@ public class TenantService : ITenantService
             FullName = createTenantDto.OwnerFullName,
             Email = createTenantDto.OwnerEmail,
             PasswordHash = passwordHash,
-            RoleId = 2 // Owner Role
+            RoleId = 2, // Owner Role
+            Status = "Pending", // Account status is pending admin approval
+            CreatedAt = DateTime.UtcNow
         };
 
         _context.Users.Add(ownerUser);
@@ -92,75 +99,96 @@ public class TenantService : ITenantService
         activities.Add(new ActivityDto
         {
             Action = "تسجيل الشركة في النظام",
-            Time = tenant.CreatedAt.ToString("o"),
+            Time = DateTime.SpecifyKind(tenant.CreatedAt, DateTimeKind.Utc).ToString("o"),
             Type = "success"
         });
 
         // 2. Recent Users
-        var lastUser = tenant.Users
+        var users = tenant.Users
             .Where(u => u.RoleId != 2) // not the owner
             .OrderByDescending(u => u.Id)
-            .FirstOrDefault();
-        if (lastUser != null)
+            .Take(5)
+            .ToList();
+        foreach (var u in users)
         {
             activities.Add(new ActivityDto
             {
-                Action = $"إضافة مستخدم جديد: {lastUser.FullName}",
-                Time = tenant.CreatedAt.AddMinutes(15).ToString("o"),
+                Action = $"إضافة مستخدم جديد: {u.FullName}",
+                Time = DateTime.SpecifyKind(u.CreatedAt, DateTimeKind.Utc).ToString("o"),
                 Type = "info"
             });
         }
 
         // 3. Recent Deals
-        var lastDeal = await _context.Deals
+        var deals = await _context.Deals
             .IgnoreQueryFilters()
             .Where(d => d.TenantId == id)
             .OrderByDescending(d => d.CreatedAt)
-            .FirstOrDefaultAsync();
-        if (lastDeal != null)
+            .Take(5)
+            .ToListAsync();
+        foreach (var d in deals)
         {
             activities.Add(new ActivityDto
             {
-                Action = $"إنشاء صفقة جديدة بقيمة ${lastDeal.Amount}",
-                Time = lastDeal.CreatedAt.ToString("o"),
+                Action = $"إنشاء صفقة جديدة بقيمة ${d.Amount}",
+                Time = DateTime.SpecifyKind(d.CreatedAt, DateTimeKind.Utc).ToString("o"),
                 Type = "info"
             });
         }
 
         // 4. Recent Meetings
-        var lastMeeting = await _context.Meetings
+        var meetings = await _context.Meetings
             .IgnoreQueryFilters()
             .Where(m => m.TenantId == id)
             .OrderByDescending(m => m.CreatedAt)
-            .FirstOrDefaultAsync();
-        if (lastMeeting != null)
+            .Take(5)
+            .ToListAsync();
+        foreach (var m in meetings)
         {
             activities.Add(new ActivityDto
             {
                 Action = "تلخيص اجتماع جديد بالذكاء الاصطناعي",
-                Time = lastMeeting.CreatedAt.ToString("o"),
+                Time = DateTime.SpecifyKind(m.CreatedAt, DateTimeKind.Utc).ToString("o"),
                 Type = "success"
             });
         }
 
         // 5. Recent Contracts
-        var lastContract = await _context.Contracts
+        var contracts = await _context.Contracts
             .IgnoreQueryFilters()
             .Where(c => c.TenantId == id)
             .OrderByDescending(c => c.CreatedAt)
-            .FirstOrDefaultAsync();
-        if (lastContract != null)
+            .Take(5)
+            .ToListAsync();
+        foreach (var c in contracts)
         {
             activities.Add(new ActivityDto
             {
-                Action = $"تحليل عقد جديد: {lastContract.FileName}",
-                Time = lastContract.CreatedAt.ToString("o"),
+                Action = $"تحليل عقد جديد: {c.FileName}",
+                Time = DateTime.SpecifyKind(c.CreatedAt, DateTimeKind.Utc).ToString("o"),
                 Type = "warning"
             });
         }
 
+        // 6. Recent Invoices
+        var invoices = await _context.Invoices
+            .IgnoreQueryFilters()
+            .Where(i => i.TenantId == id)
+            .OrderByDescending(i => i.CreatedAt)
+            .Take(5)
+            .ToListAsync();
+        foreach (var inv in invoices)
+        {
+            activities.Add(new ActivityDto
+            {
+                Action = $"إصدار فاتورة جديدة بقيمة ${inv.TotalAmount} ({inv.Status})",
+                Time = DateTime.SpecifyKind(inv.CreatedAt, DateTimeKind.Utc).ToString("o"),
+                Type = "success"
+            });
+        }
+
         // Sort by Time descending
-        activities = activities.OrderByDescending(a => a.Time).ToList();
+        activities = activities.OrderByDescending(a => a.Time).Take(10).ToList();
 
         return new TenantDto
         {
@@ -172,6 +200,9 @@ public class TenantService : ITenantService
             AiLimit = tenant.AiLimit,
             OwnerName = owner?.FullName ?? "غير محدد",
             OwnerEmail = owner?.Email ?? "غير محدد",
+            OwnerStatus = owner?.Status ?? "Active",
+            Address = tenant.Address,
+            Phone = tenant.Phone,
             IsCrmEnabled = tenant.IsCrmEnabled,
             IsInvoicesEnabled = tenant.IsInvoicesEnabled,
             IsTasksEnabled = tenant.IsTasksEnabled,
@@ -215,6 +246,9 @@ public class TenantService : ITenantService
                 AiLimit = t.AiLimit,
                 OwnerName = owner?.FullName ?? "غير محدد",
                 OwnerEmail = owner?.Email ?? "غير محدد",
+                OwnerStatus = owner?.Status ?? "Active",
+                Address = t.Address,
+                Phone = t.Phone,
                 IsCrmEnabled = t.IsCrmEnabled,
                 IsInvoicesEnabled = t.IsInvoicesEnabled,
                 IsTasksEnabled = t.IsTasksEnabled,
@@ -250,6 +284,8 @@ public class TenantService : ITenantService
             IsActive = true,
             Price = createTenantAdminDto.Price,
             AiLimit = createTenantAdminDto.AiLimit,
+            Address = createTenantAdminDto.Address,
+            Phone = createTenantAdminDto.Phone,
             IsCrmEnabled = createTenantAdminDto.IsCrmEnabled,
             IsInvoicesEnabled = createTenantAdminDto.IsInvoicesEnabled,
             IsTasksEnabled = createTenantAdminDto.IsTasksEnabled,
@@ -269,7 +305,8 @@ public class TenantService : ITenantService
             FullName = createTenantAdminDto.OwnerFullName,
             Email = createTenantAdminDto.OwnerEmail,
             PasswordHash = passwordHash,
-            RoleId = 2 // Owner Role
+            RoleId = 2, // Owner Role
+            CreatedAt = DateTime.UtcNow
         };
 
         _context.Users.Add(ownerUser);
@@ -285,6 +322,8 @@ public class TenantService : ITenantService
             AiLimit = tenant.AiLimit,
             OwnerName = ownerUser.FullName,
             OwnerEmail = ownerUser.Email,
+            Address = tenant.Address,
+            Phone = tenant.Phone,
             IsCrmEnabled = tenant.IsCrmEnabled,
             IsInvoicesEnabled = tenant.IsInvoicesEnabled,
             IsTasksEnabled = tenant.IsTasksEnabled,

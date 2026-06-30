@@ -9,7 +9,18 @@ export class TenantService {
   private http = inject(HttpClient);
   private baseUrl = 'http://localhost:5292/api/Tenants';
 
-  registerTenant(tenant: { companyName: string; ownerFullName: string; ownerEmail: string; ownerPassword?: string }): Observable<any> {
+  registerTenant(tenant: {
+    companyName: string;
+    subscriptionPlan: string;
+    price: number;
+    aiLimit: number;
+    address?: string;
+    ownerFirstName: string;
+    ownerLastName: string;
+    ownerEmail: string;
+    ownerPhone?: string;
+    ownerPassword: string;
+  }): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/register`, tenant);
   }
 

@@ -24,9 +24,9 @@ export class Tenants implements OnInit {
     const list = this.tenants();
     if (!query) return list;
     return list.filter(t => 
-      t.name.toLowerCase().includes(query) || 
-      t.owner.toLowerCase().includes(query) ||
-      t.plan.toLowerCase().includes(query)
+      (t.name || '').toLowerCase().includes(query) || 
+      (t.owner || '').toLowerCase().includes(query) ||
+      (t.plan || '').toLowerCase().includes(query)
     );
   });
 

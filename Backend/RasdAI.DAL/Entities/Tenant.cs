@@ -11,6 +11,8 @@ public class Tenant
     public bool IsActive { get; set; } = true;
     public decimal Price { get; set; } = 0.0m;
     public int AiLimit { get; set; } = 100;
+    public string? Address { get; set; }
+    public string? Phone { get; set; }
 
     // Feature toggles for Tenant Access Control
     public bool IsCrmEnabled { get; set; } = true;
