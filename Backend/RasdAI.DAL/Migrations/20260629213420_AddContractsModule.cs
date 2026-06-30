@@ -86,13 +86,6 @@ namespace RasdAI.DAL.Migrations
                 nullable: false,
                 defaultValue: 0m);
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "CreatedAt",
-                table: "Contracts",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
-
             migrationBuilder.AddColumn<int>(
                 name: "CreatedByUserId",
                 table: "Contracts",
@@ -488,10 +481,6 @@ namespace RasdAI.DAL.Migrations
 
             migrationBuilder.DropColumn(
                 name: "ContractValue",
-                table: "Contracts");
-
-            migrationBuilder.DropColumn(
-                name: "CreatedAt",
                 table: "Contracts");
 
             migrationBuilder.DropColumn(

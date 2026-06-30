@@ -1,29 +1,134 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../services/auth.service';
+import { CrmService } from '../../../services/crm.service';
+
+interface TeamMember {
+  id: number;
+  fullName: string;
+  email: string;
+  roleId: number;
+  roleName: string;
+  status: string;
+  // computed from deals
+  activeDeals: number;
+  wonDeals: number;
+  totalRevenue: number;
+  winRate: number;
+}
 
 @Component({
   selector: 'app-sales-team',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './sales-team.html',
   styleUrl: './sales-team.css'
 })
-export class SalesTeam {
-  activeFilter = signal('all');
+export class SalesTeam implements OnInit {
+  private authService = inject(AuthService);
+  private crmService = inject(CrmService);
 
-  reps = signal([
-    { name: 'فهد المطيري', email: 'fahad@company.sa', avatar: 'FM', deals: 8, revenue: '$47,500', target: 95, closed: 6, status: 'active', joined: '10 يناير 2026' },
-    { name: 'نورة السعيد', email: 'noura@company.sa', avatar: 'NS', deals: 6, revenue: '$32,200', target: 82, closed: 5, status: 'active', joined: '5 مارس 2026' },
-    { name: 'خالد الدوسري', email: 'khalid@company.sa', avatar: 'KD', deals: 5, revenue: '$28,100', target: 74, closed: 3, status: 'active', joined: '18 فبراير 2026' },
-    { name: 'منى العسيري', email: 'mona@company.sa', avatar: 'MA', deals: 7, revenue: '$34,500', target: 88, closed: 5, status: 'active', joined: '22 أبريل 2026' },
-    { name: 'ريم الجهني', email: 'reem@company.sa', avatar: 'RJ', deals: 3, revenue: '$15,800', target: 50, closed: 2, status: 'pending', joined: '1 يونيو 2026' },
-    { name: 'سلطان القرني', email: 'sultan@company.sa', avatar: 'SQ', deals: 0, revenue: '$0', target: 0, closed: 0, status: 'inactive', joined: '20 مايو 2026' },
-  ]);
+  isLoading = signal(true);
+  members = signal<TeamMember[]>([]);
+  searchQuery = signal('');
+  statusFilter = signal('all');
 
-  filteredReps = computed(() => {
-    const f = this.activeFilter();
-    if (f === 'all') return this.reps();
-    return this.reps().filter(r => r.status === f);
+  stats = computed(() => {
+    const all = this.members();
+    const active = all.filter(m => m.status === 'Active');
+    const totalRev = all.reduce((s, m) => s + m.totalRevenue, 0);
+    const avgWin = all.length ? Math.round(all.reduce((s, m) => s + m.winRate, 0) / all.length) : 0;
+    return { total: all.length, active: active.length, totalRevenue: totalRev, avgWinRate: avgWin };
   });
 
-  setFilter(f: string) { this.activeFilter.set(f); }
+  filtered = computed(() => {
+    let list = this.members();
+    const q = this.searchQuery().toLowerCase();
+    const s = this.statusFilter();
+    if (q) list = list.filter(m => m.fullName.toLowerCase().includes(q) || m.email.toLowerCase().includes(q));
+    if (s !== 'all') list = list.filter(m => m.status === s);
+    return list;
+  });
+
+  ngOnInit() { this.loadAll(); }
+
+  loadAll() {
+    this.isLoading.set(true);
+    let users: any[] = [];
+    let deals: any[] = [];
+    let done = 0;
+
+    const tryBuild = () => {
+      done++;
+      if (done < 2) return;
+      // Filter to sales roles: 4 = SalesManager, 5 = Sales
+      const salesUsers = users.filter(u => u.roleId === 4 || u.roleId === 5);
+
+      const members: TeamMember[] = salesUsers.map(u => {
+        const userDeals = deals.filter(d => d.assignedUserId === u.id);
+        const wonDeals  = userDeals.filter(d => d.status === 'Won');
+        const activeDeals = userDeals.filter(d => d.status !== 'Won' && d.status !== 'Lost');
+        const totalRevenue = wonDeals.reduce((s: number, d: any) => s + (d.amount ?? 0), 0);
+        const winRate = userDeals.length > 0 ? Math.round((wonDeals.length / userDeals.length) * 100) : 0;
+        return {
+          id: u.id,
+          fullName: u.fullName,
+          email: u.email,
+          roleId: u.roleId,
+          roleName: u.roleName,
+          status: u.status ?? 'Active',
+          activeDeals: activeDeals.length,
+          wonDeals: wonDeals.length,
+          totalRevenue,
+          winRate
+        };
+      });
+
+      this.members.set(members);
+      this.isLoading.set(false);
+    };
+
+    this.authService.getEmployees().subscribe({
+      next: (r: any) => { users = r?.data ?? r ?? []; tryBuild(); },
+      error: () => { tryBuild(); }
+    });
+
+    this.crmService.getDeals().subscribe({
+      next: (r: any) => { deals = r?.data ?? r ?? []; tryBuild(); },
+      error: () => { tryBuild(); }
+    });
+  }
+
+  initials(name: string): string {
+    return (name ?? '').split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase() || '؟';
+  }
+
+  formatAmount(n: number): string {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+    return n.toFixed(0);
+  }
+
+  roleLabel(roleId: number): string {
+    return roleId === 4 ? 'مدير مبيعات' : 'مندوب مبيعات';
+  }
+
+  progressColor(rate: number): string {
+    if (rate >= 70) return 'var(--success)';
+    if (rate >= 40) return 'var(--warning)';
+    return 'var(--danger)';
+  }
+
+  exportCSV() {
+    const headers = ['الاسم', 'البريد', 'الدور', 'الحالة', 'صفقات نشطة', 'صفقات مكتملة', 'الإيراد (ر.س)', 'نسبة الفوز %'];
+    const rows = this.filtered().map(m => [
+      m.fullName, m.email, this.roleLabel(m.roleId), m.status,
+      m.activeDeals, m.wonDeals, m.totalRevenue.toFixed(0), m.winRate
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v ?? ''}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'sales-team.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
 }

@@ -266,6 +266,18 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['sales-manager', 'owner-admin'] }
       },
+      {
+        path: 'sales-manager/analyze-contract',
+        loadComponent: () => import('./pages/sales-manager/analyze-contract/analyze-contract').then(m => m.SmAnalyzeContract),
+        canActivate: [roleGuard],
+        data: { roles: ['sales-manager', 'owner-admin'] }
+      },
+      {
+        path: 'sales-manager/contracts',
+        loadComponent: () => import('./pages/sales-manager/contracts/contracts').then(m => m.SmContracts),
+        canActivate: [roleGuard],
+        data: { roles: ['sales-manager'] }
+      },
 
       // ── Employee Manager ──────────────────────────────────────────────────
       {

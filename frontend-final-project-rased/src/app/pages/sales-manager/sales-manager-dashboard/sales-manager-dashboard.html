@@ -1,38 +1,253 @@
-<div class="page-container">
-  <header class="page-header animate-fade-in"><div class="header-info"><div class="breadcrumbs">مدير المبيعات / لوحة التحكم</div><h1>لوحة تحكم المبيعات</h1><p class="subtitle">متابعة أداء فريق المبيعات والصفقات النشطة</p></div></header>
+<div class="dashboard" dir="rtl">
+
+  <!-- Header -->
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">مدير المبيعات / لوحة التحكم</div>
+      <h1>لوحة تحكم المبيعات</h1>
+      <p class="subtitle">متابعة أداء فريق المبيعات والصفقات النشطة في الوقت الفعلي</p>
+    </div>
+    <button class="btn btn-secondary" (click)="loadAll()" title="تحديث">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           [class.spin]="isLoading()">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      <span>تحديث</span>
+    </button>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري تحميل البيانات...</p>
+    </div>
+  } @else {
+
+  <!-- Stats -->
   <div class="stats-grid animate-reveal">
-    @for (s of stats(); track s.title) {
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-title">{{ s.title }}</span>
-          <div class="stat-icon" [ngClass]="s.color">
-            @if (s.color === 'primary') {
-              <i class="fa-solid fa-chart-line"></i>
-            } @else if (s.color === 'info') {
-              <i class="fa-solid fa-business-time"></i>
-            } @else if (s.color === 'success') {
-              <i class="fa-solid fa-percent"></i>
-            } @else {
-              <i class="fa-solid fa-comments-dollar"></i>
+    <div class="stat-card accent-success">
+      <div class="stat-icon success">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-label">الإيراد المحقق</div>
+        <div class="stat-value">{{ fmt(stats().wonRevenue) }} <span class="stat-unit">ر.س</span></div>
+        <div class="stat-sub">{{ stats().totalDeals }} صفقة إجمالاً</div>
+      </div>
+    </div>
+    <div class="stat-card accent-primary">
+      <div class="stat-icon primary">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-label">الصفقات النشطة</div>
+        <div class="stat-value">{{ stats().activeDeals }}</div>
+        <div class="stat-sub">بقيمة {{ fmt(stats().activeRevenue) }} ر.س</div>
+      </div>
+    </div>
+    <div class="stat-card accent-warning">
+      <div class="stat-icon warning">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-label">معدل الفوز</div>
+        <div class="stat-value">{{ stats().winRate }}<span class="stat-unit">%</span></div>
+        <div class="stat-sub">من الصفقات المغلقة</div>
+      </div>
+    </div>
+    <div class="stat-card accent-info">
+      <div class="stat-icon info">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-label">إجمالي العملاء</div>
+        <div class="stat-value">{{ stats().totalClients }}</div>
+        <div class="stat-sub">{{ thisMonth() }} صفقة هذا الشهر</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Middle Row -->
+  <div class="mid-grid animate-reveal">
+
+    <!-- Pipeline -->
+    <div class="card pipeline-card">
+      <div class="card-head">
+        <h3>توزيع خط الصفقات</h3>
+        <a routerLink="/app/sales-manager/deals" class="card-link">عرض الكل ←</a>
+      </div>
+      <div class="pipeline-list">
+        @for (p of pipeline(); track p.key) {
+          <div class="pipeline-row">
+            <div class="pipe-label-wrap">
+              <span class="pipe-dot" [ngClass]="'dot-' + p.color"></span>
+              <span class="pipe-label">{{ p.label }}</span>
+            </div>
+            <div class="pipe-bar-wrap">
+              <div class="pipe-bar-bg">
+                <div class="pipe-bar-fill" [ngClass]="'fill-' + p.color"
+                     [style.width.%]="p.count ? (p.count / pipelineMax()) * 100 : 0">
+                </div>
+              </div>
+            </div>
+            <div class="pipe-meta">
+              <span class="pipe-count">{{ p.count }}</span>
+              <span class="pipe-value">{{ fmt(p.value) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Team Performance -->
+    <div class="card team-card">
+      <div class="card-head">
+        <h3>أداء الفريق</h3>
+        <a routerLink="/app/sales-manager/team" class="card-link">عرض الكل ←</a>
+      </div>
+      @if (teamPerf().length === 0) {
+        <p class="empty-msg">لا يوجد أعضاء في الفريق</p>
+      } @else {
+        <div class="team-list">
+          @for (m of teamPerf(); track m.id) {
+            <div class="team-row">
+              <span class="team-avatar">{{ m.initials }}</span>
+              <div class="team-info">
+                <div class="team-name">{{ m.name }}</div>
+                <div class="team-meta">{{ m.wonDeals }} مكتملة · {{ m.activeDeals }} نشطة · {{ fmt(m.revenue) }} ر.س</div>
+              </div>
+              <div class="team-prog">
+                <div class="prog-bg">
+                  <div class="prog-fill" [style.width.%]="m.winRate" [style.background]="progressColor(m.winRate)"></div>
+                </div>
+                <span class="prog-pct">{{ m.winRate }}%</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+  </div>
+
+  <!-- Recent Deals -->
+  <div class="card animate-reveal">
+    <div class="card-head" style="padding:20px 24px; border-bottom:1px solid var(--border-light)">
+      <h3>آخر الصفقات</h3>
+      <a routerLink="/app/sales-manager/deals" class="card-link">عرض الكل ←</a>
+    </div>
+    @if (recentDeals().length === 0) {
+      <div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p>لا توجد صفقات بعد</p>
+        <a routerLink="/app/sales-manager/deals" class="btn btn-primary">إضافة أول صفقة</a>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>العميل</th>
+              <th>المبلغ</th>
+              <th>المرحلة</th>
+              <th>المندوب</th>
+              <th>التاريخ</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of recentDeals(); track d.id) {
+              <tr>
+                <td class="fw-bold">{{ d.clientName }}</td>
+                <td class="text-success fw-bold">{{ fmt(d.amount) }} ر.س</td>
+                <td><span class="badge" [ngClass]="stageClass(d.status)">{{ stageLabel(d.status) }}</span></td>
+                <td>
+                  <div class="rep-cell">
+                    <span class="rep-av">{{ initials(d.assignedUserName) }}</span>
+                    <span class="text-muted">{{ d.assignedUserName || 'غير محدد' }}</span>
+                  </div>
+                </td>
+                <td class="text-muted">{{ d.createdAt | date:'MM/dd/yyyy' }}</td>
+              </tr>
             }
-          </div>
-        </div>
-        <div class="stat-body">
-          <div class="stat-value">{{ s.value }}</div>
-          <div class="stat-meta">
-            <span class="stat-badge" [ngClass]="s.positive ? 'positive' : 'negative'">
-              {{ s.change }}
-            </span>
-            <span class="stat-desc">{{ s.desc }}</span>
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
     }
   </div>
-  <div class="card animate-reveal" style="padding:24px">
-    <h3 class="card-title">أداء فريق المبيعات</h3>
-    @for (m of teamPerformance(); track m.name) {
-      <div class="team-row"><div class="team-info"><span class="team-avatar">{{ m.avatar }}</span><div><div class="team-name">{{ m.name }}</div><div class="team-meta">{{ m.deals }} صفقة · {{ m.revenue }}</div></div></div><div class="team-progress"><div class="progress-bar-bg"><div class="progress-bar-fill" [style.width.%]="m.target"></div></div><span class="progress-pct">{{ m.target }}%</span></div></div>
-    }
+
+  <!-- Quick Actions -->
+  <div class="quick-actions animate-reveal">
+    <a routerLink="/app/sales-manager/customers" class="qa-card">
+      <div class="qa-icon primary">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="qa-text">
+        <div class="qa-title">العملاء</div>
+        <div class="qa-desc">{{ stats().totalClients }} عميل</div>
+      </div>
+      <svg class="qa-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </a>
+    <a routerLink="/app/sales-manager/deals" class="qa-card">
+      <div class="qa-icon warning">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+      </div>
+      <div class="qa-text">
+        <div class="qa-title">خط الصفقات</div>
+        <div class="qa-desc">{{ stats().activeDeals }} صفقة نشطة</div>
+      </div>
+      <svg class="qa-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </a>
+    <a routerLink="/app/sales-manager/contracts" class="qa-card">
+      <div class="qa-icon success">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+      </div>
+      <div class="qa-text">
+        <div class="qa-title">العقود</div>
+        <div class="qa-desc">إدارة وإنشاء العقود</div>
+      </div>
+      <svg class="qa-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </a>
+    <a routerLink="/app/sales-manager/team" class="qa-card">
+      <div class="qa-icon info">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </div>
+      <div class="qa-text">
+        <div class="qa-title">الفريق</div>
+        <div class="qa-desc">متابعة الأداء</div>
+      </div>
+      <svg class="qa-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </a>
   </div>
+
+  } <!-- end !isLoading -->
 </div>

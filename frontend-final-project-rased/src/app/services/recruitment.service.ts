@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class RecruitmentService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5092/api/Recruitment';
+  private baseUrl = 'http://localhost:5292/api/Recruitment';
 
   // ───── Job Vacancies ─────
 
