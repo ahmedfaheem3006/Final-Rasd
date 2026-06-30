@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -5,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RasdAI.DAL.Migrations
 {
     /// <inheritdoc />
+    [Migration("20260629000000_AddSupportIssueSeverity")]
     public partial class AddSupportIssueSeverity : Migration
     {
         /// <inheritdoc />

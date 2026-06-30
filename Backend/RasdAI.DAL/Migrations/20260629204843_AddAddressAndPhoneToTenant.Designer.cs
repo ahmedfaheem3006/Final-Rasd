@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RasdAI.DAL;
 
@@ -11,9 +12,11 @@ using RasdAI.DAL;
 namespace RasdAI.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260629204843_AddAddressAndPhoneToTenant")]
+    partial class AddAddressAndPhoneToTenant
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -730,76 +733,6 @@ namespace RasdAI.DAL.Migrations
                     b.ToTable("Notes");
                 });
 
-            modelBuilder.Entity("RasdAI.DAL.Entities.PendingCompanyRegistration", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("AiLimit")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("OwnerFirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("OwnerLastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("OwnerPasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OwnerPhone")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("SubscriptionPlan")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PendingCompanyRegistrations");
-                });
-
             modelBuilder.Entity("RasdAI.DAL.Entities.Report", b =>
                 {
                     b.Property<int>("Id")
@@ -1110,9 +1043,6 @@ namespace RasdAI.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1161,7 +1091,6 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 6, 30, 2, 51, 29, 516, DateTimeKind.Utc).AddTicks(6852),
                             Email = "faheem.admin@gmail.com",
                             FullName = "مدير النظام العام",
                             PasswordHash = "XC79lW2YM1/IxvvW+g0u9nU87lE8sbYdG95ZQMH4njM=",
@@ -1172,7 +1101,6 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 100,
-                            CreatedAt = new DateTime(2026, 6, 30, 2, 51, 29, 516, DateTimeKind.Utc).AddTicks(9034),
                             Email = "owner@rasd.com",
                             FullName = "أحمد فهيم (المالك)",
                             PasswordHash = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=",
@@ -1183,7 +1111,6 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 101,
-                            CreatedAt = new DateTime(2026, 6, 30, 2, 51, 29, 516, DateTimeKind.Utc).AddTicks(9037),
                             Email = "sales@rasd.com",
                             FullName = "عمر البائع (مندوب مبيعات)",
                             PasswordHash = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=",
@@ -1194,7 +1121,6 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 102,
-                            CreatedAt = new DateTime(2026, 6, 30, 2, 51, 29, 516, DateTimeKind.Utc).AddTicks(9038),
                             Email = "accountant@rasd.com",
                             FullName = "منى الحسابات (المحاسب)",
                             PasswordHash = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=",
@@ -1205,7 +1131,6 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 103,
-                            CreatedAt = new DateTime(2026, 6, 30, 2, 51, 29, 516, DateTimeKind.Utc).AddTicks(9040),
                             Email = "salesmgr@rasd.com",
                             FullName = "محمد المبيعات (مدير المبيعات)",
                             PasswordHash = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=",
@@ -1216,7 +1141,6 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2026, 6, 30, 2, 51, 29, 518, DateTimeKind.Utc).AddTicks(1930),
                             Email = "joe@rasd.com",
                             FullName = "جو المالك",
                             PasswordHash = "0ocFH8CB123YXvwpHXdNY00CYOXsehVfYI7i3qOWcGY=",
@@ -1227,7 +1151,6 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 19,
-                            CreatedAt = new DateTime(2026, 6, 30, 2, 51, 29, 518, DateTimeKind.Utc).AddTicks(2298),
                             Email = "sales_joe@rasd.com",
                             FullName = "صالح مندوب جو",
                             PasswordHash = "0ocFH8CB123YXvwpHXdNY00CYOXsehVfYI7i3qOWcGY=",
@@ -1238,7 +1161,6 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 20,
-                            CreatedAt = new DateTime(2026, 6, 30, 2, 51, 29, 518, DateTimeKind.Utc).AddTicks(2302),
                             Email = "sales2_joe@rasd.com",
                             FullName = "عمر مندوب جو",
                             PasswordHash = "0ocFH8CB123YXvwpHXdNY00CYOXsehVfYI7i3qOWcGY=",

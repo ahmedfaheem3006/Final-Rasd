@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -12,7 +12,7 @@ import { I18nService } from '../../../services/i18n.service';
   templateUrl: './add-tenant.html',
   styleUrl: './add-tenant.css'
 })
-export class AddTenant {
+export class AddTenant implements OnInit {
   private systemAdminService = inject(SystemAdminService);
   private toastService = inject(ToastService);
   private router = inject(Router);
@@ -25,7 +25,7 @@ export class AddTenant {
   ownerPassword = '';
   phone = '';
   location = '';
-  price = 49;
+  price = 50;
   aiLimit = 200;
 
   // Module check boxes
@@ -37,11 +37,57 @@ export class AddTenant {
 
   isSubmitting = signal(false);
 
-  availablePlans = [
-    { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 49, aiLimit: 200, periodAr: 'شهر', periodEn: 'mo' },
-    { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 199, aiLimit: 5000, periodAr: 'شهر', periodEn: 'mo' },
-    { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 300, aiLimit: 999999, periodAr: 'شهر', periodEn: 'mo' }
-  ];
+  availablePlans: any[] = [];
+
+  ngOnInit() {
+    this.loadPricingPlans();
+  }
+
+  loadPricingPlans() {
+    this.systemAdminService.getPricingPlans().subscribe({
+      next: (res) => {
+        if (res && res.success && res.data && Array.isArray(res.data)) {
+          this.availablePlans = res.data.map((p: any) => {
+            let limit = 200;
+            if (p.id === 'starter' || p.price <= 50) limit = 200;
+            else if (p.id === 'professional' || p.price <= 200) limit = 5000;
+            else if (p.id === 'enterprise' || p.price >= 300) limit = 999999;
+            return {
+              id: p.id,
+              nameAr: p.nameAr,
+              nameEn: p.nameEn,
+              price: p.price,
+              aiLimit: limit,
+              periodAr: p.periodAr || 'شهر',
+              periodEn: p.periodEn || 'mo'
+            };
+          });
+
+          // Set default selected price and aiLimit
+          if (this.availablePlans.length > 0) {
+            this.price = this.availablePlans[0].price;
+            this.aiLimit = this.availablePlans[0].aiLimit;
+          }
+        } else {
+          this.setFallbackPlans();
+        }
+      },
+      error: (err) => {
+        console.warn('Failed to load dynamic pricing plans, using fallbacks.', err);
+        this.setFallbackPlans();
+      }
+    });
+  }
+
+  setFallbackPlans() {
+    this.availablePlans = [
+      { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 50, aiLimit: 200, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 200, aiLimit: 5000, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 300, aiLimit: 999999, periodAr: 'شهر', periodEn: 'mo' }
+    ];
+    this.price = 50;
+    this.aiLimit = 200;
+  }
 
   onPricePlanChange() {
     const selected = this.availablePlans.find(p => p.price === Number(this.price));

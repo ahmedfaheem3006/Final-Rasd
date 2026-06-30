@@ -1,125 +1,198 @@
-<div class="page-container animate-fade-in" [class.rtl]="i18n.isRtl()">
-  <!-- Page Header -->
+<div class="page-container animate-fade-in">
   <header class="page-header">
     <div class="header-info">
       <div class="breadcrumbs">
         {{ i18n.currentLang() === 'ar' ? 'المشرف العام / إدارة الأسعار' : 'System Admin / Pricing Management' }}
       </div>
-      <h1>{{ i18n.currentLang() === 'ar' ? 'إدارة باقات وأسعار الموقع' : 'Landing Page Pricing Settings' }}</h1>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'إدارة باقات الاشتراك' : 'Subscription Plans' }}</h1>
       <p class="subtitle">
-        {{ i18n.currentLang() === 'ar' ? 'تعديل أسعار الاشتراكات الشهرية وتفاصيل الخيارات المتاحة للباقات على الصفحة الرئيسية للمنصة.' : 'Modify monthly plans, prices, and features displayed dynamically on the platform landing page.' }}
+        {{ i18n.currentLang() === 'ar' ? 'قم بتصميم وتعديل باقات الأسعار التي تظهر للعملاء على صفحة التسجيل.' : 'Design and manage the pricing plans shown to customers on the registration page.' }}
       </p>
     </div>
     <div class="header-actions">
-      <button class="btn btn-primary btn-save-pricing" (click)="savePricing()" [disabled]="isSaving()">
+      <button class="btn btn-primary btn-save" (click)="savePricing()" [disabled]="isSaving()">
+        @if (isSaving()) {
+          <span class="spinner-sm"></span>
+        }
         <i class="fa-solid fa-floppy-disk"></i>
-        <span>{{ i18n.currentLang() === 'ar' ? 'حفظ التعديلات' : 'Save Pricing Plans' }}</span>
+        <span>{{ i18n.currentLang() === 'ar' ? 'حفظ جميع الباقات' : 'Save All Plans' }}</span>
       </button>
     </div>
   </header>
 
-  <!-- Loading State -->
-  <div class="loading-state" *ngIf="isLoading()">
-    <div class="spinner"></div>
-    <p>{{ i18n.currentLang() === 'ar' ? 'جاري تحميل الباقات...' : 'Loading plans...' }}</p>
-  </div>
-
-  <!-- Plans Editor Cards Grid -->
-  <div class="pricing-mgmt-grid" *ngIf="!isLoading()">
-    <div class="card plan-mgmt-card animate-reveal" *ngFor="let plan of plans(); let pIdx = index">
-      <!-- Card Header -->
-      <div class="plan-mgmt-header" [ngClass]="'header-' + plan.id">
-        <div class="plan-header-top">
-          <div class="plan-icon-badge">
-            <i class="fa-solid" [ngClass]="plan.id === 'starter' ? 'fa-seedling' : plan.id === 'professional' ? 'fa-rocket' : 'fa-building-columns'"></i>
-          </div>
-          <span class="plan-id-badge">{{ plan.id | uppercase }}</span>
-        </div>
-        <h3 class="plan-card-title">{{ i18n.currentLang() === 'ar' ? plan.nameAr : plan.nameEn }}</h3>
-      </div>
-
-      <!-- Card Body -->
-      <div class="plan-mgmt-body">
-        <!-- Basic Plan Configs -->
-        <div class="mgmt-section-title">
-          <i class="fa-solid fa-gears"></i>
-          <span>{{ i18n.currentLang() === 'ar' ? 'المعلومات الأساسية' : 'Basic Configurations' }}</span>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label>{{ i18n.currentLang() === 'ar' ? 'الاسم (بالعربية)' : 'Name (Arabic)' }}</label>
-            <input type="text" [(ngModel)]="plan.nameAr" required />
-          </div>
-          <div class="form-group flex-1">
-            <label>{{ i18n.currentLang() === 'ar' ? 'الاسم (بالإنجليزية)' : 'Name (English)' }}</label>
-            <input type="text" [(ngModel)]="plan.nameEn" required />
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label>{{ i18n.currentLang() === 'ar' ? 'السعر ($)' : 'Price ($)' }}</label>
-            <input type="number" [(ngModel)]="plan.price" required />
-          </div>
-          <div class="form-group flex-1">
-            <label>{{ i18n.currentLang() === 'ar' ? 'الدورية (عربي)' : 'Period (Arabic)' }}</label>
-            <input type="text" [(ngModel)]="plan.periodAr" required />
-          </div>
-          <div class="form-group flex-1">
-            <label>{{ i18n.currentLang() === 'ar' ? 'الدورية (إنجليزي)' : 'Period (English)' }}</label>
-            <input type="text" [(ngModel)]="plan.periodEn" required />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>{{ i18n.currentLang() === 'ar' ? 'الوصف الترويجي (بالعربية)' : 'Tagline (Arabic)' }}</label>
-          <input type="text" [(ngModel)]="plan.taglineAr" required />
-        </div>
-        <div class="form-group">
-          <label>{{ i18n.currentLang() === 'ar' ? 'الوصف الترويجي (بالإنجليزية)' : 'Tagline (English)' }}</label>
-          <input type="text" [(ngModel)]="plan.taglineEn" required />
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- Features/Checklist List -->
-        <div class="features-mgmt-section">
-          <div class="section-title-row">
-            <div class="mgmt-section-title">
-              <i class="fa-solid fa-list-check"></i>
-              <span>{{ i18n.currentLang() === 'ar' ? 'خيارات ومميزات الباقة' : 'Plan Features' }}</span>
-            </div>
-            <button class="btn-add-feature" (click)="addFeature(pIdx)">
-              <i class="fa-solid fa-circle-plus"></i>
-              <span>{{ i18n.currentLang() === 'ar' ? 'إضافة ميزة' : 'Add Feature' }}</span>
-            </button>
-          </div>
-
-          <div class="features-mgmt-list">
-            <div class="feature-mgmt-item animate-fade-in" *ngFor="let feat of plan.features; let fIdx = index">
-              <!-- Included check status toggle -->
-              <label class="toggle-included" [title]="i18n.currentLang() === 'ar' ? 'تفعيل/تعطيل الميزة' : 'Toggle feature inclusion'">
-                <input type="checkbox" [(ngModel)]="feat.included" />
-                <span class="custom-checkbox" [class.checked]="feat.included">
-                  <i class="fa-solid" [ngClass]="feat.included ? 'fa-check' : 'fa-xmark'"></i>
-                </span>
-              </label>
-
-              <!-- Text fields Ar/En -->
-              <div class="feature-inputs-row">
-                <input type="text" class="feature-text-input" [(ngModel)]="feat.textAr" [placeholder]="i18n.currentLang() === 'ar' ? 'الميزة بالعربية' : 'Feature text (Arabic)'" required />
-                <input type="text" class="feature-text-input" [(ngModel)]="feat.textEn" [placeholder]="i18n.currentLang() === 'ar' ? 'الميزة بالإنجليزية' : 'Feature text (English)'" required />
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner-lg"></div>
+      <p>{{ i18n.currentLang() === 'ar' ? 'جاري تحميل الباقات...' : 'Loading plans...' }}</p>
+    </div>
+  } @else {
+    <div class="plans-list">
+      @for (plan of plans(); track plan.id; let pIdx = $index) {
+        <div class="plan-card">
+          <!-- Left: Live Preview -->
+          <div class="plan-preview" [ngClass]="'preview-' + plan.id">
+            <div class="preview-bg-glow"></div>
+            <div class="preview-content">
+              <div class="live-preview-indicator">
+                <span class="pulse-dot"></span>
+                <span>{{ i18n.currentLang() === 'ar' ? 'معاينة مباشرة' : 'Live Preview' }}</span>
+              </div>
+              <div class="preview-header">
+                <div class="preview-icon">
+                  @if (plan.id === 'free') {
+                    <i class="fa-solid fa-gift"></i>
+                  } @else if (plan.id === 'starter') {
+                    <i class="fa-solid fa-seedling"></i>
+                  } @else if (plan.id === 'professional') {
+                    <i class="fa-solid fa-rocket"></i>
+                  } @else {
+                    <i class="fa-solid fa-building-columns"></i>
+                  }
+                </div>
+                <span class="preview-badge">{{ plan.id }}</span>
               </div>
 
-              <!-- Delete feature btn -->
-              <button class="btn-delete-feature" (click)="removeFeature(pIdx, fIdx)" [title]="i18n.currentLang() === 'ar' ? 'حذف الميزة' : 'Remove feature'">
-                <i class="fa-solid fa-trash-can"></i>
-              </button>
+              <div class="preview-body">
+                <h3 class="preview-name">{{ i18n.currentLang() === 'ar' ? plan.nameAr : plan.nameEn }}</h3>
+                <div class="preview-price-row">
+                  <span class="preview-currency">$</span>
+                  <span class="preview-price">{{ plan.price }}</span>
+                  <span class="preview-period">/ {{ i18n.currentLang() === 'ar' ? plan.periodAr : plan.periodEn }}</span>
+                </div>
+                <p class="preview-tagline">{{ i18n.currentLang() === 'ar' ? plan.taglineAr : plan.taglineEn }}</p>
+              </div>
+
+              <div class="preview-divider"></div>
+
+              <div class="preview-features">
+                @for (feat of plan.features; track $index) {
+                  <div class="preview-feat" [class.muted]="!feat.included">
+                    <div class="preview-feat-icon" [class.included]="feat.included">
+                      @if (feat.included) {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      } @else {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      }
+                    </div>
+                    <span class="preview-feat-text">{{ i18n.currentLang() === 'ar' ? feat.textAr : feat.textEn }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Editor Panel -->
+          <div class="plan-editor">
+            <!-- Basic Information -->
+            <div class="editor-card">
+              <div class="editor-card-header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>{{ i18n.currentLang() === 'ar' ? 'المعلومات الأساسية' : 'Basic Information' }}</span>
+              </div>
+              <div class="editor-card-body">
+                <div class="form-grid">
+                  <div class="form-field">
+                    <label>{{ i18n.currentLang() === 'ar' ? 'الاسم (عربي)' : 'Name (Arabic)' }}</label>
+                    <input type="text" [(ngModel)]="plan.nameAr" [placeholder]="i18n.currentLang() === 'ar' ? 'اسم الباقة بالعربية' : 'Plan name in Arabic'">
+                  </div>
+                  <div class="form-field">
+                    <label>{{ i18n.currentLang() === 'ar' ? 'الاسم (إنجليزي)' : 'Name (English)' }}</label>
+                    <input type="text" [(ngModel)]="plan.nameEn" [placeholder]="i18n.currentLang() === 'ar' ? 'اسم الباقة بالإنجليزية' : 'Plan name in English'">
+                  </div>
+                  <div class="form-field">
+                    <label>{{ i18n.currentLang() === 'ar' ? 'السعر ($)' : 'Price ($)' }}</label>
+                    <input type="number" [(ngModel)]="plan.price" min="0" step="0.01">
+                  </div>
+                  <div class="form-field">
+                    <label>{{ i18n.currentLang() === 'ar' ? 'المدة (عربي)' : 'Duration (Arabic)' }}</label>
+                    <input type="text" [(ngModel)]="plan.periodAr" [placeholder]="i18n.currentLang() === 'ar' ? 'Example: month' : 'Example: month'">
+                  </div>
+                  <div class="form-field">
+                    <label>{{ i18n.currentLang() === 'ar' ? 'المدة (إنجليزي)' : 'Duration (English)' }}</label>
+                    <input type="text" [(ngModel)]="plan.periodEn" [placeholder]="i18n.currentLang() === 'ar' ? 'Example: mo' : 'Example: mo'">
+                  </div>
+                  <div class="form-field form-field-full">
+                    <label>{{ i18n.currentLang() === 'ar' ? 'الوصف (عربي)' : 'Description (Arabic)' }}</label>
+                    <textarea [(ngModel)]="plan.taglineAr" rows="2" [placeholder]="i18n.currentLang() === 'ar' ? 'وصف تسويقي قصير للباقة' : 'Short marketing description'"></textarea>
+                  </div>
+                  <div class="form-field form-field-full">
+                    <label>{{ i18n.currentLang() === 'ar' ? 'الوصف (إنجليزي)' : 'Description (English)' }}</label>
+                    <textarea [(ngModel)]="plan.taglineEn" rows="2" [placeholder]="i18n.currentLang() === 'ar' ? 'وصف تسويقي قصير بالإنجليزية' : 'Short marketing description in English'"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Features Management -->
+            <div class="editor-card">
+              <div class="editor-card-header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>{{ i18n.currentLang() === 'ar' ? 'مميزات الباقة' : 'Plan Features' }}</span>
+                <button class="btn-add-feature" (click)="openAddFeatureModal(pIdx)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  <span>{{ i18n.currentLang() === 'ar' ? 'إضافة ميزة' : 'Add Feature' }}</span>
+                </button>
+              </div>
+              <div class="editor-card-body">
+                @if (plan.features.length === 0) {
+                  <div class="features-empty">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                    <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد ميزات مضافة بعد' : 'No features added yet' }}</p>
+                  </div>
+                } @else {
+                  <div class="features-list">
+                    @for (feat of plan.features; track $index; let fIdx = $index) {
+                      <div class="feature-row">
+                        <label class="toggle-switch">
+                          <input type="checkbox" [(ngModel)]="feat.included">
+                          <span class="toggle-track">
+                            <span class="toggle-thumb"></span>
+                          </span>
+                        </label>
+                        <div class="feature-inputs">
+                          <input type="text" [(ngModel)]="feat.textAr" [placeholder]="i18n.currentLang() === 'ar' ? 'الميزة بالعربية' : 'Feature (Arabic)'">
+                          <input type="text" [(ngModel)]="feat.textEn" [placeholder]="i18n.currentLang() === 'ar' ? 'الميزة بالإنجليزية' : 'Feature (English)'">
+                        </div>
+                        <button class="btn-delete-feature" (click)="removeFeature(pIdx, fIdx)" [title]="i18n.currentLang() === 'ar' ? 'حذف' : 'Delete'">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
             </div>
           </div>
         </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Add Feature Modal -->
+<div class="modal-overlay" [class.active]="showAddFeatureModal()" (click)="closeAddFeatureModal()">
+  <div class="feature-modal" (click)="$event.stopPropagation()">
+    <div class="feature-modal-header">
+      <h3>{{ i18n.currentLang() === 'ar' ? 'إضافة ميزة جديدة' : 'Add New Feature' }}</h3>
+      <button class="modal-close-btn" (click)="closeAddFeatureModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="feature-modal-body">
+      <div class="form-field">
+        <label>{{ i18n.currentLang() === 'ar' ? 'الميزة (بالعربية)' : 'Feature (Arabic)' }}</label>
+        <input type="text" [(ngModel)]="newFeatureAr" [placeholder]="i18n.currentLang() === 'ar' ? 'أدخل الميزة بالعربية' : 'Enter feature in Arabic'">
       </div>
+      <div class="form-field">
+        <label>{{ i18n.currentLang() === 'ar' ? 'الميزة (بالإنجليزية)' : 'Feature (English)' }}</label>
+        <input type="text" [(ngModel)]="newFeatureEn" [placeholder]="i18n.currentLang() === 'ar' ? 'أدخل الميزة بالإنجليزية' : 'Enter feature in English'">
+      </div>
+    </div>
+    <div class="feature-modal-footer">
+      <button class="btn btn-secondary" (click)="closeAddFeatureModal()">{{ i18n.currentLang() === 'ar' ? 'إلغاء' : 'Cancel' }}</button>
+      <button class="btn btn-primary" (click)="confirmAddFeature()" [disabled]="!newFeatureAr.trim() || !newFeatureEn.trim()">
+        {{ i18n.currentLang() === 'ar' ? 'إضافة' : 'Add' }}
+      </button>
     </div>
   </div>
 </div>

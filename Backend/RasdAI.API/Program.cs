@@ -39,6 +39,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IRecruitmentService, RecruitmentService>();
+builder.Services.AddScoped<IPendingRegistrationService, PendingRegistrationService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

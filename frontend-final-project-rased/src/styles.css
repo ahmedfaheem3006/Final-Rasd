@@ -260,6 +260,16 @@ input, select, textarea {
   font-size: var(--font-size-base);
 }
 
+select option {
+  background-color: #0b1437 !important;
+  color: #ffffff !important;
+}
+
+:root.light-theme select option {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
 input::placeholder, textarea::placeholder {
   color: var(--text-muted);
 }

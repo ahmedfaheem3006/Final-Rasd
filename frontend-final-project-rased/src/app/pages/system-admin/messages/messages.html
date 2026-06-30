@@ -1,0 +1,124 @@
+<div class="messages-page-container" [class.rtl]="i18n.isRtl()">
+  
+  <!-- Breadcrumbs & Header -->
+  <div class="page-header-row">
+    <div class="header-breadcrumbs">
+      <span>{{ i18n.currentLang() === 'ar' ? 'المشرف العام' : 'System Admin' }}</span>
+      <i class="fa-solid fa-chevron-left" *ngIf="i18n.isRtl()"></i>
+      <i class="fa-solid fa-chevron-right" *ngIf="!i18n.isRtl()"></i>
+      <span class="active-crumb">{{ i18n.currentLang() === 'ar' ? 'الرسائل الواردة' : 'Inbox Messages' }}</span>
+    </div>
+    <h1 class="page-main-title">
+      {{ i18n.currentLang() === 'ar' ? 'إدارة رسائل تواصل معنا' : 'Contact Us Inbox' }}
+    </h1>
+    <p class="page-subtitle">
+      {{ i18n.currentLang() === 'ar' ? 'عرض ومتابعة كافة رسائل الاستفسار الواردة من الصفحة الرئيسية للمنصة' : 'Monitor and read all messages sent by visitors from the platform landing page' }}
+    </p>
+  </div>
+
+  <!-- Main Split Layout -->
+  <div class="messages-split-grid" *ngIf="!isLoading()">
+    
+    <!-- Left Column: Messages List -->
+    <div class="messages-list-panel">
+      <!-- Search & Filters -->
+      <div class="search-wrap-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" class="search-input" 
+               [placeholder]="i18n.currentLang() === 'ar' ? 'البحث باسم المرسل، البريد، أو نص الرسالة...' : 'Search by sender, email, or message...'"
+               [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+      </div>
+
+      <div class="messages-scroll-area">
+        <div class="no-messages-found" *ngIf="filteredMessages().length === 0">
+          <i class="fa-solid fa-box-open empty-icon"></i>
+          <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد رسائل مطابقة لعملية البحث' : 'No messages match your search query' }}</p>
+        </div>
+
+        <div class="msg-list-item animate-fade-in" 
+             *ngFor="let msg of filteredMessages()" 
+             [class.active]="selectedMessage()?.id === msg.id"
+             (click)="selectMessage(msg)">
+          <div class="msg-item-avatar">
+            <span>{{ msg.firstName.substring(0, 1).toUpperCase() }}{{ msg.lastName.substring(0, 1).toUpperCase() }}</span>
+          </div>
+          <div class="msg-item-details">
+            <div class="msg-item-header">
+              <h4 class="msg-sender-name">{{ msg.firstName }} {{ msg.lastName }}</h4>
+              <span class="msg-time">{{ formatDate(msg.createdAt) }}</span>
+            </div>
+            <p class="msg-email-sub">{{ msg.email }}</p>
+            <p class="msg-preview-text">{{ msg.message }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Message Detail Panel -->
+    <div class="message-detail-panel">
+      <div class="detail-card-glass" *ngIf="selectedMessage(); else noSelectedTpl">
+        
+        <!-- Header Info -->
+        <div class="detail-header-row">
+          <div class="sender-avatar-large">
+            <span>{{ selectedMessage()!.firstName.substring(0, 1).toUpperCase() }}{{ selectedMessage()!.lastName.substring(0, 1).toUpperCase() }}</span>
+          </div>
+          <div class="sender-meta">
+            <h2 class="sender-full-name">{{ selectedMessage()!.firstName }} {{ selectedMessage()!.lastName }}</h2>
+            <div class="sender-email-row">
+              <i class="fa-solid fa-envelope"></i>
+              <a href="mailto:{{ selectedMessage()!.email }}" class="email-link">{{ selectedMessage()!.email }}</a>
+            </div>
+          </div>
+          <div class="message-date-badge">
+            <i class="fa-solid fa-calendar-day"></i>
+            <span>{{ formatDate(selectedMessage()!.createdAt) }}</span>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <!-- Message Body -->
+        <div class="message-content-box">
+          <h4 class="box-title">
+            <i class="fa-solid fa-quote-right" *ngIf="i18n.isRtl()"></i>
+            <i class="fa-solid fa-quote-left" *ngIf="!i18n.isRtl()"></i>
+            <span>{{ i18n.currentLang() === 'ar' ? 'محتوى الرسالة الاستفسارية' : 'Inquiry Message Content' }}</span>
+          </h4>
+          <p class="message-full-text">{{ selectedMessage()!.message }}</p>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <!-- Action Panel -->
+        <div class="detail-actions-row">
+          <a href="mailto:{{ selectedMessage()!.email }}?subject=Re: Rasd AI Inquiry" class="btn btn-primary btn-reply">
+            <i class="fa-solid fa-reply"></i>
+            <span>{{ i18n.currentLang() === 'ar' ? 'الرد عبر البريد الإلكتروني' : 'Reply via Email' }}</span>
+          </a>
+          <button class="btn btn-secondary btn-copy" (click)="loadMessages()">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>{{ i18n.currentLang() === 'ar' ? 'تحديث الرسائل' : 'Refresh' }}</span>
+          </button>
+        </div>
+
+      </div>
+
+      <ng-template #noSelectedTpl>
+        <div class="no-selection-glass">
+          <i class="fa-solid fa-envelope-open select-icon"></i>
+          <h3>{{ i18n.currentLang() === 'ar' ? 'لم يتم اختيار أي رسالة' : 'No Message Selected' }}</h3>
+          <p>{{ i18n.currentLang() === 'ar' ? 'الرجاء اختيار رسالة من القائمة الجانبية لقراءة التفاصيل الكاملة' : 'Please select a message from the list to view its full details' }}</p>
+        </div>
+      </ng-template>
+    </div>
+
+  </div>
+
+  <!-- Loading State Indicator -->
+  <div class="messages-loading-state" *ngIf="isLoading()">
+    <i class="fa-solid fa-spinner fa-spin loading-icon"></i>
+    <p>{{ i18n.currentLang() === 'ar' ? 'جاري تحميل الرسائل الواردة...' : 'Loading inbox messages...' }}</p>
+  </div>
+
+</div>

@@ -15,6 +15,7 @@ public class User : ITenantEntity
     public string? OtpCode { get; set; }
     public DateTime? OtpExpiryTime { get; set; }
     public string Status { get; set; } = "Active";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
     public Tenant Tenant { get; set; } = null!;

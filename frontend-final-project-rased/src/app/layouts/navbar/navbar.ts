@@ -91,10 +91,14 @@ export class Navbar implements OnInit {
       this.currentTitle = 'sidebar.sys_management';
     } else if (url.includes('sys-admin/support-ai')) {
       this.currentTitle = 'sidebar.sys_support_ai';
+    } else if (url.includes('sys-admin/pending-registrations')) {
+      this.currentTitle = 'sidebar.sys_pending_registrations';
     } else if (url.includes('sys-admin/add-tenant')) {
       this.currentTitle = 'sidebar.sys_add_tenant';
     } else if (url.includes('sys-admin/settings')) {
       this.currentTitle = 'sidebar.sys_settings';
+    } else if (url.includes('sys-admin/messages')) {
+      this.currentTitle = 'sidebar.sys_messages';
     } else if (url.includes('owner/dashboard')) {
       this.currentTitle = 'sidebar.dashboard';
     } else if (url.includes('owner/users')) {

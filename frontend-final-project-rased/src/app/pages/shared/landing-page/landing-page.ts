@@ -22,9 +22,14 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
   http = inject(HttpClient);
 
   isHeaderScrolled = signal(false);
+  isMobileMenuOpen = signal(false);
   activeFaqIndex = signal<number | null>(null);
-  // Show back‑to‑top button after scrolling down
   showBackToTop = signal<boolean>(false);
+
+  // Scroll-spy: id of the section currently in view (drives navbar active link)
+  activeSection = signal<string>('hero');
+  // Sections tracked by the scroll-spy, in document order
+  private readonly spySectionIds = ['hero', 'features', 'pricing', 'faq', 'contact'];
 
   // FAQ data – 12 enterprise‑grade items
   faqs = [
@@ -123,6 +128,34 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  /**
+   * Scroll-spy: pick the section whose top is closest above the viewport
+   * midpoint and mark it active so the navbar highlights the current link.
+   */
+  private updateActiveSection() {
+    // Offset roughly to the navbar height so a section counts as "active"
+    // a little before its very top reaches the top of the screen.
+    const probeLine = window.scrollY + window.innerHeight * 0.35;
+    let current = this.spySectionIds[0];
+
+    for (const id of this.spySectionIds) {
+      const el = document.getElementById(id);
+      if (el && el.offsetTop <= probeLine) {
+        current = id;
+      }
+    }
+
+    // Near the very bottom of the page, force the last section active so the
+    // final link (Contact) reliably lights up even if it's short.
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) {
+      current = this.spySectionIds[this.spySectionIds.length - 1];
+    }
+
+    if (this.activeSection() !== current) {
+      this.activeSection.set(current);
+    }
+  }
+
 
   // AI Simulator States
   isTyping = signal(false);
@@ -193,6 +226,24 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
   private testimonialInterval: any;
 
   defaultPlans = [
+    {
+      id: "free",
+      nameAr: "المجانية",
+      nameEn: "Free",
+      price: 0,
+      periodAr: "شهر",
+      periodEn: "mo",
+      taglineAr: "ابدأ بدون أي تكلفة وجرّب جميع الأساسيات.",
+      taglineEn: "Start at no cost and explore the basics.",
+      features: [
+        { textAr: "مستخدم واحد", textEn: "1 User", included: true },
+        { textAr: "50 طلب ذكاء اصطناعي / شهر", textEn: "50 AI Queries / mo", included: true },
+        { textAr: "إدارة الصفقات الأساسية", textEn: "Basic Deals Pipeline", included: true },
+        { textAr: "تقارير شهرية", textEn: "Monthly Reports", included: true },
+        { textAr: "مساعد ذكي متقدم", textEn: "Advanced AI CoPilot", included: false },
+        { textAr: "دعم فني أولوي", textEn: "Priority Support", included: false }
+      ]
+    },
     {
       id: "starter",
       nameAr: "المبتدئ",
@@ -283,6 +334,8 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
         this.isHeaderScrolled.set(window.scrollY > 50);
         // Show/hide back‑to‑top button
         this.showBackToTop.set(window.scrollY > 300);
+        // Update which section is active for the navbar scroll-spy
+        this.updateActiveSection();
       };
     window.addEventListener('scroll', this.scrollHandler, { passive: true });
 
@@ -331,6 +384,8 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit() {
     this.setupIntersectionObserver();
+    // Compute the initial active section once the layout is measured.
+    this.updateActiveSection();
   }
 
   setupIntersectionObserver() {
@@ -357,64 +412,65 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
       this.observer.observe(statsSection);
     }
 
-    // ── Problem-cards cascade observer ─────────────────────────────
-    // Fires once when the grid enters the viewport (threshold 15%).
-    // Adds .is-visible which triggers all .cascade-item CSS animations.
-    // Once triggered the observer disconnects itself to stay lean.
-    this.problemObserver = new IntersectionObserver(
-      (entries, obs) => {
+    // ── Replaying cascade grids ────────────────────────────────────
+    // Each grid (problem / features / workflow) animates whenever it
+    // scrolls into view, AND re-plays every 10s while it stays in view.
+    // Hovering a grid pauses it (CSS) and skips the periodic re-trigger,
+    // so the animation never gets stuck and always feels alive.
+    this.setupReplayingGrids(['problem-grid-anim', 'features-grid-anim', 'workflow-grid-anim']);
+  }
+
+  // Grids that replay their entrance animation on scroll + on an interval.
+  private animGrids: { el: HTMLElement; inView: boolean; hovered: boolean }[] = [];
+  private cascadeObserver: IntersectionObserver | null = null;
+  private cascadeInterval: any = null;
+
+  private setupReplayingGrids(ids: string[]) {
+    this.animGrids = [];
+
+    this.cascadeObserver = new IntersectionObserver(
+      (entries) => {
         entries.forEach(entry => {
+          const grid = this.animGrids.find(g => g.el === entry.target);
+          if (!grid) return;
+          grid.inView = entry.isIntersecting;
           if (entry.isIntersecting) {
-            // Add trigger class — CSS handles the rest via --cascade-delay
-            entry.target.classList.add('is-visible');
-            // Unobserve: animation should only fire once per page visit
-            obs.unobserve(entry.target);
+            this.playGrid(grid.el);
+          } else {
+            // Reset so re-entering the viewport replays the animation.
+            grid.el.classList.remove('is-visible');
           }
         });
       },
       { root: null, rootMargin: '0px', threshold: 0.15 }
     );
 
-    const problemGrid = document.getElementById('problem-grid-anim');
-    if (problemGrid) {
-      this.problemObserver.observe(problemGrid);
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      const grid = { el, inView: false, hovered: false };
+      this.animGrids.push(grid);
+      el.addEventListener('mouseenter', () => (grid.hovered = true));
+      el.addEventListener('mouseleave', () => (grid.hovered = false));
+      this.cascadeObserver.observe(el);
     }
 
-    // ── Features-cards cascade observer ────────────────────────────
-    this.featuresObserver = new IntersectionObserver(
-      (entries, obs) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            obs.unobserve(entry.target);
-          }
-        });
-      },
-      { root: null, rootMargin: '0px', threshold: 0.15 }
-    );
+    // Re-play every 10s for any grid in view and not being hovered.
+    this.cascadeInterval = setInterval(() => {
+      this.animGrids.forEach(g => {
+        if (g.inView && !g.hovered) {
+          this.playGrid(g.el);
+        }
+      });
+    }, 10000);
+  }
 
-    const featuresGrid = document.getElementById('features-grid-anim');
-    if (featuresGrid) {
-      this.featuresObserver.observe(featuresGrid);
-    }
-
-    // ── Workflow-cards slide-in observer ───────────────────────────
-    this.workflowObserver = new IntersectionObserver(
-      (entries, obs) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            obs.unobserve(entry.target);
-          }
-        });
-      },
-      { root: null, rootMargin: '0px', threshold: 0.15 }
-    );
-
-    const workflowGrid = document.getElementById('workflow-grid-anim');
-    if (workflowGrid) {
-      this.workflowObserver.observe(workflowGrid);
-    }
+  /** Restart the CSS cascade by toggling .is-visible with a forced reflow. */
+  private playGrid(el: HTMLElement) {
+    el.classList.remove('is-visible');
+    // Force reflow so removing + re-adding the class restarts the animation.
+    void el.offsetWidth;
+    el.classList.add('is-visible');
   }
 
   animateStats() {
@@ -492,10 +548,21 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
 
   toggleLang() {
     this.i18n.toggleLang();
-    // Re-run the active prompt simulation in the new language
-    const activeIndex = this.selectedPromptIndex() ?? 0;
-    this.isTyping.set(false);
-    setTimeout(() => this.runAiSimulation(activeIndex), 200);
+  }
+
+  toggleMobileMenu() {
+    this.isMobileMenuOpen.update(val => !val);
+    this.syncBodyScrollLock();
+  }
+
+  closeMobileMenu() {
+    this.isMobileMenuOpen.set(false);
+    this.syncBodyScrollLock();
+  }
+
+  /** Lock background scroll while the mobile drawer is open. */
+  private syncBodyScrollLock() {
+    document.body.style.overflow = this.isMobileMenuOpen() ? 'hidden' : '';
   }
 
   openSupport() {
@@ -507,6 +574,7 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
   isSubmittingContact = signal(false);
   contactFeedbackMessage = signal('');
   contactFeedbackSuccess = signal(true);
+  showSuccessModal = signal(false);
 
   onSubmitContactForm(event: Event) {
     event.preventDefault();
@@ -533,6 +601,8 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
         this.contactFeedbackMessage.set(this.i18n.currentLang() === 'ar' 
           ? 'تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.' 
           : 'Your message has been sent successfully! We will contact you soon.');
+        // Show success modal
+        this.showSuccessModal.set(true);
         // Reset form
         this.contactData = { firstName: '', lastName: '', email: '', message: '' };
       },

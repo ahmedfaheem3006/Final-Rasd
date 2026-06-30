@@ -36,7 +36,26 @@ public class AuthService : IAuthService
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
-        if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash))
+        if (user == null)
+        {
+            var pendingReg = await _context.PendingCompanyRegistrations
+                .FirstOrDefaultAsync(p => p.OwnerEmail == loginDto.Email && p.Status == "Pending");
+            if (pendingReg != null)
+            {
+                throw new Exception("حسابك قيد المراجعة والموافقة من قبل إدارة النظام.");
+            }
+
+            var rejectedReg = await _context.PendingCompanyRegistrations
+                .FirstOrDefaultAsync(p => p.OwnerEmail == loginDto.Email && p.Status == "Rejected");
+            if (rejectedReg != null)
+            {
+                throw new Exception("تم رفض طلب تسجيل شركتك من قبل إدارة النظام.");
+            }
+
+            throw new Exception("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+        }
+
+        if (!VerifyPassword(loginDto.Password, user.PasswordHash))
         {
             throw new Exception("البريد الإلكتروني أو كلمة المرور غير صحيحة");
         }
@@ -50,9 +69,26 @@ public class AuthService : IAuthService
 
         if (user.RoleId != 1) // Not SystemAdmin
         {
+            if (user.Status == "Pending")
+            {
+                throw new Exception("حسابك قيد المراجعة والموافقة من قبل إدارة النظام.");
+            }
+            if (user.Status == "Rejected")
+            {
+                throw new Exception("تم رفض طلب تسجيل شركتك من قبل إدارة النظام.");
+            }
+
             var tenant = await _context.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.TenantId == user.TenantId);
             if (tenant != null)
             {
+                // Check if Free Trial (Price = 0) has expired
+                if (tenant.Price == 0.0m && tenant.CreatedAt.AddDays(3) < DateTime.UtcNow)
+                {
+                    tenant.IsActive = false;
+                    await _context.SaveChangesAsync();
+                    throw new Exception("انتهت صلاحية الفترة التجريبية المجانية (3 أيام). يرجى الترقية إلى باقة مدفوعة.");
+                }
+
                 if (!tenant.IsActive)
                 {
                     throw new Exception("الحساب تم وقفه بالفعل. يرجى التواصل مع إدارة النظام.");

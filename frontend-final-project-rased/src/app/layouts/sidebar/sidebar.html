@@ -59,6 +59,14 @@
         <span class="nav-label">{{ i18n.t('sidebar.sys_support_ai') }}</span>
       </a>
 
+      <!-- 4.4b طلبات التسجيل المعلقة -->
+      <a routerLink="/app/sys-admin/pending-registrations" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
+        <div class="nav-icon">
+          <i class="fa-solid fa-clock-rotate-left" style="font-size: 16px;"></i>
+        </div>
+        <span class="nav-label">{{ i18n.t('sidebar.sys_pending_registrations') }}</span>
+      </a>
+
       <!-- 4.5 إضافة شركة -->
       <a routerLink="/app/sys-admin/add-tenant" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
         <div class="nav-icon">
@@ -73,6 +81,14 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
         </div>
         <span class="nav-label">{{ i18n.currentLang() === 'ar' ? 'إدارة الأسعار' : 'Pricing Settings' }}</span>
+      </a>
+
+      <!-- 4.8 الرسائل الواردة -->
+      <a routerLink="/app/sys-admin/messages" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
+        <div class="nav-icon">
+          <i class="fa-solid fa-envelope" style="font-size: 16px;"></i>
+        </div>
+        <span class="nav-label">{{ i18n.t('sidebar.sys_messages') }}</span>
       </a>
 
       <!-- 4.6 الإعدادات -->

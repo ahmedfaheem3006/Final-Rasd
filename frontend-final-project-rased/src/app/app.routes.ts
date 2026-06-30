@@ -81,6 +81,18 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['system-admin'] }
       },
+      {
+        path: 'sys-admin/pending-registrations',
+        loadComponent: () => import('./pages/system-admin/pending-registrations/pending-registrations').then(m => m.PendingRegistrations),
+        canActivate: [roleGuard],
+        data: { roles: ['system-admin'] }
+      },
+      {
+        path: 'sys-admin/messages',
+        loadComponent: () => import('./pages/system-admin/messages/messages').then(m => m.MessagesComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['system-admin'] }
+      },
 
       // ── Owner / Admin ─────────────────────────────────────────────────────
       {

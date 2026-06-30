@@ -2,58 +2,87 @@
   <!-- ═══════════════ NAVBAR ═══════════════ -->
   <header class="landing-header" [class.scrolled]="isHeaderScrolled()">
     <div class="header-content">
+
+      <!-- Logo (left in LTR / right in RTL) -->
       <div class="brand">
         <img
-          [src]="themeService.isDark() 
+          [src]="themeService.isDark()
           ? (i18n.currentLang() === 'ar' ? 'assets/images/Rasd Ar black Rmove bg.png' : 'assets/images/Rasd En black Rmove bg.png')
           : (i18n.currentLang() === 'ar' ? 'assets/images/rasd Ar remove bg.png' : 'assets/images/Rasd En White Rmove bg.png')"
           alt="Rasd Logo" class="brand-logo-img" />
       </div>
 
-      <nav class="nav-links">
-        <a href="#hero">{{ i18n.currentLang() === 'ar' ? 'الرئيسية' : 'Platform' }}</a>
-        <a href="#features">{{ i18n.currentLang() === 'ar' ? 'المميزات' : 'Solutions' }}</a>
-        <a href="#pricing">{{ i18n.currentLang() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
-        <a href="#faq">{{ i18n.currentLang() === 'ar' ? 'الأسئلة الشائعة' : 'FAQs' }}</a>
-        <a href="#contact">{{ i18n.currentLang() === 'ar' ? 'تواصل معنا' : 'Contact Us' }}</a>
+      <!-- Desktop Navigation (center) -->
+      <nav class="nav-links desktop-nav">
+        <a href="#hero" class="nav-link" [class.active]="activeSection() === 'hero'">{{ i18n.currentLang() === 'ar' ? 'الرئيسية' : 'Home' }}</a>
+        <a href="#features" class="nav-link" [class.active]="activeSection() === 'features'">{{ i18n.currentLang() === 'ar' ? 'المميزات' : 'Features' }}</a>
+        <a href="#pricing" class="nav-link" [class.active]="activeSection() === 'pricing'">{{ i18n.currentLang() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
+        <a href="#faq" class="nav-link" [class.active]="activeSection() === 'faq'">{{ i18n.currentLang() === 'ar' ? 'الأسئلة الشائعة' : 'FAQ' }}</a>
+        <a href="#contact" class="nav-link" [class.active]="activeSection() === 'contact'">{{ i18n.currentLang() === 'ar' ? 'تواصل معنا' : 'Contact Us' }}</a>
       </nav>
 
-      <div class="header-actions">
-        <!-- Theme Toggle Button -->
-        <button class="header-toggle-btn theme-btn" (click)="toggleTheme()" title="Toggle Theme">
+      <!-- Desktop Actions (right in LTR / left in RTL) -->
+      <div class="header-actions desktop-actions">
+        <button class="header-toggle-btn theme-btn" (click)="toggleTheme()" title="Toggle Theme" aria-label="Toggle Theme">
           @if (themeService.isDark()) {
-          <!-- Sun Icon -->
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
           } @else {
-          <!-- Moon Icon -->
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           }
         </button>
 
-        <!-- Language Switcher Button -->
-        <button class="header-toggle-btn lang-btn" (click)="toggleLang()" title="Toggle Language">
+        <button class="header-toggle-btn lang-btn" (click)="toggleLang()" title="Toggle Language" aria-label="Toggle Language">
           {{ i18n.currentLang() === 'ar' ? 'EN' : 'AR' }}
         </button>
-        <a routerLink="/login" class="btn-login-header">{{ i18n.currentLang() === 'ar' ? 'تسجيل الدخول' : 'Log In'
-          }}</a>
-        <a routerLink="/register" class="btn btn-primary btn-cta-header">{{ i18n.currentLang() === 'ar' ? 'سجل شركتك' :
-          'Get Started' }}</a>
+
+        <a routerLink="/login" class="btn-login-header">{{ i18n.currentLang() === 'ar' ? 'تسجيل الدخول' : 'Log In' }}</a>
+
+        <a routerLink="/register" class="btn btn-primary btn-cta-header">{{ i18n.currentLang() === 'ar' ? 'سجل شركتك' : 'Register' }}</a>
       </div>
+
+      <!-- Hamburger (mobile only) -->
+      <button class="hamburger-btn" (click)="toggleMobileMenu()" [attr.aria-expanded]="isMobileMenuOpen()" aria-label="Toggle mobile menu">
+        @if (isMobileMenuOpen()) {
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        } @else {
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        }
+      </button>
+
     </div>
+
+    <!-- Mobile Sidebar Drawer -->
+    <div class="mobile-backdrop" [class.open]="isMobileMenuOpen()" (click)="closeMobileMenu()"></div>
+    <aside class="mobile-menu" [class.open]="isMobileMenuOpen()">
+      <!-- Drawer header: logo + close -->
+      <div class="mobile-menu-head">
+        <img
+          [src]="themeService.isDark()
+          ? (i18n.currentLang() === 'ar' ? 'assets/images/Rasd Ar black Rmove bg.png' : 'assets/images/Rasd En black Rmove bg.png')
+          : (i18n.currentLang() === 'ar' ? 'assets/images/rasd Ar remove bg.png' : 'assets/images/Rasd En White Rmove bg.png')"
+          alt="Rasd Logo" class="mobile-menu-logo" />
+        <button class="mobile-close-btn" (click)="closeMobileMenu()" aria-label="Close menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <nav class="mobile-nav-links">
+        <a href="#hero" [class.active]="activeSection() === 'hero'" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'الرئيسية' : 'Home' }}</a>
+        <a href="#features" [class.active]="activeSection() === 'features'" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'المميزات' : 'Features' }}</a>
+        <a href="#pricing" [class.active]="activeSection() === 'pricing'" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'الأسعار' : 'Pricing' }}</a>
+        <a href="#faq" [class.active]="activeSection() === 'faq'" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'الأسئلة الشائعة' : 'FAQ' }}</a>
+        <a href="#contact" [class.active]="activeSection() === 'contact'" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'تواصل معنا' : 'Contact Us' }}</a>
+      </nav>
+
+      <div class="mobile-actions">
+        <div class="mobile-toggles">
+          <button type="button" class="header-toggle-btn theme-btn" (click)="toggleTheme()">{{ themeService.isDark() ? (i18n.currentLang() === 'ar' ? 'وضع فاتح' : 'Light') : (i18n.currentLang() === 'ar' ? 'وضع داكن' : 'Dark') }}</button>
+          <button type="button" class="header-toggle-btn lang-btn" (click)="toggleLang()">{{ i18n.currentLang() === 'ar' ? 'English' : 'العربية' }}</button>
+        </div>
+        <a routerLink="/login" class="btn btn-outline" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'تسجيل الدخول' : 'Log In' }}</a>
+        <a routerLink="/register" class="btn btn-primary" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'سجل شركتك' : 'Get Started' }}</a>
+      </div>
+    </aside>
   </header>
 
   <!-- ═══════════════ HERO SECTION ═══════════════ -->
@@ -264,12 +293,12 @@
             <i class="fa-solid fa-triangle-exclamation"></i>
           </div>
           <!-- Title: animates second (delay 150ms) -->
-          <h3 [appTypewriter]="i18n.currentLang() === 'ar' ? 'تأخر التقارير والقرارات' : 'Delayed Decision Making'"
-            [typeDelay]="150" [typeSpeed]="25" class="cascade-item">
+          <h3 class="cascade-item" style="--cascade-delay: 150ms">
+            {{ i18n.currentLang() === 'ar' ? 'تأخر التقارير والقرارات' : 'Delayed Decision Making' }}
           </h3>
           <!-- Description: animates third (delay 350ms) -->
-          <p [appTypewriter]="i18n.currentLang() === 'ar' ? 'يستغرق تجميع البيانات من المبيعات والمحاسبة أياماً، مما يعيق اتخاذ القرارات السريعة.' : 'Manual report aggregation takes days, blocking executives from making critical strategic decisions.'"
-            [typeDelay]="350" [typeSpeed]="10" class="cascade-item">
+          <p class="cascade-item" style="--cascade-delay: 350ms">
+            {{ i18n.currentLang() === 'ar' ? 'يستغرق تجميع البيانات من المبيعات والمحاسبة أياماً، مما يعيق اتخاذ القرارات السريعة.' : 'Manual report aggregation takes days, blocking executives from making critical strategic decisions.' }}
           </p>
         </div>
 
@@ -280,12 +309,12 @@
             <i class="fa-solid fa-users"></i>
           </div>
           <!-- Title: delay 500ms -->
-          <h3 [appTypewriter]="i18n.currentLang() === 'ar' ? 'تشتت الموظفين والمهام' : 'Disconnected Team Operations'"
-            [typeDelay]="500" [typeSpeed]="25" class="cascade-item">
+          <h3 class="cascade-item" style="--cascade-delay: 500ms">
+            {{ i18n.currentLang() === 'ar' ? 'تشتت الموظفين والمهام' : 'Disconnected Team Operations' }}
           </h3>
           <!-- Description: delay 700ms -->
-          <p [appTypewriter]="i18n.currentLang() === 'ar' ? 'إسناد المهام عشوائياً يؤدي إلى نسيان المواعيد النهائية وضياع الفرص البيعية المهمة.' : 'Siloed tasks and unmonitored assignments lead to missed deadlines and dropped customer sales.'"
-            [typeDelay]="700" [typeSpeed]="10" class="cascade-item">
+          <p class="cascade-item" style="--cascade-delay: 700ms">
+            {{ i18n.currentLang() === 'ar' ? 'إسناد المهام عشوائياً يؤدي إلى نسيان المواعيد النهائية وضياع الفرص البيعية المهمة.' : 'Siloed tasks and unmonitored assignments lead to missed deadlines and dropped customer sales.' }}
           </p>
         </div>
 
@@ -296,12 +325,12 @@
             <i class="fa-solid fa-magnifying-glass-chart"></i>
           </div>
           <!-- Title: delay 850ms -->
-          <h3 [appTypewriter]="i18n.currentLang() === 'ar' ? 'صعوبة الرقابة والتدقيق' : 'Complex Manual Auditing'"
-            [typeDelay]="850" [typeSpeed]="25" class="cascade-item">
+          <h3 class="cascade-item" style="--cascade-delay: 850ms">
+            {{ i18n.currentLang() === 'ar' ? 'صعوبة الرقابة والتدقيق' : 'Complex Manual Auditing' }}
           </h3>
           <!-- Description: delay 1050ms -->
-          <p [appTypewriter]="i18n.currentLang() === 'ar' ? 'غياب سجلات واضحة للمبيعات والمهام والتدفق المالي يعرض الشركة للمخاطر التشغيلية.' : 'Lack of absolute audit trails makes tracking user edits, tasks, and budgets highly vulnerable to leaks.'"
-            [typeDelay]="1050" [typeSpeed]="10" class="cascade-item">
+          <p class="cascade-item" style="--cascade-delay: 1050ms">
+            {{ i18n.currentLang() === 'ar' ? 'غياب سجلات واضحة للمبيعات والمهام والتدفق المالي يعرض الشركة للمخاطر التشغيلية.' : 'Lack of absolute audit trails makes tracking user edits, tasks, and budgets highly vulnerable to leaks.' }}
           </p>
         </div>
 
@@ -327,14 +356,12 @@
             <i class="fa-solid fa-chart-line feat-fa-icon feat-icon-blue"></i>
           </div>
           <!-- 2. Title -->
-          <h3 class="cascade-item" style="--cascade-delay: 150ms"
-            [appTypewriter]="i18n.currentLang() === 'ar' ? 'متابعة الصفقات والمبيعات' : 'Smart Deals Pipeline'"
-            [typeDelay]="200" [typeSpeed]="25">
+          <h3 class="cascade-item" style="--cascade-delay: 150ms">
+            {{ i18n.currentLang() === 'ar' ? 'متابعة الصفقات والمبيعات' : 'Smart Deals Pipeline' }}
           </h3>
           <!-- 3. Description -->
-          <p class="cascade-item" style="--cascade-delay: 300ms"
-            [appTypewriter]="i18n.currentLang() === 'ar' ? 'تتبع الفرص البيعية، عين مندوبي المبيعات، وراجع تفاصيل المحادثات والتدفق المالي لحظياً.' : 'Track leads dynamically, assign managers, and forecast closures with analytical AI metrics.'"
-            [typeDelay]="450" [typeSpeed]="10">
+          <p class="cascade-item" style="--cascade-delay: 300ms">
+            {{ i18n.currentLang() === 'ar' ? 'تتبع الفرص البيعية، عين مندوبي المبيعات، وراجع تفاصيل المحادثات والتدفق المالي لحظياً.' : 'Track leads dynamically, assign managers, and forecast closures with analytical AI metrics.' }}
           </p>
         </div>
 
@@ -345,14 +372,12 @@
             <i class="fa-solid fa-robot feat-fa-icon feat-icon-cyan"></i>
           </div>
           <!-- 2. Title -->
-          <h3 class="cascade-item" style="--cascade-delay: 350ms"
-            [appTypewriter]="i18n.currentLang() === 'ar' ? 'مساعد ذكي توليدي' : 'Interactive AI Assistant'"
-            [typeDelay]="400" [typeSpeed]="25">
+          <h3 class="cascade-item" style="--cascade-delay: 350ms">
+            {{ i18n.currentLang() === 'ar' ? 'مساعد ذكي توليدي' : 'Interactive AI Assistant' }}
           </h3>
           <!-- 3. Description -->
-          <p class="cascade-item" style="--cascade-delay: 500ms"
-            [appTypewriter]="i18n.currentLang() === 'ar' ? 'استعلم باللغة الطبيعية عن أداء شركتك، معدلات المبيعات، وتفاصيل المهام واحصل على تدقيق فوري.' : 'Query statistics, analyze sales reports, and get smart warnings using pure natural text.'"
-            [typeDelay]="650" [typeSpeed]="10">
+          <p class="cascade-item" style="--cascade-delay: 500ms">
+            {{ i18n.currentLang() === 'ar' ? 'استعلم باللغة الطبيعية عن أداء شركتك، معدلات المبيعات، وتفاصيل المهام واحصل على تدقيق فوري.' : 'Query statistics, analyze sales reports, and get smart warnings using pure natural text.' }}
           </p>
         </div>
 
@@ -363,14 +388,12 @@
             <i class="fa-solid fa-calendar-check feat-fa-icon feat-icon-purple"></i>
           </div>
           <!-- 2. Title -->
-          <h3 class="cascade-item" style="--cascade-delay: 550ms"
-            [appTypewriter]="i18n.currentLang() === 'ar' ? 'إدارة المهام والجدولة' : 'Task & Meeting Control'"
-            [typeDelay]="600" [typeSpeed]="25">
+          <h3 class="cascade-item" style="--cascade-delay: 550ms">
+            {{ i18n.currentLang() === 'ar' ? 'إدارة المهام والجدولة' : 'Task & Meeting Control' }}
           </h3>
           <!-- 3. Description -->
-          <p class="cascade-item" style="--cascade-delay: 700ms"
-            [appTypewriter]="i18n.currentLang() === 'ar' ? 'نظام متكامل لإسناد المهام، الموافقة على الإجازات، وجدولة الاجتماعات مع تقارير الإنجاز.' : 'Delegate project work, approve employee leave, and keep a shared schedule without scheduling conflicts.'"
-            [typeDelay]="850" [typeSpeed]="10">
+          <p class="cascade-item" style="--cascade-delay: 700ms">
+            {{ i18n.currentLang() === 'ar' ? 'نظام متكامل لإسناد المهام، الموافقة على الإجازات، وجدولة الاجتماعات مع تقارير الإنجاز.' : 'Delegate project work, approve employee leave, and keep a shared schedule without scheduling conflicts.' }}
           </p>
         </div>
 
@@ -395,7 +418,7 @@
 
           <!-- Selectable prompts -->
           <div class="prompts-list">
-            @for (prompt of (i18n.currentLang() === 'ar' ? promptsAr : promptsEn); track prompt; let idx = $index) {
+            @for (prompt of (i18n.currentLang() === 'ar' ? promptsAr : promptsEn); track idx; let idx = $index) {
             <button class="prompt-chip" [class.active]="selectedPromptIndex() === idx" (click)="runAiSimulation(idx)">
               {{ prompt }}
             </button>
@@ -559,8 +582,8 @@
             <i class="fa-solid fa-fire-flame-curved" style="margin-left:5px;margin-right:5px;"></i>
             {{ i18n.currentLang() === 'ar' ? 'الأكثر طلباً' : 'Most Popular' }}
           </div>
-          <div class="plan-icon-wrap" [ngClass]="plan.id === 'starter' ? 'plan-icon-green' : plan.id === 'professional' ? 'plan-icon-blue' : 'plan-icon-purple'">
-            <i class="fa-solid" [ngClass]="plan.id === 'starter' ? 'fa-seedling' : plan.id === 'professional' ? 'fa-rocket' : 'fa-building-columns'"></i>
+          <div class="plan-icon-wrap" [ngClass]="plan.id === 'free' ? 'plan-icon-teal' : plan.id === 'starter' ? 'plan-icon-green' : plan.id === 'professional' ? 'plan-icon-blue' : 'plan-icon-purple'">
+            <i class="fa-solid" [ngClass]="plan.id === 'free' ? 'fa-gift' : plan.id === 'starter' ? 'fa-seedling' : plan.id === 'professional' ? 'fa-rocket' : 'fa-building-columns'"></i>
           </div>
           <span class="plan-name">{{ i18n.currentLang() === 'ar' ? plan.nameAr : plan.nameEn }}</span>
           <div class="plan-price-row">
@@ -579,7 +602,7 @@
             </li>
           </ul>
 
-          <a routerLink="/register" class="btn-pricing" [ngClass]="plan.id === 'starter' ? 'btn-pricing-starter' : plan.id === 'professional' ? 'btn-pricing-primary' : 'btn-pricing-enterprise'">
+          <a routerLink="/register" class="btn-pricing" [ngClass]="plan.id === 'free' ? 'btn-pricing-free' : plan.id === 'starter' ? 'btn-pricing-starter' : plan.id === 'professional' ? 'btn-pricing-primary' : 'btn-pricing-enterprise'">
             {{ i18n.currentLang() === 'ar' ? 'ابدأ الآن' : 'Get Started' }}
             <i class="fa-solid fa-arrow-left" style="margin-right: 6px;" *ngIf="i18n.currentLang() === 'ar'"></i>
             <i class="fa-solid fa-arrow-right" style="margin-left: 6px;" *ngIf="i18n.currentLang() !== 'ar'"></i>
@@ -803,6 +826,22 @@
       </div>
     </div>
   </section>
+
+  <!-- Success Modal -->
+  <div class="contact-success-modal-backdrop" *ngIf="showSuccessModal()" (click)="showSuccessModal.set(false)">
+    <div class="contact-success-modal animate-reveal" (click)="$event.stopPropagation()">
+      <div class="success-icon-ring">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h3 class="modal-title">{{ i18n.currentLang() === 'ar' ? 'تم الإرسال بنجاح!' : 'Sent Successfully!' }}</h3>
+      <p class="modal-text">
+        {{ i18n.currentLang() === 'ar' ? 'تم استلام رسالتك وسيتواصل معك فريقنا في أقرب وقت.' : 'Your message has been received, and our team will contact you soon.' }}
+      </p>
+      <button class="btn-close-modal" (click)="showSuccessModal.set(false)">
+        {{ i18n.currentLang() === 'ar' ? 'حسناً' : 'Okay' }}
+      </button>
+    </div>
+  </div>
 
   <!-- ═══════════════ FOOTER ═══════════════ -->
   <footer class="landing-footer">

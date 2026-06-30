@@ -1,115 +1,293 @@
-<div class="page-container animate-fade-in">
-  <header class="page-header">
+<div class="settings-page-wrapper animate-fade-in" [class.rtl]="i18n.isRtl()">
+  
+  <!-- Page Header -->
+  <header class="settings-header">
     <div class="header-info">
       <div class="breadcrumbs">
-        {{ i18n.currentLang() === 'ar' ? 'المشرف العام / الإعدادات' : 'System Admin / Settings' }}
+        <span>{{ i18n.currentLang() === 'ar' ? 'المشرف العام' : 'System Admin' }}</span>
+        <i class="fa-solid" [class.fa-chevron-left]="i18n.isRtl()" [class.fa-chevron-right]="!i18n.isRtl()"></i>
+        <span class="active-crumb">{{ i18n.currentLang() === 'ar' ? 'الإعدادات العامة' : 'Global Settings' }}</span>
       </div>
       <h1>{{ i18n.currentLang() === 'ar' ? 'إعدادات الحساب والنظام' : 'Account & System Settings' }}</h1>
       <p class="subtitle">
-        {{ i18n.currentLang() === 'ar' ? 'عرض بيانات مدير النظام الفني وتحديث كلمة مرور الحساب والتحقق من الهوية.' : 'View technical admin profile details and update your system admin password.' }}
+        {{ i18n.currentLang() === 'ar' ? 'قم بإدارة حسابك الشخصي والتحكم في إعدادات النظام ومراجعة طلبات انضمام الشركات' : 'Manage your root administrator profile, configure system options, and review client company registration requests.' }}
       </p>
     </div>
   </header>
 
-  <div class="settings-grid">
-    <!-- Left Pane: Admin Info Card -->
-    <div class="card profile-card animate-reveal">
-      <div class="profile-avatar">
-        {{ authService.currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'SA' : (authService.currentUser()?.avatarInitials || 'AD') }}
-      </div>
-      <h3 class="profile-name">{{ authService.currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'System Admin' : authService.currentUser()?.name }}</h3>
-      <span class="profile-role-badge">{{ authService.currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'System Admin' : authService.currentUser()?.roleLabel }}</span>
-      
-      <div class="divider"></div>
-      
-      <div class="meta-info-list">
-        <div class="meta-item">
-          <span class="meta-label">{{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email Address' }}</span>
-          <span class="meta-value">{{ authService.currentUser()?.email }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">{{ i18n.currentLang() === 'ar' ? 'المنشأة الحالية' : 'Current Workspace' }}</span>
-          <span class="meta-value">{{ authService.currentUser()?.workspaceName }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">{{ i18n.currentLang() === 'ar' ? 'صلاحيات الحساب' : 'Account Permission' }}</span>
-          <span class="meta-value font-success">{{ i18n.currentLang() === 'ar' ? 'الوصول الكامل للنظام' : 'Full Root Access' }}</span>
-        </div>
-      </div>
-    </div>
+  <!-- Split Tab Layout -->
+  <div class="settings-split-layout">
+    
+    <!-- Sidebar Navigation Tabs -->
+    <aside class="settings-nav-sidebar">
+      <ul class="nav-tab-list">
+        <li [class.active]="activeTab() === 'profile'" (click)="activeTab.set('profile')">
+          <i class="fa-solid fa-user-gear"></i>
+          <span>{{ i18n.currentLang() === 'ar' ? 'ملف البروفايل' : 'Admin Profile' }}</span>
+        </li>
+        <li [class.active]="activeTab() === 'password'" (click)="activeTab.set('password')">
+          <i class="fa-solid fa-key"></i>
+          <span>{{ i18n.currentLang() === 'ar' ? 'تغيير كلمة المرور' : 'Change Password' }}</span>
+        </li>
+        <li [class.active]="activeTab() === 'notifications'" (click)="activeTab.set('notifications')">
+          <i class="fa-solid fa-bell"></i>
+          <span>{{ i18n.currentLang() === 'ar' ? 'الإشعارات الفنية' : 'System Notifications' }}</span>
+          <span class="badge badge-danger" *ngIf="notificationService.unreadCount() > 0">
+            {{ notificationService.unreadCount() }}
+          </span>
+        </li>
+        <li [class.active]="activeTab() === 'tenants'" (click)="activeTab.set('tenants')">
+          <i class="fa-solid fa-building-circle-check"></i>
+          <span>{{ i18n.currentLang() === 'ar' ? 'إدارة حساب الشركات' : 'Company Management' }}</span>
+        </li>
+      </ul>
+    </aside>
 
-    <!-- Right Pane: Password & Configurations Column -->
-    <div class="settings-right-pane">
-      <!-- Password Card -->
-      <div class="card form-card animate-reveal">
-        <h3 class="section-title">{{ i18n.currentLang() === 'ar' ? 'تغيير كلمة المرور الآمنة' : 'Update Security Password' }}</h3>
-        <p class="section-subtitle">
-          {{ i18n.currentLang() === 'ar' ? 'ننصحك باستخدام كلمة مرور قوية تحتوي على رموز وأرقام وحروف لحماية حساب المشرف العام.' : 'Ensure a strong, unique password with symbols and numbers to protect root privileges.' }}
-        </p>
+    <!-- Main Content Panel -->
+    <main class="settings-content-panel">
 
-        <form (ngSubmit)="onSubmit()">
-          <div class="form-group">
-            <label>{{ i18n.currentLang() === 'ar' ? 'كلمة المرور الحالية' : 'Current Password' }} <span class="required">*</span></label>
-            <input type="password" [(ngModel)]="currentPassword" name="currentPassword" required placeholder="••••••••" />
+      <!-- 1. Profile Tab -->
+      <div class="tab-pane animate-fade-in" *ngIf="activeTab() === 'profile'">
+        <div class="settings-card-glass">
+          <h2 class="card-title">{{ i18n.currentLang() === 'ar' ? 'معلومات مدير النظام الفنية' : 'Administrator Profile Information' }}</h2>
+          <div class="profile-details-hero">
+            <div class="profile-large-avatar">
+              {{ authService.currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'SA' : (authService.currentUser()?.avatarInitials || 'AD') }}
+            </div>
+            <div class="profile-hero-meta">
+              <h3>{{ authService.currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'System Admin' : authService.currentUser()?.name }}</h3>
+              <span class="role-badge">{{ i18n.currentLang() === 'ar' ? 'مشرف عام النظام' : 'Full Root Administrator' }}</span>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label>{{ i18n.currentLang() === 'ar' ? 'كلمة المرور الجديدة' : 'New Password' }} <span class="required">*</span></label>
-            <input type="password" [(ngModel)]="newPassword" name="newPassword" required placeholder="••••••••" />
+          <div class="panel-divider"></div>
+
+          <div class="profile-info-grid">
+            <div class="info-field">
+              <span class="field-label">{{ i18n.currentLang() === 'ar' ? 'الاسم الكامل' : 'Full Name' }}</span>
+              <span class="field-value">{{ authService.currentUser()?.name }}</span>
+            </div>
+            <div class="info-field">
+              <span class="field-label">{{ i18n.currentLang() === 'ar' ? 'البريد الإلكتروني' : 'Email Address' }}</span>
+              <span class="field-value">{{ authService.currentUser()?.email }}</span>
+            </div>
+            <div class="info-field">
+              <span class="field-label">{{ i18n.currentLang() === 'ar' ? 'المساحة الحالية' : 'Current Workspace' }}</span>
+              <span class="field-value">{{ authService.currentUser()?.workspaceName || 'System Root' }}</span>
+            </div>
+            <div class="info-field">
+              <span class="field-label">{{ i18n.currentLang() === 'ar' ? 'صلاحيات الحساب' : 'Account Authority' }}</span>
+              <span class="field-value text-success font-bold">{{ i18n.currentLang() === 'ar' ? 'وصول كامل ومطلق للنظام' : 'Full Admin Access Authority' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Global Settings Form -->
+        <div class="settings-card-glass" style="margin-top: 24px;">
+          <h2 class="card-title">{{ i18n.currentLang() === 'ar' ? 'إعدادات النظام والتنبيهات العامة' : 'Global Settings & Notifications' }}</h2>
+          <p class="card-subtitle">{{ i18n.currentLang() === 'ar' ? 'تخصيص الإشعارات المباشرة للشركات والتنبيهات الفنية للخوادم.' : 'Customize active user notifications and server alert rules.' }}</p>
+          
+          <div class="toggles-list">
+            <div class="toggle-row">
+              <div class="toggle-text">
+                <h4>{{ i18n.currentLang() === 'ar' ? 'تفعيل الإشعارات لجميع الشركات' : 'Enable Global Notifications' }}</h4>
+                <p>{{ i18n.currentLang() === 'ar' ? 'السماح للنظام بإرسال رسائل بريد دورية وتنبيهات فورية للمستخدمين.' : 'Allow the platform to send periodic notifications and email reports to corporate clients.' }}</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="enableGlobalNotifications" name="enableGlobalNotifications" />
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-text">
+                <h4>{{ i18n.currentLang() === 'ar' ? 'التحكم بالتشخيص والذكاء الاصطناعي (AI Support)' : 'AI Diagnostic Support' }}</h4>
+                <p>{{ i18n.currentLang() === 'ar' ? 'تفعيل الفحص التلقائي بالذكاء الاصطناعي لإصلاح مشاكل خوادم الشركات.' : 'Enable automated diagnostics to fix corporate client database errors autonomously.' }}</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="enableAiSupport" name="enableAiSupport" />
+                <span class="slider round"></span>
+              </label>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label>{{ i18n.currentLang() === 'ar' ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password' }} <span class="required">*</span></label>
-            <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required placeholder="••••••••" />
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-submit" [disabled]="isSubmitting()">
-              <span *ngIf="!isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'حفظ كلمة المرور الجديدة' : 'Save Password' }}</span>
-              <span *ngIf="isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'جاري الحفظ...' : 'Saving...' }}</span>
+          <div class="form-actions" style="margin-top: 25px;">
+            <button class="btn btn-primary btn-save" (click)="saveSystemConfig()" [disabled]="isSavingConfig()">
+              <span *ngIf="!isSavingConfig()">{{ i18n.currentLang() === 'ar' ? 'حفظ إعدادات النظام' : 'Save Configurations' }}</span>
+              <span *ngIf="isSavingConfig()">{{ i18n.currentLang() === 'ar' ? 'جاري الحفظ...' : 'Saving...' }}</span>
             </button>
           </div>
-        </form>
-      </div>
-
-      <!-- System Configurations Card -->
-      <div class="card form-card animate-reveal" style="margin-top: 24px;">
-        <h3 class="section-title">{{ i18n.currentLang() === 'ar' ? 'إعدادات النظام العامة' : 'Global System Configurations' }}</h3>
-        <p class="section-subtitle">
-          {{ i18n.currentLang() === 'ar' ? 'التحكم في دعم الشركات الذكي بالذكاء الاصطناعي وتنبيهات الخوادم.' : 'Control AI Support and server alerts across all registered clients.' }}
-        </p>
-
-        <div class="settings-toggle-group">
-          <div class="toggle-setting-item">
-            <div class="toggle-info">
-              <h4>{{ i18n.currentLang() === 'ar' ? 'إدارة التنبيهات لجميع الشركات' : 'Global Notification Management' }}</h4>
-              <p>{{ i18n.currentLang() === 'ar' ? 'إرسال إشعارات البريد وتنبيهات النظام للمشتركين بشكل دوري.' : 'Send global system notifications and email updates to all companies.' }}</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" [(ngModel)]="enableGlobalNotifications" name="enableGlobalNotifications" />
-              <span class="slider round"></span>
-            </label>
-          </div>
-
-          <div class="toggle-setting-item" style="margin-top: 20px;">
-            <div class="toggle-info">
-              <h4>{{ i18n.currentLang() === 'ar' ? 'التحكم في الدعم بالذكاء الاصطناعي (AI Support)' : 'AI Support Control' }}</h4>
-              <p>{{ i18n.currentLang() === 'ar' ? 'تفعيل نظام الفحص الذكي لتشخيص وإصلاح أخطاء الشركات تلقائياً.' : 'Enable system diagnostic monitors to fix corporate server errors autonomously.' }}</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" [(ngModel)]="enableAiSupport" name="enableAiSupport" />
-              <span class="slider round"></span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-actions" style="margin-top: 28px;">
-          <button class="btn btn-primary btn-submit" (click)="saveSystemConfig()" [disabled]="isSavingConfig()">
-            <span *ngIf="!isSavingConfig()">{{ i18n.currentLang() === 'ar' ? 'حفظ إعدادات النظام' : 'Save Settings' }}</span>
-            <span *ngIf="isSavingConfig()">{{ i18n.currentLang() === 'ar' ? 'جاري الحفظ...' : 'Saving...' }}</span>
-          </button>
         </div>
       </div>
-    </div>
+
+      <!-- 2. Password Tab -->
+      <div class="tab-pane animate-fade-in" *ngIf="activeTab() === 'password'">
+        <div class="settings-card-glass">
+          <h2 class="card-title">{{ i18n.currentLang() === 'ar' ? 'تغيير كلمة المرور' : 'Update Security Password' }}</h2>
+          <p class="card-subtitle">
+            {{ i18n.currentLang() === 'ar' ? 'يرجى إدخال كلمة المرور الحالية ثم كتابة كلمة المرور الجديدة وتأكيدها لتأمين حسابك.' : 'To update your password, input the current key followed by your new one.' }}
+          </p>
+
+          <form (ngSubmit)="onSubmit()" class="password-form-grid">
+            <div class="form-group">
+              <label>{{ i18n.currentLang() === 'ar' ? 'كلمة المرور الحالية' : 'Current Password' }} <span class="required">*</span></label>
+              <input type="password" [(ngModel)]="currentPassword" name="currentPassword" required placeholder="••••••••" />
+            </div>
+
+            <div class="form-group">
+              <label>{{ i18n.currentLang() === 'ar' ? 'كلمة المرور الجديدة' : 'New Password' }} <span class="required">*</span></label>
+              <input type="password" [(ngModel)]="newPassword" name="newPassword" required placeholder="••••••••" />
+            </div>
+
+            <div class="form-group">
+              <label>{{ i18n.currentLang() === 'ar' ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password' }} <span class="required">*</span></label>
+              <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required placeholder="••••••••" />
+            </div>
+
+            <div class="form-actions" style="margin-top: 15px;">
+              <button type="submit" class="btn btn-primary btn-save" [disabled]="isSubmitting()">
+                <span *ngIf="!isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'حفظ كلمة المرور' : 'Update Password' }}</span>
+                <span *ngIf="isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'جاري الحفظ...' : 'Saving...' }}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 3. Notifications Tab -->
+      <div class="tab-pane animate-fade-in" *ngIf="activeTab() === 'notifications'">
+        <div class="settings-card-glass">
+          <div class="notifications-header-row">
+            <h2 class="card-title" style="margin: 0;">{{ i18n.currentLang() === 'ar' ? 'الإشعارات وسجلات النظام الفنية' : 'System Notifications & Health Logs' }}</h2>
+            <button class="btn btn-secondary btn-sm" (click)="notificationService.markAllAsRead()" *ngIf="notificationService.unreadCount() > 0">
+              {{ i18n.currentLang() === 'ar' ? 'تحديد الكل كمقروء' : 'Mark All Read' }}
+            </button>
+          </div>
+          <p class="card-subtitle">{{ i18n.currentLang() === 'ar' ? 'استعراض التنبيهات المباشرة الواردة من النظام ومحاولات التسجيل الجديدة.' : 'Review real-time log alerts and client company registration inquiries.' }}</p>
+
+          <div class="notifications-list-box" style="margin-top: 20px;">
+            <div class="no-notifs-tpl" *ngIf="notificationService.notifications().length === 0">
+              <i class="fa-solid fa-bell-slash"></i>
+              <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد إشعارات حالياً' : 'No active notifications at the moment' }}</p>
+            </div>
+
+            <div class="notification-alert-item animate-reveal" 
+                 *ngFor="let item of notificationService.notifications()"
+                 [class.unread]="!item.isRead"
+                 [class.info]="item.type === 'info'"
+                 [class.warning]="item.type === 'warning'"
+                 [class.success]="item.type === 'success'"
+                 [class.danger]="item.type === 'danger'">
+              
+              <div class="alert-icon-box">
+                <i class="fa-solid fa-circle-info" *ngIf="item.type === 'info'"></i>
+                <i class="fa-solid fa-triangle-exclamation" *ngIf="item.type === 'warning'"></i>
+                <i class="fa-solid fa-circle-check" *ngIf="item.type === 'success'"></i>
+                <i class="fa-solid fa-circle-xmark" *ngIf="item.type === 'danger'"></i>
+              </div>
+
+              <div class="alert-content-box">
+                <h4 class="alert-title">{{ i18n.currentLang() === 'ar' ? item.titleAr : item.titleEn }}</h4>
+                <p class="alert-description">{{ i18n.currentLang() === 'ar' ? item.descriptionAr : item.descriptionEn }}</p>
+                <span class="alert-time">{{ i18n.currentLang() === 'ar' ? item.timeAr : item.timeEn }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Tenants tab (Corporate Accounts Management) -->
+      <div class="tab-pane animate-fade-in" *ngIf="activeTab() === 'tenants'">
+        <div class="settings-card-glass">
+          <h2 class="card-title">{{ i18n.currentLang() === 'ar' ? 'إدارة طلبات تسجيل حسابات الشركات' : 'Corporate Accounts Registration Management' }}</h2>
+          <p class="card-subtitle">
+            {{ i18n.currentLang() === 'ar' ? 'مراجعة وتفعيل أو رفض طلبات انضمام الشركات الجديدة المسجلة في وضع الانتظار.' : 'Review, approve, or reject company registration requests currently in pending status.' }}
+          </p>
+
+          <div class="tenants-approval-box" style="margin-top: 25px;">
+            <div class="loading-tenants-tpl" *ngIf="loadingTenants()">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+              <p>{{ i18n.currentLang() === 'ar' ? 'جاري تحميل الشركات...' : 'Loading registered companies...' }}</p>
+            </div>
+
+            <div class="no-tenants-tpl" *ngIf="!loadingTenants() && tenantsList().length === 0">
+              <i class="fa-solid fa-folder-open"></i>
+              <p>{{ i18n.currentLang() === 'ar' ? 'لا توجد شركات مسجلة في النظام' : 'No registered companies found' }}</p>
+            </div>
+
+            <!-- List of Companies -->
+            <div class="corporate-request-list" *ngIf="!loadingTenants() && tenantsList().length > 0">
+              <div class="corp-request-card animate-reveal" 
+                   *ngFor="let tenant of tenantsList()"
+                   [class.pending-card]="tenant.ownerStatus === 'Pending'"
+                   [class.rejected-card]="tenant.ownerStatus === 'Rejected'">
+                
+                <div class="corp-card-header">
+                  <div class="corp-title-group">
+                    <span class="corp-avatar">
+                      <i class="fa-solid fa-building"></i>
+                    </span>
+                    <div>
+                      <h3 class="corp-name">{{ tenant.name }}</h3>
+                      <p class="corp-owner">{{ i18n.currentLang() === 'ar' ? 'المالك:' : 'Owner:' }} {{ tenant.ownerName }} ({{ tenant.ownerEmail }})</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Status Badge -->
+                  <div class="corp-status-badge">
+                    <span class="badge" 
+                          [class.badge-warning]="tenant.ownerStatus === 'Pending'" 
+                          [class.badge-success]="tenant.ownerStatus === 'Active' && tenant.isActive"
+                          [class.badge-danger]="tenant.ownerStatus === 'Rejected' || !tenant.isActive">
+                      {{ tenant.ownerStatus === 'Pending' ? (i18n.currentLang() === 'ar' ? 'معلق بانتظار الموافقة' : 'Pending Approval') : 
+                         tenant.ownerStatus === 'Rejected' ? (i18n.currentLang() === 'ar' ? 'تم الرفض' : 'Rejected') : 
+                         tenant.isActive ? (i18n.currentLang() === 'ar' ? 'نشط' : 'Active') : (i18n.currentLang() === 'ar' ? 'معلق سداد' : 'Suspended') }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="corp-card-body">
+                  <div class="corp-detail-item">
+                    <i class="fa-solid fa-tags"></i>
+                    <span>{{ i18n.currentLang() === 'ar' ? 'باقة الاشتراك:' : 'Subscription Plan:' }} {{ tenant.price === 0 ? (i18n.currentLang() === 'ar' ? 'تجريبية مجانية (3 أيام)' : 'Free Trial (3 Days)') : tenant.price + ' $ / شهر' }}</span>
+                  </div>
+                  <div class="corp-detail-item">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>{{ i18n.currentLang() === 'ar' ? 'حد الذكاء الاصطناعي:' : 'AI limit:' }} {{ tenant.aiLimit }} {{ i18n.currentLang() === 'ar' ? 'طلب' : 'queries' }}</span>
+                  </div>
+                  <div class="corp-detail-item">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>{{ i18n.currentLang() === 'ar' ? 'العنوان:' : 'Address:' }} {{ tenant.address || (i18n.currentLang() === 'ar' ? 'غير محدد' : 'Not specified') }}</span>
+                  </div>
+                  <div class="corp-detail-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>{{ i18n.currentLang() === 'ar' ? 'المحمول:' : 'Mobile:' }} {{ tenant.phone || (i18n.currentLang() === 'ar' ? 'غير محدد' : 'Not specified') }}</span>
+                  </div>
+                </div>
+
+                <!-- Approval Actions Panel -->
+                <div class="corp-card-footer" *ngIf="tenant.ownerStatus === 'Pending'">
+                  <div class="approval-buttons">
+                    <button class="btn btn-success btn-sm btn-approve" (click)="approveOrRejectTenant(tenant.tenantId, true)">
+                      <i class="fa-solid fa-check"></i>
+                      <span>{{ i18n.currentLang() === 'ar' ? 'موافقة وتفعيل الحساب' : 'Approve & Activate' }}</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm btn-reject" (click)="approveOrRejectTenant(tenant.tenantId, false)">
+                      <i class="fa-solid fa-xmark"></i>
+                      <span>{{ i18n.currentLang() === 'ar' ? 'رفض الطلب' : 'Reject' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </main>
+
   </div>
+
 </div>
