@@ -10,7 +10,13 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // Not logged in → redirect to login, preserve the intended URL
+  const token = localStorage.getItem('rasd_jwt_token');
+  const session = localStorage.getItem('rasd_user_session');
+
+  if (token && session) {
+    authService.clearSession();
+  }
+
   return router.createUrlTree(['/login'], {
     queryParams: { returnUrl: state.url }
   });

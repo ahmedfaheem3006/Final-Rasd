@@ -87,7 +87,7 @@
     "id": "enterprise",
     "nameAr": "\u0627\u0644\u0645\u0624\u0633\u0633\u0627\u062A",
     "nameEn": "Enterprise",
-    "price": 300,
+    "price": 350,
     "periodAr": "\u0634\u0647\u0631",
     "periodEn": "mo",
     "taglineAr": "\u0645\u062E\u0635\u0635\u0629 \u0644\u0644\u0634\u0631\u0643\u0627\u062A \u0627\u0644\u0643\u0628\u0631\u0649 \u0648\u0627\u0644\u0645\u0646\u0634\u0622\u062A \u0627\u0644\u0636\u062E\u0645\u0629.",
@@ -127,26 +127,26 @@
   },
   {
     "id": "free",
-    "nameAr": "الباقة المجانية",
+    "nameAr": "\u0627\u0644\u0628\u0627\u0642\u0629 \u0627\u0644\u0645\u062C\u0627\u0646\u064A\u0629",
     "nameEn": "Free Trial",
     "price": 0,
-    "periodAr": "3 أيام",
+    "periodAr": "3 \u0623\u064A\u0627\u0645",
     "periodEn": "3 days",
-    "taglineAr": "فترة تجريبية مجانية كاملة الميزات صالحة للاستخدام لمدة 3 أيام فقط.",
+    "taglineAr": "\u0641\u062A\u0631\u0629 \u062A\u062C\u0631\u064A\u0628\u064A\u0629 \u0645\u062C\u0627\u0646\u064A\u0629 \u0643\u0627\u0645\u0644\u0629 \u0627\u0644\u0645\u064A\u0632\u0627\u062A \u0635\u0627\u0644\u062D\u0629 \u0644\u0644\u0627\u0633\u062A\u062E\u062F\u0627\u0645 \u0644\u0645\u062F\u0629 3 \u0623\u064A\u0627\u0645 \u0641\u0642\u0637.",
     "taglineEn": "Full-featured free trial valid for 3 days only.",
     "features": [
       {
-        "textAr": "الوصول الكامل للميزات كـ Owner",
+        "textAr": "\u0627\u0644\u0648\u0635\u0648\u0644 \u0627\u0644\u0643\u0627\u0645\u0644 \u0644\u0644\u0645\u064A\u0632\u0627\u062A \u0643\u0640 Owner",
         "textEn": "Full Owner Features Access",
         "included": true
       },
       {
-        "textAr": "100 طلب ذكاء اصطناعي إجمالاً",
+        "textAr": "100 \u0637\u0644\u0628 \u0630\u0643\u0627\u0621 \u0627\u0635\u0637\u0646\u0627\u0639\u064A \u0625\u062C\u0645\u0627\u0644\u0627\u064B",
         "textEn": "100 AI Queries total",
         "included": true
       },
       {
-        "textAr": "صالحة لمدة 3 أيام فقط",
+        "textAr": "\u0635\u0627\u0644\u062D\u0629 \u0644\u0645\u062F\u0629 3 \u0623\u064A\u0627\u0645 \u0641\u0642\u0637",
         "textEn": "Valid for 3 days only",
         "included": true
       }

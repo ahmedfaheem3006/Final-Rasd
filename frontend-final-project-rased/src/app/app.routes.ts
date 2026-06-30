@@ -111,37 +111,37 @@ export const routes: Routes = [
         path: 'owner/deals',
         loadComponent: () => import('./pages/owner-admin/deals-pipeline/deals-pipeline').then(m => m.DealsPipeline),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin'] }
+        data: { roles: ['owner-admin'], permission: 'isCrmEnabled' }
       },
       {
         path: 'owner/reports',
         loadComponent: () => import('./pages/owner-admin/reports/reports').then(m => m.Reports),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin'] }
+        data: { roles: ['owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'owner/meetings',
         loadComponent: () => import('./pages/owner-admin/meetings/meetings').then(m => m.Meetings),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin'] }
+        data: { roles: ['owner-admin'], permission: 'isMeetingsEnabled' }
       },
       {
         path: 'owner/ai-assistant',
         loadComponent: () => import('./pages/owner-admin/ai-assistant/ai-assistant').then(m => m.AiAssistant),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin', 'employee-manager'] }
+        data: { roles: ['owner-admin', 'employee-manager'], permission: 'isAiEnabled' }
       },
       {
         path: 'owner/analyze-contract',
         loadComponent: () => import('./pages/owner-admin/analyze-contract/analyze-contract').then(m => m.AnalyzeContract),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin', 'hr'] }
+        data: { roles: ['owner-admin', 'hr'], permission: 'isAiEnabled' }
       },
       {
         path: 'owner/transcribe-meeting',
         loadComponent: () => import('./pages/owner-admin/transcribe-meeting/transcribe-meeting').then(m => m.TranscribeMeeting),
         canActivate: [roleGuard],
-        data: { roles: ['owner-admin', 'hr'] }
+        data: { roles: ['owner-admin', 'hr'], permission: 'isAiEnabled' }
       },
       {
         path: 'owner/leaves',
@@ -158,7 +158,8 @@ export const routes: Routes = [
       {
         path: 'meetings',
         loadComponent: () => import('./pages/owner-admin/meetings/meetings').then(m => m.Meetings),
-        canActivate: [authGuard]
+        canActivate: [roleGuard],
+        data: { permission: 'isMeetingsEnabled' }
       },
 
       // ── Accountant ────────────────────────────────────────────────────────
@@ -166,79 +167,79 @@ export const routes: Routes = [
         path: 'accountant/dashboard',
         loadComponent: () => import('./pages/accountant/dashboard/dashboard').then(m => m.AccountantDashboard),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/finance',
         loadComponent: () => import('./pages/accountant/finance-overview/finance-overview').then(m => m.FinanceOverview),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/clients',
         loadComponent: () => import('./pages/accountant/clients/clients').then(m => m.AccountantClients),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/clients/:id',
         loadComponent: () => import('./pages/accountant/client-detail/client-detail').then(m => m.ClientDetail),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/customers',
         loadComponent: () => import('./pages/accountant/customers-readonly/customers-readonly').then(m => m.CustomersReadonly),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/contracts',
         loadComponent: () => import('./pages/accountant/contracts/contracts').then(m => m.Contracts),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/contracts/:id',
         loadComponent: () => import('./pages/accountant/contract-detail/contract-detail').then(m => m.ContractDetail),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/invoices',
         loadComponent: () => import('./pages/accountant/invoices/invoices').then(m => m.Invoices),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/invoices/:id',
         loadComponent: () => import('./pages/accountant/invoice-detail/invoice-detail').then(m => m.InvoiceDetail),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/payments',
         loadComponent: () => import('./pages/accountant/payments/payments').then(m => m.PaymentsComponent),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/payments/:id',
         loadComponent: () => import('./pages/accountant/payment-detail/payment-detail').then(m => m.PaymentDetailComponent),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/expenses',
         loadComponent: () => import('./pages/accountant/expenses/expenses').then(m => m.ExpensesComponent),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
       {
         path: 'accountant/reports',
         loadComponent: () => import('./pages/accountant/reports/reports').then(m => m.ReportsComponent),
         canActivate: [roleGuard],
-        data: { roles: ['accountant', 'owner-admin'] }
+        data: { roles: ['accountant', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
 
       // ── Sales Manager ─────────────────────────────────────────────────────
@@ -246,49 +247,49 @@ export const routes: Routes = [
         path: 'sales-manager/dashboard',
         loadComponent: () => import('./pages/sales-manager/sales-manager-dashboard/sales-manager-dashboard').then(m => m.SalesManagerDashboard),
         canActivate: [roleGuard],
-        data: { roles: ['sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-manager', 'owner-admin'], permission: 'isCrmEnabled' }
       },
       {
         path: 'sales-manager/team',
         loadComponent: () => import('./pages/sales-manager/sales-team/sales-team').then(m => m.SalesTeam),
         canActivate: [roleGuard],
-        data: { roles: ['sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-manager', 'owner-admin'], permission: 'isCrmEnabled' }
       },
       {
         path: 'sales-manager/customers',
         loadComponent: () => import('./pages/sales-manager/customers/customers').then(m => m.Customers),
         canActivate: [roleGuard],
-        data: { roles: ['sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-manager', 'owner-admin'], permission: 'isCrmEnabled' }
       },
       {
         path: 'sales-manager/deals',
         loadComponent: () => import('./pages/sales-manager/deals-pipeline/deals-pipeline').then(m => m.SalesManagerDealsPipeline),
         canActivate: [roleGuard],
-        data: { roles: ['sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-manager', 'owner-admin'], permission: 'isCrmEnabled' }
       },
       {
         path: 'sales-manager/tasks',
         loadComponent: () => import('./pages/sales-manager/tasks/tasks').then(m => m.SalesManagerTasks),
         canActivate: [roleGuard],
-        data: { roles: ['sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-manager', 'owner-admin'], permission: 'isTasksEnabled' }
       },
       {
         path: 'sales-manager/ai-assistant',
         loadComponent: () => import('./pages/sales-manager/ai-assistant/ai-assistant').then(m => m.SalesManagerAiAssistant),
         canActivate: [roleGuard],
-        data: { roles: ['sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-manager', 'owner-admin'], permission: 'isAiEnabled' }
       },
       {
         path: 'sales-manager/analyze-contract',
         loadComponent: () => import('./pages/sales-manager/analyze-contract/analyze-contract').then(m => m.SmAnalyzeContract),
         canActivate: [roleGuard],
-        data: { roles: ['sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-manager', 'owner-admin'], permission: 'isAiEnabled' }
       },
       {
         path: 'sales-manager/contracts',
         loadComponent: () => import('./pages/sales-manager/contracts/contracts').then(m => m.SmContracts),
         canActivate: [roleGuard],
-        data: { roles: ['sales-manager'] }
+        data: { roles: ['sales-manager'], permission: 'isCrmEnabled' }
       },
 
       // ── Employee Manager ──────────────────────────────────────────────────
@@ -302,13 +303,13 @@ export const routes: Routes = [
         path: 'emp-manager/tasks',
         loadComponent: () => import('./pages/employee-manager/team-tasks-board/team-tasks-board').then(m => m.TeamTasksBoard),
         canActivate: [roleGuard],
-        data: { roles: ['employee-manager', 'owner-admin'] }
+        data: { roles: ['employee-manager', 'owner-admin'], permission: 'isTasksEnabled' }
       },
       {
         path: 'emp-manager/meetings',
         loadComponent: () => import('./pages/employee-manager/meetings/meetings').then(m => m.EmployeeManagerMeetings),
         canActivate: [roleGuard],
-        data: { roles: ['employee-manager', 'owner-admin'] }
+        data: { roles: ['employee-manager', 'owner-admin'], permission: 'isMeetingsEnabled' }
       },
       {
         path: 'emp-manager/leaves',
@@ -350,7 +351,7 @@ export const routes: Routes = [
         path: 'hr/reports',
         loadComponent: () => import('./pages/employee-manager/reports/reports').then(m => m.EmployeeManagerReports),
         canActivate: [roleGuard],
-        data: { roles: ['hr', 'owner-admin'] }
+        data: { roles: ['hr', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
 
 
@@ -360,13 +361,13 @@ export const routes: Routes = [
         path: 'employee/tasks',
         loadComponent: () => import('./pages/employee/my-tasks/my-tasks').then(m => m.MyTasks),
         canActivate: [roleGuard],
-        data: { roles: ['employee', 'employee-manager', 'owner-admin', 'hr'] }
+        data: { roles: ['employee', 'employee-manager', 'owner-admin', 'hr'], permission: 'isTasksEnabled' }
       },
       {
         path: 'employee/tasks/:id',
         loadComponent: () => import('./pages/employee/task-detail/task-detail').then(m => m.TaskDetail),
         canActivate: [roleGuard],
-        data: { roles: ['employee', 'employee-manager', 'owner-admin', 'hr'] }
+        data: { roles: ['employee', 'employee-manager', 'owner-admin', 'hr'], permission: 'isTasksEnabled' }
       },
       {
         path: 'employee/attendance',
@@ -392,31 +393,31 @@ export const routes: Routes = [
         path: 'sales-rep/dashboard',
         loadComponent: () => import('./pages/sales-rep/sales-dashboard/sales-dashboard').then(m => m.SalesDashboard),
         canActivate: [roleGuard],
-        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'], permission: 'isCrmEnabled' }
       },
       {
         path: 'sales-rep/customers',
         loadComponent: () => import('./pages/sales-rep/sales-customers/sales-customers').then(m => m.SalesCustomers),
         canActivate: [roleGuard],
-        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'], permission: 'isCrmEnabled' }
       },
       {
         path: 'sales-rep/deals',
         loadComponent: () => import('./pages/sales-rep/sales-deals/sales-deals').then(m => m.SalesDeals),
         canActivate: [roleGuard],
-        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'], permission: 'isCrmEnabled' }
       },
       {
         path: 'sales-rep/tasks',
         loadComponent: () => import('./pages/sales-rep/sales-tasks/sales-tasks').then(m => m.SalesTasks),
         canActivate: [roleGuard],
-        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'], permission: 'isTasksEnabled' }
       },
       {
         path: 'sales-rep/ai-assistant',
         loadComponent: () => import('./pages/sales-rep/ai-assistant/ai-assistant').then(m => m.SalesRepAiAssistant),
         canActivate: [roleGuard],
-        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'] }
+        data: { roles: ['sales-rep', 'sales-manager', 'owner-admin'], permission: 'isAiEnabled' }
       }
     ]
   },

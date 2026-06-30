@@ -50,7 +50,7 @@ export class MessagesComponent implements OnInit {
 
   loadMessages() {
     this.isLoading.set(true);
-    this.http.get<ContactMessage[]>('http://localhost:5092/api/Contact/messages').subscribe({
+    this.http.get<ContactMessage[]>('http://localhost:5292/api/Contact/messages').subscribe({
       next: (data) => {
         this.messages.set(data || []);
         this.isLoading.set(false);

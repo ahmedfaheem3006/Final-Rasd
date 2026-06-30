@@ -380,6 +380,14 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
     if (this.workflowObserver) {
       this.workflowObserver.disconnect();
     }
+    // Clean up cascade animation interval and observer
+    if (this.cascadeInterval) {
+      clearInterval(this.cascadeInterval);
+      this.cascadeInterval = null;
+    }
+    if (this.cascadeObserver) {
+      this.cascadeObserver.disconnect();
+    }
   }
 
   ngAfterViewInit() {

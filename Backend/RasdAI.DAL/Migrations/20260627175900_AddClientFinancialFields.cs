@@ -13,19 +13,17 @@ namespace RasdAI.DAL.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<DateTime>(
-                name: "CreatedAt",
-                table: "Users",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('Users', 'CreatedAt') IS NULL
+BEGIN
+    ALTER TABLE [Users] ADD [CreatedAt] datetime2 NOT NULL DEFAULT '0001-01-01T00:00:00.0000000';
+END");
 
-            migrationBuilder.AddColumn<string>(
-                name: "PhoneNumber",
-                table: "Users",
-                type: "nvarchar(50)",
-                maxLength: 50,
-                nullable: true);
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('Users', 'PhoneNumber') IS NULL
+BEGIN
+    ALTER TABLE [Users] ADD [PhoneNumber] nvarchar(50) NULL;
+END");
 
             migrationBuilder.AddColumn<string>(
                 name: "City",
@@ -245,13 +243,17 @@ namespace RasdAI.DAL.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
 
-            migrationBuilder.DropColumn(
-                name: "CreatedAt",
-                table: "Users");
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('Users', 'CreatedAt') IS NOT NULL
+BEGIN
+    ALTER TABLE [Users] DROP COLUMN [CreatedAt];
+END");
 
-            migrationBuilder.DropColumn(
-                name: "PhoneNumber",
-                table: "Users");
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('Users', 'PhoneNumber') IS NOT NULL
+BEGIN
+    ALTER TABLE [Users] DROP COLUMN [PhoneNumber];
+END");
 
             migrationBuilder.DropColumn(
                 name: "City",

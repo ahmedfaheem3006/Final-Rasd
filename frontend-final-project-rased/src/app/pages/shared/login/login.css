@@ -10,9 +10,9 @@
   --accent-glow-subtle: rgba(139, 92, 246, 0.15);
   --text-link: #a78bfa;          /* Vibrant purple for links in dark mode */
   --text-muted-custom: #8a99ad;  /* Better contrast muted text in dark mode */
-  --blob-blend: screen;
-  --blob-opacity: 0.45;
-  --blob-blur: 120px;
+  --blob-blend: normal;
+  --blob-opacity: 0.25;
+  --blob-blur: 12px;
 }
 
 :host-context(.light-theme) {
@@ -23,8 +23,8 @@
   --text-link: #4318ff;          /* Deep purple for links in light mode */
   --text-muted-custom: #5c6b84;  /* Darker gray for better contrast in light mode */
   --blob-blend: normal;
-  --blob-opacity: 0.18;          /* Clean visible pastel glow */
-  --blob-blur: 100px;
+  --blob-opacity: 0.1;
+  --blob-blur: 8px;
 }
 
 .login-wrapper {
@@ -63,49 +63,59 @@
 .blob-1 {
   top: -15%;
   left: -10%;
-  width: 55vw;
-  height: 55vw;
+  width: 45vw;
+  height: 45vw;
   background: radial-gradient(circle, #4318ff 0%, rgba(67, 24, 255, 0) 70%);
-  animation: float-blob-1 25s infinite alternate ease-in-out;
+  animation: float-blob-1 35s infinite alternate ease-in-out;
 }
 
 .blob-2 {
   bottom: -20%;
   right: -8%;
-  width: 50vw;
-  height: 50vw;
+  width: 40vw;
+  height: 40vw;
   background: radial-gradient(circle, #0ea5e9 0%, rgba(14, 165, 233, 0) 70%);
-  animation: float-blob-2 20s infinite alternate ease-in-out;
+  animation: float-blob-2 30s infinite alternate ease-in-out;
 }
 
 .blob-3 {
   top: 35%;
   left: 25%;
-  width: 40vw;
-  height: 40vw;
+  width: 35vw;
+  height: 35vw;
   background: radial-gradient(circle, #9f7aea 0%, rgba(159, 122, 234, 0) 70%);
-  animation: float-blob-3 22s infinite alternate ease-in-out;
+  animation: float-blob-3 32s infinite alternate ease-in-out;
+}
+
+/* Performance: promote animated blobs to their own compositor layer */
+.blob {
+  will-change: transform;
+}
+
+/* Respect user motion preferences to prevent GPU overload */
+@media (prefers-reduced-motion: reduce) {
+  .blob {
+    animation: none;
+    transition: none;
+  }
 }
 
 @keyframes float-blob-1 {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(10%, 8%) scale(1.15); }
-  66% { transform: translate(-5%, 12%) scale(0.9); }
-  100% { transform: translate(-8%, -5%) scale(1.05); }
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(8%, 6%); }
+  100% { transform: translate(-4%, 8%); }
 }
 
 @keyframes float-blob-2 {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-12%, -6%) scale(0.85); }
-  66% { transform: translate(8%, -10%) scale(1.1); }
-  100% { transform: translate(5%, 5%) scale(0.95); }
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-8%, -4%); }
+  100% { transform: translate(4%, 4%); }
 }
 
 @keyframes float-blob-3 {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(6%, -15%) scale(1.2); }
-  66% { transform: translate(-10%, 5%) scale(0.85); }
-  100% { transform: translate(-6%, 10%) scale(1.1); }
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(5%, -10%); }
+  100% { transform: translate(-6%, 6%); }
 }
 
 /* ─── Left Form Area ─── */
@@ -692,6 +702,28 @@
   .form-body h2 {
     font-size: 1.75rem;
   }
+}
+
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-inline-end: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes formSlideUp {

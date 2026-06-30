@@ -1,7 +1,8 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, of, TimeoutError } from 'rxjs';
+import { tap, catchError, finalize, timeout } from 'rxjs/operators';
 
 export interface User {
   id?: number;
@@ -32,6 +33,7 @@ export class AuthService {
   currentUser = signal<User | null>(null);
   isAuthenticated = computed(() => this.currentUser() !== null);
   userRole = computed(() => this.currentUser()?.role || null);
+  loginLoading = signal(false);
 
   private mockUsers: Record<string, User> = {
     'admin@rasd.com': {
@@ -108,44 +110,82 @@ export class AuthService {
     }
   };
 
+  private _initialized = false;
+
   constructor() {
     this.loadSession();
-    // Defer execution to next macro-task to prevent circular dependency with authInterceptor
-    setTimeout(() => this.checkAndFillUserId(), 0);
+  }
+
+  init() {
+    if (this._initialized) return;
+    this._initialized = true;
+    // Only refresh permissions/profile if the user is already authenticated.
+    // Calling refreshPermissions() with a stale token on the login page causes
+    // a race condition: the stale 401 response can arrive AFTER a successful
+    // new login and wipe the fresh session via the interceptor.
+    if (this.currentUser()) {
+      this.checkAndFillUserId();
+      this.refreshPermissions();
+    }
   }
 
   private checkAndFillUserId() {
     const user = this.currentUser();
     if (user && !user.id) {
-      this.getProfile().subscribe({
+      this.http.get<any>(`${this.baseUrl}/profile`).pipe(
+        timeout(10_000),
+        catchError(() => of(null))
+      ).subscribe({
         next: (res) => {
           if (res && res.success && res.data) {
-            user.id = res.data.id;
-            this.currentUser.set({ ...user });
-            localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(user));
+            const updated = { ...user, id: res.data.id };
+            this.currentUser.set(updated);
+            localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(updated));
           }
         },
-        error: (err) => console.error('Failed to fill user ID from profile', err)
+        error: () => {}
       });
     }
   }
 
   private loadSession() {
+    const token = localStorage.getItem(AuthService.TOKEN_KEY);
+    // If the stored token is expired, clear everything so the user starts
+    // fresh instead of being auto-redirected to the dashboard with a stale
+    // session (which causes GPU-heavy transition freeze + 401 loops).
+    if (token && this.isTokenExpired(token)) {
+      this.clearSession();
+      return;
+    }
+
     const saved = localStorage.getItem(AuthService.STORAGE_KEY);
     if (saved) {
       try {
         this.currentUser.set(JSON.parse(saved));
-        this.refreshPermissions();
       } catch (e) {
         localStorage.removeItem(AuthService.STORAGE_KEY);
       }
     }
   }
 
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (!payload.exp) return false;
+      // exp is in seconds, Date.now() is in milliseconds
+      return payload.exp * 1000 <= Date.now();
+    } catch (e) {
+      return false;
+    }
+  }
+
   refreshPermissions() {
     const token = localStorage.getItem(AuthService.TOKEN_KEY);
     if (!token) return;
-    this.http.get<any>(`${this.baseUrl}/permissions`).subscribe({
+    this.http.get<any>(`${this.baseUrl}/permissions`).pipe(
+      timeout(10_000),
+      catchError(() => of(null))
+    ).subscribe({
       next: (res) => {
         if (res?.success && res.data) {
           const user = this.currentUser();
@@ -167,17 +207,20 @@ export class AuthService {
     });
   }
 
-  // Real API Login
   login(email: string, password?: string): Observable<any> {
+    this.loginLoading.set(true);
     const loginPayload = { email, password: password || '123456' };
     return this.http.post<any>(`${this.baseUrl}/login`, loginPayload).pipe(
+      timeout(15_000),
       tap(response => {
         if (response && response.success && response.data) {
           const apiUser = response.data;
           const token = apiUser.token;
-          localStorage.setItem(AuthService.TOKEN_KEY, token);
 
-          // Map API Role to Frontend Role
+          if (token) {
+            localStorage.setItem(AuthService.TOKEN_KEY, token);
+          }
+
           const mappedRole = this.mapRole(apiUser.role);
           const mappedUser: User = {
             id: apiUser.userId || apiUser.id,
@@ -196,25 +239,24 @@ export class AuthService {
 
           this.currentUser.set(mappedUser);
           localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(mappedUser));
-          this.navigateToDashboard(mappedRole);
         }
+      }),
+      finalize(() => {
+        this.loginLoading.set(false);
       })
     );
   }
 
-  // Mock Login Fallback
   loginMock(email: string): boolean {
     const sanitizedEmail = email.trim().toLowerCase();
     const user = this.mockUsers[sanitizedEmail];
-    
+
     if (user) {
       this.currentUser.set(user);
       localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(user));
-      this.navigateToDashboard(user.role);
       return true;
     }
-    
-    // Default fallback
+
     const fallbackUser: User = {
       name: 'زائر تجريبي',
       email: email,
@@ -225,7 +267,6 @@ export class AuthService {
     };
     this.currentUser.set(fallbackUser);
     localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(fallbackUser));
-    this.navigateToDashboard('owner-admin');
     return true;
   }
 
@@ -234,6 +275,12 @@ export class AuthService {
     localStorage.removeItem(AuthService.STORAGE_KEY);
     localStorage.removeItem(AuthService.TOKEN_KEY);
     this.router.navigate(['/login']);
+  }
+
+  clearSession() {
+    this.currentUser.set(null);
+    localStorage.removeItem(AuthService.STORAGE_KEY);
+    localStorage.removeItem(AuthService.TOKEN_KEY);
   }
 
   registerUser(registerDto: { fullName: string; email: string; password?: string; roleId: number; phoneNumber?: string; managerId?: number }): Observable<any> {
@@ -317,7 +364,7 @@ export class AuthService {
     return name[0] || 'ر';
   }
 
-  public navigateToDashboard(role: string) {
+  navigateToDashboard(role: string) {
     switch (role) {
       case 'system-admin':
         this.router.navigate(['/app/sys-admin/overview']);

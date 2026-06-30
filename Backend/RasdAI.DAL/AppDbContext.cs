@@ -350,6 +350,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.ContractNumber).IsRequired().HasMaxLength(100);
             entity.Property(e => e.ContractTitle).IsRequired().HasMaxLength(300);
             entity.Property(e => e.ContractType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.FileName).HasMaxLength(255);
             entity.Property(e => e.Description).HasMaxLength(2000);
             entity.Property(e => e.ReferenceNumber).HasMaxLength(100);
             entity.Property(e => e.Currency).HasMaxLength(10);

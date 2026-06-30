@@ -6,18 +6,27 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // First ensure user is authenticated
   if (!authService.isAuthenticated()) {
+    const token = localStorage.getItem('rasd_jwt_token');
+    const session = localStorage.getItem('rasd_user_session');
+    if (token && session) {
+      authService.clearSession();
+    }
     return router.createUrlTree(['/login'], {
       queryParams: { returnUrl: state.url }
     });
   }
 
   const currentRole = authService.userRole();
-  // Get the allowed roles from route data e.g. data: { roles: ['owner-admin', 'system-admin'] }
+  const requiredPermission = route.data?.['permission'] as string | undefined;
+  const user = authService.currentUser() as any;
+
+  if (requiredPermission && user?.[requiredPermission] === false) {
+    return router.createUrlTree(['/unauthorized']);
+  }
+
   const allowedRoles: string[] = route.data?.['roles'] ?? [];
 
-  // If no roles are specified on the route, allow all authenticated users
   if (allowedRoles.length === 0) {
     return true;
   }
@@ -26,6 +35,5 @@ export const roleGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // User is authenticated but doesn't have the required role
   return router.createUrlTree(['/unauthorized']);
 };

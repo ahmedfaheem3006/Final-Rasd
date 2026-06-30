@@ -9,6 +9,7 @@ public class Contract : ITenantEntity
     public Guid TenantId { get; set; }
     public int? ClientId { get; set; }
 
+    public string? FileName { get; set; }
     public string ContractNumber { get; set; } = string.Empty;
     public string ContractTitle { get; set; } = string.Empty;
     public string? FileName { get; set; }

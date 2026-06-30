@@ -50,10 +50,11 @@
       </button>
 
     </div>
+  </header>
 
-    <!-- Mobile Sidebar Drawer -->
-    <div class="mobile-backdrop" [class.open]="isMobileMenuOpen()" (click)="closeMobileMenu()"></div>
-    <aside class="mobile-menu" [class.open]="isMobileMenuOpen()">
+  <!-- Mobile Sidebar Drawer (outside header to avoid stacking context issues) -->
+  <div class="mobile-backdrop" [class.open]="isMobileMenuOpen()" (click)="closeMobileMenu()"></div>
+  <aside class="mobile-menu" [class.open]="isMobileMenuOpen()" [attr.aria-hidden]="!isMobileMenuOpen()">
       <!-- Drawer header: logo + close -->
       <div class="mobile-menu-head">
         <img
@@ -83,7 +84,6 @@
         <a routerLink="/register" class="btn btn-primary" (click)="closeMobileMenu()">{{ i18n.currentLang() === 'ar' ? 'سجل شركتك' : 'Get Started' }}</a>
       </div>
     </aside>
-  </header>
 
   <!-- ═══════════════ HERO SECTION ═══════════════ -->
   <section id="hero" class="hero-section">
