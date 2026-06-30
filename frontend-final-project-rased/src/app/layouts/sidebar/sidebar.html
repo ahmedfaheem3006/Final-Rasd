@@ -308,7 +308,21 @@
           </div>
           <span class="nav-label">{{ i18n.t('sidebar.ai_agent') }}</span>
         </a>
+
+        <a routerLink="/app/sales-manager/analyze-contract" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
+          <div class="nav-icon ai-icon">
+            <i class="fa-solid fa-file-contract"></i>
+          </div>
+          <span class="nav-label">{{ i18n.currentLang() === 'ar' ? 'تحليل العقود بالذكاء الاصطناعي' : 'AI Contract Analysis' }}</span>
+        </a>
       }
+
+      <a routerLink="/app/sales-manager/contracts" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
+        <div class="nav-icon">
+          <i class="fa-solid fa-file-signature"></i>
+        </div>
+        <span class="nav-label">{{ i18n.currentLang() === 'ar' ? 'العقود' : 'Contracts' }}</span>
+      </a>
     }
 
     <!-- 5. EMPLOYEE MANAGER -->

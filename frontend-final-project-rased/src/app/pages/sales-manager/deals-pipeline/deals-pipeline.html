@@ -1,145 +1,234 @@
-<div class="pipeline-container">
+<div class="pipeline-container" dir="rtl">
+
   <!-- Header -->
   <header class="page-header animate-fade-in">
     <div class="header-info">
-      <div class="breadcrumbs">{{ i18n.t('pipeline.breadcrumbs') }}</div>
-      <h1>{{ i18n.t('pipeline.title') }}</h1>
-      <p class="subtitle">{{ i18n.t('pipeline.subtitle') }}</p>
+      <div class="breadcrumbs">مدير المبيعات / خط الصفقات</div>
+      <h1>خط سير الصفقات</h1>
+      <p class="subtitle">تتبع صفقاتك عبر مراحل البيع وإدارة الفرص</p>
     </div>
     <div class="header-actions">
-      <button class="btn btn-secondary">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        <span>{{ i18n.t('pipeline.btn.list') }}</span>
+      <button class="btn btn-secondary" (click)="loadAll()" title="تحديث">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             [class.spin]="isLoading()">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
       </button>
-      <button class="btn btn-primary" (click)="openModal()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span>{{ i18n.t('pipeline.btn.new') }}</span>
+      <button class="btn btn-primary" (click)="openCreate()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>إضافة صفقة</span>
       </button>
     </div>
   </header>
 
-  <!-- Pipeline Stats -->
-  <div class="pipeline-stats animate-reveal">
-    @for (stage of stagesDisplay(); track stage.name) {
-      <div class="pipeline-stat-card" [ngClass]="'border-' + stage.color">
-        <div class="pstat-label">{{ stage.displayName }}</div>
-        <div class="pstat-value">{{ stage.value }}</div>
-        <div class="pstat-count"><span class="badge" [ngClass]="'badge-' + stage.color">{{ stage.displayCount }}</span></div>
+  <!-- Stats -->
+  <div class="stats-grid animate-reveal">
+    <div class="stat-card accent-primary">
+      <div class="stat-icon primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
       </div>
-    }
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().total }}</div>
+        <div class="stat-label">إجمالي الصفقات</div>
+      </div>
+    </div>
+    <div class="stat-card accent-info">
+      <div class="stat-icon info">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ formatAmount(stats().totalValue) }}</div>
+        <div class="stat-label">إجمالي القيمة</div>
+      </div>
+    </div>
+    <div class="stat-card accent-success">
+      <div class="stat-icon success">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().wonCount }}</div>
+        <div class="stat-label">صفقات مكتملة</div>
+      </div>
+    </div>
+    <div class="stat-card accent-warning">
+      <div class="stat-icon warning">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ stats().winRate }}%</div>
+        <div class="stat-label">نسبة الإغلاق</div>
+      </div>
+    </div>
   </div>
 
+  <!-- Loading -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>جاري تحميل الصفقات...</p>
+    </div>
+  }
+
   <!-- Kanban Board -->
-  <div class="kanban-board animate-reveal">
-    @for (stage of stagesDisplay(); track stage.name) {
-      <div class="kanban-column" [ngClass]="'col-' + stage.color">
-        <div class="column-header">
-          <div class="col-title">
-            <span class="col-dot" [ngClass]="stage.color"></span>
-            <span>{{ stage.displayName }}</span>
-          </div>
-          <span class="col-count">{{ stage.count }}</span>
-        </div>
-        <div class="deals-list">
-          @for (deal of stage.deals; track deal.client) {
-            <div class="deal-card">
-              <div class="deal-client">{{ deal.client }}</div>
-              <div class="deal-value">{{ deal.value }}</div>
-              <div class="deal-footer">
-                <div class="deal-agent">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 8 0v2"/></svg>
-                  {{ deal.agent }}
-                </div>
-                <div class="deal-date">{{ deal.date }}</div>
-              </div>
+  @if (!isLoading()) {
+    <div class="kanban-board animate-reveal">
+      @for (stage of stages; track stage.key) {
+        <div class="kanban-column" [ngClass]="'col-' + stage.color">
+
+          <!-- Column Header -->
+          <div class="column-header">
+            <div class="col-title">
+              <span class="col-dot" [ngClass]="stage.color"></span>
+              <span>{{ stage.label }}</span>
             </div>
-          }
-          <button class="add-deal-btn" (click)="openModal()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            {{ i18n.t('pipeline.btn.add') }}
-          </button>
+            <div class="col-meta">
+              <span class="col-count">{{ dealsByStage()[stage.key].length }}</span>
+              @if (dealsByStage()[stage.key].length > 0) {
+                <span class="col-value">{{ formatAmount(stageTotal(stage.key)) }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Deal Cards -->
+          <div class="deals-list">
+            @for (deal of dealsByStage()[stage.key]; track deal.id) {
+              <div class="deal-card">
+                <div class="deal-header">
+                  <div class="deal-client">{{ deal.clientName }}</div>
+                  <div class="deal-actions">
+                    <button class="icon-btn edit-btn" (click)="openEdit(deal)" title="تعديل">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button class="icon-btn delete-btn" (click)="confirmDelete(deal.id)" title="حذف">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                        <path d="M10 11v6"/><path d="M14 11v6"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="deal-amount">{{ formatAmount(deal.amount) }} ر.س</div>
+                <div class="deal-footer">
+                  <div class="deal-agent">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 8 0v2"/>
+                    </svg>
+                    {{ deal.assignedUserName || 'غير محدد' }}
+                  </div>
+                  <div class="deal-date">{{ deal.createdAt | date:'MM/dd' }}</div>
+                </div>
+                <!-- Move to stage -->
+                <div class="deal-move">
+                  <select class="move-select" [value]="deal.status" (change)="moveStage(deal, $any($event.target).value)">
+                    @for (s of stages; track s.key) {
+                      <option [value]="s.key" [selected]="deal.status === s.key">{{ s.label }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+            }
+            <button class="add-deal-btn" (click)="openCreate(stage.key)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              إضافة صفقة
+            </button>
+          </div>
+
         </div>
-      </div>
-    }
-  </div>
+      }
+    </div>
+  }
+
 </div>
 
 <!-- ═══════════════════════════════════════════════
-     ADD DEAL MODAL — Premium Enterprise Design
-     ═══════════════════════════════════════════════ -->
-<div #premiumModalOverlay class="premium-modal-overlay" [class.active]="showModal()" [class.light]="isLightTheme" (click)="closeModal()">
-  <div #premiumModal class="premium-modal" [class.active]="showModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-label]="i18n.t('pipeline.add_aria')">
+     Create / Edit Modal
+════════════════════════════════════════════════ -->
+@if (modalMode()) {
+  <div class="modal-backdrop" (click)="closeModal()"></div>
+  <div class="modal-card" dir="rtl" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modalMode() === 'create' ? 'إضافة صفقة جديدة' : 'تعديل الصفقة' }}</h3>
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
 
-    <!-- Header -->
-    <div class="premium-header">
-      <div class="premium-header-left">
-        <div class="premium-header-icon">
-          <i class="fa-solid fa-folder-plus"></i>
+      <div class="form-group">
+        <label>العميل <span class="req">*</span></label>
+        <select [(ngModel)]="form.clientId" class="form-ctrl">
+          <option [value]="0">-- اختر العميل --</option>
+          @for (c of clients(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>مندوب المبيعات</label>
+        <select [(ngModel)]="form.assignedUserId" class="form-ctrl">
+          <option [ngValue]="null">-- بدون تعيين --</option>
+          @for (u of users(); track u.id) {
+            <option [value]="u.id">{{ u.fullName }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>قيمة الصفقة <span class="req">*</span></label>
+          <input type="number" [(ngModel)]="form.amount" class="form-ctrl" placeholder="0.00" min="0">
         </div>
-        <div class="premium-header-text">
-          <h2 class="premium-title">{{ i18n.t('pipeline.modal.title') }}</h2>
-          <p class="premium-subtitle">{{ i18n.t('pipeline.modal.subtitle') }}</p>
+        <div class="form-group">
+          <label>المرحلة</label>
+          <select [(ngModel)]="form.status" class="form-ctrl">
+            @for (s of stages; track s.key) {
+              <option [value]="s.key">{{ s.label }}</option>
+            }
+          </select>
         </div>
       </div>
-      <button class="premium-close-btn" (click)="closeModal()" type="button">
-        <i class="fa-solid fa-xmark"></i>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="isSaving()">
+        @if (isSaving()) { <span class="mini-spin"></span> }
+        {{ isSaving() ? 'جاري الحفظ...' : (modalMode() === 'create' ? 'إنشاء الصفقة' : 'حفظ التعديلات') }}
       </button>
     </div>
-    <div class="premium-header-divider"></div>
-
-    <form (ngSubmit)="addDeal()">
-      <div class="premium-body">
-
-        <!-- Client Name -->
-        <div class="form-group-modal">
-          <label><i class="fa-solid fa-user-tie"></i> {{ i18n.t('pipeline.form.client') }}</label>
-          <div class="input-wrapper">
-            <i class="fa-solid fa-building input-icon"></i>
-            <input type="text" [(ngModel)]="newClient" name="newClient" required [placeholder]="i18n.t('pipeline.form.client_placeholder')" />
-          </div>
-        </div>
-
-        <!-- Deal Value -->
-        <div class="form-group-modal">
-          <label><i class="fa-solid fa-sack-dollar"></i> {{ i18n.t('pipeline.form.value') }}</label>
-          <div class="input-wrapper">
-            <i class="fa-solid fa-dollar-sign input-icon"></i>
-            <input type="number" lang="en" [(ngModel)]="newValue" name="newValue" required [placeholder]="i18n.t('pipeline.form.value_placeholder')" />
-          </div>
-        </div>
-
-        <!-- Deal Stage -->
-        <div class="form-group-modal">
-          <label><i class="fa-solid fa-chart-line"></i> {{ i18n.t('pipeline.form.stage') }}</label>
-          <div class="input-wrapper select-wrapper">
-            <i class="fa-solid fa-magnifying-glass-chart input-icon"></i>
-            <select [(ngModel)]="newDealStatus" name="newDealStatus">
-              <option value="Proposal">{{ i18n.t('pipeline.stage.prospects') }}</option>
-              <option value="Negotiation">{{ i18n.t('pipeline.stage.negotiation') }}</option>
-              <option value="Won">{{ i18n.t('pipeline.stage.closed') }}</option>
-            </select>
-            <i class="fa-solid fa-chevron-down select-arrow"></i>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Sticky Footer -->
-      <div class="premium-footer">
-        <button type="button" class="premium-btn premium-btn-ghost" (click)="closeModal()">
-          <i class="fa-solid fa-xmark"></i>
-          {{ i18n.t('pipeline.btn.cancel') }}
-        </button>
-        <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
-          @if (isSubmitting()) {
-            <span class="premium-btn-loader"></span>
-            {{ i18n.t('pipeline.btn.creating') }}
-          } @else {
-            <i class="fa-solid fa-circle-plus"></i>
-            {{ i18n.t('pipeline.btn.create') }}
-          }
-        </button>
-      </div>
-    </form>
   </div>
-</div>
+}
+
+<!-- Delete Confirm -->
+@if (deleteTargetId()) {
+  <div class="modal-backdrop" (click)="cancelDelete()"></div>
+  <div class="confirm-dialog" dir="rtl">
+    <div class="confirm-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/>
+      </svg>
+    </div>
+    <h3>حذف الصفقة</h3>
+    <p>هل أنت متأكد من حذف هذه الصفقة؟</p>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" (click)="cancelDelete()">إلغاء</button>
+      <button class="btn btn-danger" (click)="deleteDeal()">نعم، احذف</button>
+    </div>
+  </div>
+}

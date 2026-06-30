@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -96,9 +97,30 @@ public class AuthController : ControllerBase
         });
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin,HR,EmployeeManager")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR,EmployeeManager,SalesManager")]
     [HttpGet("users")]
     public async Task<IActionResult> GetUsers()
+    {
+        if (_tenantContext.TenantId == null)
+        {
+            return BadRequest(new { success = false, message = "معرف الشركة غير متوفر في السياق" });
+        }
+
+        var users = await _authService.GetTenantUsersAsync(_tenantContext.TenantId.Value);
+
+        // Sales managers only see sales-related accounts (SalesManager=4, Sales=5)
+        if (User.IsInRole("SalesManager"))
+        {
+            users = users.Where(u => u.RoleId == 4 || u.RoleId == 5).ToList();
+        }
+
+        return Ok(new { success = true, data = users });
+    }
+
+    // Returns all tenant employees regardless of role — used for contract party selection
+    [Authorize(Roles = "Owner,SystemAdmin,HR,EmployeeManager,SalesManager")]
+    [HttpGet("employees")]
+    public async Task<IActionResult> GetEmployees()
     {
         if (_tenantContext.TenantId == null)
         {

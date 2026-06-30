@@ -61,7 +61,7 @@ export class EmployeeAttendance implements OnInit {
   }
 
   loadTodayStatus() {
-    this.http.get<any>('http://localhost:5092/api/Attendances/today').subscribe({
+    this.http.get<any>('http://localhost:5292/api/Attendances/today').subscribe({
       next: (res) => {
         if (res && res.success && res.data) {
           this.todayStatus.set(res.data);
@@ -72,7 +72,7 @@ export class EmployeeAttendance implements OnInit {
   }
 
   performCheckIn() {
-    this.http.post<any>('http://localhost:5092/api/Attendances/check-in', {}).subscribe({
+    this.http.post<any>('http://localhost:5292/api/Attendances/check-in', {}).subscribe({
       next: (res) => {
         if (res && res.success) {
           this.toastService.success(res.message || 'تم تسجيل الحضور بنجاح', 'سجل الحضور');
@@ -86,7 +86,7 @@ export class EmployeeAttendance implements OnInit {
   }
 
   performCheckOut() {
-    this.http.post<any>('http://localhost:5092/api/Attendances/check-out', {}).subscribe({
+    this.http.post<any>('http://localhost:5292/api/Attendances/check-out', {}).subscribe({
       next: (res) => {
         if (res && res.success) {
           this.toastService.success(res.message || 'تم تسجيل الانصراف بنجاح', 'سجل الانصراف');
