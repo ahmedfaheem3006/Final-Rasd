@@ -26,11 +26,29 @@
       <div class="form-row col-2">
         <div class="form-group">
           <label>{{ i18n.currentLang() === 'ar' ? 'قيمة الاشتراك الشهري ($)' : 'Monthly Subscription ($)' }}</label>
-          <input type="number" [(ngModel)]="price" name="price" min="0" />
+          <select [(ngModel)]="price" name="price" (change)="onPricePlanChange()" required>
+            <option *ngFor="let p of availablePlans" [ngValue]="p.price">
+              {{ i18n.currentLang() === 'ar' ? p.nameAr : p.nameEn }} - ${{ p.price }} / {{ i18n.currentLang() === 'ar' ? p.periodAr : p.periodEn }}
+            </option>
+          </select>
         </div>
         <div class="form-group">
           <label>{{ i18n.currentLang() === 'ar' ? 'حد استهلاك الذكاء الاصطناعي (عدد العمليات)' : 'AI Capacity Limit (Requests/mo)' }}</label>
-          <input type="number" [(ngModel)]="aiLimit" name="aiLimit" min="0" />
+          <div class="ai-limit-wrapper">
+            <input type="number" [(ngModel)]="aiLimit" name="aiLimit" min="0" readonly />
+            <span *ngIf="aiLimit >= 999999" class="unlimited-badge">{{ i18n.currentLang() === 'ar' ? 'غير محدود' : 'Unlimited' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row col-2">
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'رقم الهاتف' : 'Phone Number' }}</label>
+          <input type="text" [(ngModel)]="phone" name="phone" [placeholder]="i18n.currentLang() === 'ar' ? '+966 55 000 0000' : '+1 555 000 0000'" />
+        </div>
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'العنوان / الموقع' : 'Address / Location' }}</label>
+          <input type="text" [(ngModel)]="location" name="location" [placeholder]="i18n.currentLang() === 'ar' ? 'الرياض، المملكة العربية السعودية' : 'Riyadh, Saudi Arabia'" />
         </div>
       </div>
 

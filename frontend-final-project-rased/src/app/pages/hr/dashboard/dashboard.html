@@ -1,0 +1,180 @@
+<div class="hr-dashboard-container animate-fade-in">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.isRtl() ? 'الموارد البشرية / لوحة التحكم' : 'HR / Dashboard' }}</div>
+      <h1>{{ i18n.isRtl() ? 'لوحة مؤشرات الموارد البشرية' : 'Human Resources Dashboard' }}</h1>
+      <p class="subtitle">{{ i18n.isRtl() ? 'نظرة عامة على القوى العاملة، كشف الرواتب، الإجازات النشطة وتنبيهات العقود' : 'Overview of workforce metrics, payroll status, active leaves, and contract alerts.' }}</p>
+    </div>
+    <div class="header-date">
+      <i class="fa-regular fa-calendar"></i>
+      <span>{{ i18n.isRtl() ? 'يونيو 2026' : 'June 2026' }}</span>
+    </div>
+  </header>
+
+  <!-- Metrics Grid -->
+  <div class="metrics-grid">
+    <div class="metric-card col-blue">
+      <div class="metric-header">
+        <span class="metric-title">{{ i18n.isRtl() ? 'إجمالي الموظفين' : 'Total Employees' }}</span>
+        <div class="metric-icon"><i class="fa-solid fa-users"></i></div>
+      </div>
+      <div class="metric-value">{{ stats().totalEmployees }}</div>
+      <div class="metric-footer success-text">
+        <i class="fa-solid fa-arrow-up"></i>
+        <span>{{ stats().employeesDiff }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card col-emerald">
+      <div class="metric-header">
+        <span class="metric-title">{{ i18n.isRtl() ? 'حضور اليوم' : 'Today\'s Attendance' }}</span>
+        <div class="metric-icon"><i class="fa-solid fa-user-check"></i></div>
+      </div>
+      <div class="metric-value">{{ stats().attendanceToday }}</div>
+      <div class="metric-footer">
+        <span>{{ stats().attendanceDiff }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card col-amber" [routerLink]="['/app/hr/leaves']">
+      <div class="metric-header">
+        <span class="metric-title">{{ i18n.isRtl() ? 'طلبات الإجازات المعلقة' : 'Pending Leaves' }}</span>
+        <div class="metric-icon"><i class="fa-solid fa-calendar-minus"></i></div>
+      </div>
+      <div class="metric-value">{{ stats().pendingLeaves }}</div>
+      <div class="metric-footer warning-text">
+        <span>{{ i18n.isRtl() ? 'تحتاج إلى مراجعة واعتماد' : 'Awaiting HR action' }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card col-purple" [routerLink]="['/app/hr/reports']">
+      <div class="metric-header">
+        <span class="metric-title">{{ i18n.isRtl() ? 'إجمالي الرواتب الشهرية' : 'Total Monthly Salaries' }}</span>
+        <div class="metric-icon"><i class="fa-solid fa-wallet"></i></div>
+      </div>
+      <div class="metric-value">{{ stats().monthlyPayroll }}</div>
+      <div class="metric-footer success-text">
+        <span>{{ stats().payrollDiff }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Workspace Grid -->
+  <div class="dashboard-workspace">
+    <!-- Left Column: Alerts & Shortcuts -->
+    <div class="workspace-col-left">
+      <!-- Alerts Card -->
+      <div class="glass-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-bell"></i> {{ i18n.isRtl() ? 'تنبيهات الموارد البشرية العاجلة' : 'Urgent HR Alerts' }}</h3>
+          <span class="badge-alert">{{ alerts().length }}</span>
+        </div>
+        <div class="alerts-list">
+          @for (alert of alerts(); track alert.id) {
+            <div class="alert-item" [ngClass]="'severity-' + alert.severity">
+              <div class="alert-indicator"></div>
+              <div class="alert-body">
+                <div class="alert-title-row">
+                  <span class="alert-user">{{ alert.user }}</span>
+                  <span class="alert-tag" [ngClass]="alert.type">{{ alert.type }}</span>
+                </div>
+                <p class="alert-detail">{{ alert.detail }}</p>
+              </div>
+              <button class="btn-action-alert" [title]="i18n.isRtl() ? 'معالجة التنبيه' : 'Resolve Alert'">
+                <i class="fa-solid fa-chevron-left" [class.fa-chevron-right]="!i18n.isRtl()"></i>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Quick Shortcuts -->
+      <div class="glass-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-rocket"></i> {{ i18n.isRtl() ? 'روابط الوصول السريع' : 'Quick Shortcuts' }}</h3>
+        </div>
+        <div class="shortcuts-grid">
+          <a [routerLink]="['/app/hr/employees']" class="shortcut-tile">
+            <div class="tile-icon icon-blue"><i class="fa-solid fa-address-book"></i></div>
+            <div class="tile-label">{{ i18n.isRtl() ? 'دليل ملفات الموظفين' : 'Employees Directory' }}</div>
+          </a>
+          <a [routerLink]="['/app/hr/leaves']" class="shortcut-tile">
+            <div class="tile-icon icon-amber"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="tile-label">{{ i18n.isRtl() ? 'طلبات الإجازات العامة' : 'Leave Approvals' }}</div>
+          </a>
+          <a [routerLink]="['/app/hr/recruitment']" class="shortcut-tile">
+            <div class="tile-icon icon-purple"><i class="fa-solid fa-briefcase"></i></div>
+            <div class="tile-label">{{ i18n.isRtl() ? 'بوابة التوظيف (ATS)' : 'Recruitment Pipeline' }}</div>
+          </a>
+          <a [routerLink]="['/app/hr/reports']" class="shortcut-tile">
+            <div class="tile-icon icon-emerald"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="tile-label">{{ i18n.isRtl() ? 'التقارير والمستندات' : 'Payroll & HR Reports' }}</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Payroll & Visual Chart -->
+    <div class="workspace-col-right">
+      <!-- Payroll Bar Chart -->
+      <div class="glass-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-chart-bar"></i> {{ i18n.isRtl() ? 'نمو إجمالي الرواتب (النصف الأول)' : 'Monthly Salaries Growth (H1)' }}</h3>
+          <span class="payroll-total">{{ i18n.isRtl() ? 'إجمالي الرواتب: $142.5k' : 'Total: $142.5k' }}</span>
+        </div>
+        
+        <div class="chart-container">
+          <div class="y-axis">
+            <span>$150k</span>
+            <span>$100k</span>
+            <span>$50k</span>
+            <span>$0k</span>
+          </div>
+          <div class="chart-bars">
+            @for (stat of payrollStats(); track stat.month) {
+              <div class="bar-wrapper">
+                <div class="bar-tooltip">{{ stat.amount | number }}</div>
+                <div 
+                  class="chart-bar" 
+                  [style.height.%]="(stat.amount / 150000) * 100"
+                ></div>
+                <span class="bar-label">{{ stat.month }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Activities Feed -->
+      <div class="glass-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-history"></i> {{ i18n.isRtl() ? 'أحدث النشاطات وحالة الأنظمة' : 'Recent HR Activities' }}</h3>
+        </div>
+        <div class="activities-timeline">
+          <div class="timeline-item">
+            <div class="timeline-marker marker-green"></div>
+            <div class="timeline-content">
+              <span class="time">10:45 AM</span>
+              <p>تم سحب الرواتب بنجاح لشهر يونيو وإصدار الكشف المؤقت</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker marker-blue"></div>
+            <div class="timeline-content">
+              <span class="time">أمس</span>
+              <p>قام الموظف <strong>فهد المطيري</strong> بتوقيع العقد السنوي الجديد رقم 2026-A</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker marker-purple"></div>
+            <div class="timeline-content">
+              <span class="time">منذ يومين</span>
+              <p>تم إدراج 3 مرشحين جدد في مرحلة المقابلة الشخصية لوظيفة مهندس برمجيات</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

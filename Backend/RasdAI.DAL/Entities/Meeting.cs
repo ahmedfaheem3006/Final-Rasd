@@ -10,6 +10,7 @@ public class Meeting : ITenantEntity
     public string VideoFilePath { get; set; } = string.Empty;
     public string Transcript { get; set; } = string.Empty;
     public string AISummary { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
     public Tenant Tenant { get; set; } = null!;

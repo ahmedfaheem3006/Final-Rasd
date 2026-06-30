@@ -6,7 +6,19 @@
       <h1 class="animate-gradient-text">{{ i18n.currentLang() === 'ar' ? 'تحليل العقود الذكي' : 'Smart Contract Analysis' }}</h1>
       <p class="subtitle">{{ i18n.currentLang() === 'ar' ? 'قم بتحميل ملف العقد بصيغة PDF لاستخراج البنود والالتزامات والمخاطر ومناقشتها فوراً' : 'Upload contract PDF to instantly extract terms, obligations, and risks, then chat about them' }}</p>
     </div>
+
+    <!-- Color Legend (center) -->
+    <div class="severity-legend">
+      <span class="legend-title">{{ i18n.isRtl() ? 'دليل الألوان:' : 'Legend:' }}</span>
+      <span class="legend-item legend-red">🔴 {{ i18n.isRtl() ? 'خطر بالغ' : 'Danger' }}</span>
+      <span class="legend-item legend-orange">🟠 {{ i18n.isRtl() ? 'تحذير' : 'Warning' }}</span>
+      <span class="legend-item legend-blue">🔵 {{ i18n.isRtl() ? 'معلومة' : 'Info' }}</span>
+      <span class="legend-item legend-green">🟢 {{ i18n.isRtl() ? 'آمن' : 'Safe' }}</span>
+    </div>
     <div class="header-actions">
+      <button (click)="showHistoryModal.set(true)" class="btn btn-secondary history-modal-btn" [title]="i18n.currentLang() === 'ar' ? 'سجل العقود' : 'Contract History'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </button>
       <button (click)="clearChat()" class="btn btn-secondary clear-btn" [title]="i18n.currentLang() === 'ar' ? 'مسح المحادثة' : 'Clear Chat'">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/></svg>
         <span>{{ i18n.currentLang() === 'ar' ? 'مسح المحادثة' : 'Clear Chat' }}</span>
@@ -40,7 +52,7 @@
     }
 
     <!-- Chat Window -->
-    <div class="chat-window card animate-slide-up" [class.full-width]="contractData()">
+    <div class="chat-window card animate-slide-up">
       <div #chatScrollContainer class="chat-messages">
         @for (msg of messages(); track $index) {
           <div class="chat-message" [ngClass]="msg.role">
@@ -88,8 +100,8 @@
     </div>
 
     <!-- Sidebar / Upload Area -->
-    @if (!contractData()) {
-      <div class="ai-sidebar animate-fade-in">
+    <div class="ai-sidebar animate-fade-in">
+      @if (!contractData()) {
         <!-- Upload Panel -->
         <div class="card upload-card animate-pulse-border">
           <input type="file" id="contractFileInput" (change)="onFileSelected($event)" accept=".pdf" style="display: none;" />
@@ -102,23 +114,57 @@
             <p>{{ i18n.currentLang() === 'ar' ? 'اضغط لاختيار ملف PDF أو اسحبه هنا' : 'Click to select PDF or drag it here' }}</p>
           </div>
         </div>
+      }
 
-        <!-- Suggestions -->
-        <div class="card suggestions-card animate-reveal">
-          <div class="card-header-s">
-            <h3>{{ i18n.t('ai.suggestions') }}</h3>
-            <p>{{ i18n.currentLang() === 'ar' ? 'مواضيع يمكنك الاستفسار عنها بعد تحميل العقد' : 'Topics you can query after uploading contract' }}</p>
-          </div>
-          <div class="suggestions-list">
-            @for (s of suggestions(); track s) {
-              <button class="suggestion-btn" style="cursor: not-allowed; opacity: 0.7;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                {{ s }}
-              </button>
-            }
-          </div>
+      <!-- Suggestions -->
+      <div class="card suggestions-card animate-reveal">
+        <div class="card-header-s">
+          <h3>{{ i18n.t('ai.suggestions') }}</h3>
+          <p>{{ i18n.currentLang() === 'ar' ? 'مواضيع يمكنك الاستفسار عنها' : 'Topics you can query' }}</p>
+        </div>
+        <div class="suggestions-list">
+          @for (s of suggestions(); track s) {
+            <button class="suggestion-btn" [style.cursor]="contractData() ? 'pointer' : 'not-allowed'" [style.opacity]="contractData() ? '1' : '0.7'" (click)="contractData() ? sendMessage(s) : null">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              {{ s }}
+            </button>
+          }
         </div>
       </div>
-    }
+
+    </div>
   </div>
 </div>
+
+<!-- Contract History Modal -->
+@if (showHistoryModal()) {
+  <div class="history-modal-overlay" (click)="showHistoryModal.set(false)">
+    <div class="history-modal" (click)="$event.stopPropagation()">
+      <div class="history-modal-header">
+        <div class="history-modal-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>{{ i18n.currentLang() === 'ar' ? 'سجل العقود المحللة' : 'Contract History' }}</span>
+        </div>
+        <button class="history-modal-close" (click)="showHistoryModal.set(false)">✕</button>
+      </div>
+      <div class="history-modal-body">
+        @if (contractHistory().length === 0) {
+          <p class="history-empty">{{ i18n.currentLang() === 'ar' ? 'لا توجد عقود سابقة' : 'No past contracts' }}</p>
+        }
+        @for (h of contractHistory(); track h.id) {
+          <div class="history-modal-item" [class.active]="activeContractId() === h.id" (click)="loadContractDetails(h.id); showHistoryModal.set(false)">
+            <div class="history-modal-item-info">
+              <span class="history-modal-item-title">{{ h.fileName }}</span>
+              <span class="history-modal-item-date">{{ h.createdAt | date:'yyyy-MM-dd HH:mm' }}</span>
+            </div>
+            <button class="history-modal-delete" (click)="deleteContractFromHistory(h.id, $event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+

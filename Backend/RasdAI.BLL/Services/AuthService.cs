@@ -42,6 +42,12 @@ public class AuthService : IAuthService
         }
 
         string companyName = "نظام رصد الذكي";
+        bool isCrmEnabled = true;
+        bool isInvoicesEnabled = true;
+        bool isTasksEnabled = true;
+        bool isMeetingsEnabled = true;
+        bool isAiEnabled = true;
+
         if (user.RoleId != 1) // Not SystemAdmin
         {
             var tenant = await _context.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.TenantId == user.TenantId);
@@ -49,9 +55,14 @@ public class AuthService : IAuthService
             {
                 if (!tenant.IsActive)
                 {
-                    throw new Exception("تم إيقاف عمل هذه الشركة مؤقتاً. يرجى التواصل مع إدارة النظام.");
+                    throw new Exception("الحساب تم وقفه بالفعل. يرجى التواصل مع إدارة النظام.");
                 }
                 companyName = tenant.Name;
+                isCrmEnabled = tenant.IsCrmEnabled;
+                isInvoicesEnabled = tenant.IsInvoicesEnabled;
+                isTasksEnabled = tenant.IsTasksEnabled;
+                isMeetingsEnabled = tenant.IsMeetingsEnabled;
+                isAiEnabled = tenant.IsAiEnabled;
             }
         }
 
@@ -65,7 +76,32 @@ public class AuthService : IAuthService
             Email = user.Email,
             Role = user.Role != null ? user.Role.Name : "Owner",
             TenantId = user.TenantId,
-            CompanyName = companyName
+            CompanyName = companyName,
+            IsCrmEnabled = isCrmEnabled,
+            IsInvoicesEnabled = isInvoicesEnabled,
+            IsTasksEnabled = isTasksEnabled,
+            IsMeetingsEnabled = isMeetingsEnabled,
+            IsAiEnabled = isAiEnabled
+        };
+    }
+
+    public async Task<object> GetUserPermissionsAsync(int userId)
+    {
+        var user = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null || user.RoleId == 1)
+            return new { isCrmEnabled = true, isInvoicesEnabled = true, isTasksEnabled = true, isMeetingsEnabled = true, isAiEnabled = true };
+
+        var tenant = await _context.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.TenantId == user.TenantId);
+        if (tenant == null)
+            return new { isCrmEnabled = true, isInvoicesEnabled = true, isTasksEnabled = true, isMeetingsEnabled = true, isAiEnabled = true };
+
+        return new
+        {
+            isCrmEnabled = tenant.IsCrmEnabled,
+            isInvoicesEnabled = tenant.IsInvoicesEnabled,
+            isTasksEnabled = tenant.IsTasksEnabled,
+            isMeetingsEnabled = tenant.IsMeetingsEnabled,
+            isAiEnabled = tenant.IsAiEnabled
         };
     }
 
@@ -167,7 +203,8 @@ public class AuthService : IAuthService
                 Email = u.Email,
                 RoleId = u.RoleId,
                 RoleName = u.Role.Name,
-                ManagerId = u.ManagerId
+                ManagerId = u.ManagerId,
+                Status = u.Status
             })
             .ToListAsync();
     }

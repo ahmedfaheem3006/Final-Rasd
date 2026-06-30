@@ -15,10 +15,10 @@
     <!-- Left Pane: Admin Info Card -->
     <div class="card profile-card animate-reveal">
       <div class="profile-avatar">
-        {{ authService.currentUser()?.avatarInitials || 'AD' }}
+        {{ authService.currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'SA' : (authService.currentUser()?.avatarInitials || 'AD') }}
       </div>
-      <h3 class="profile-name">{{ authService.currentUser()?.name }}</h3>
-      <span class="profile-role-badge">{{ authService.currentUser()?.roleLabel }}</span>
+      <h3 class="profile-name">{{ authService.currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'System Admin' : authService.currentUser()?.name }}</h3>
+      <span class="profile-role-badge">{{ authService.currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'System Admin' : authService.currentUser()?.roleLabel }}</span>
       
       <div class="divider"></div>
       
@@ -38,36 +38,78 @@
       </div>
     </div>
 
-    <!-- Right Pane: Password Change Card -->
-    <div class="card form-card animate-reveal">
-      <h3 class="section-title">{{ i18n.currentLang() === 'ar' ? 'تغيير كلمة المرور الآمنة' : 'Update Security Password' }}</h3>
-      <p class="section-subtitle">
-        {{ i18n.currentLang() === 'ar' ? 'ننصحك باستخدام كلمة مرور قوية تحتوي على رموز وأرقام وحروف لحماية حساب المشرف العام.' : 'Ensure a strong, unique password with symbols and numbers to protect root privileges.' }}
-      </p>
+    <!-- Right Pane: Password & Configurations Column -->
+    <div class="settings-right-pane">
+      <!-- Password Card -->
+      <div class="card form-card animate-reveal">
+        <h3 class="section-title">{{ i18n.currentLang() === 'ar' ? 'تغيير كلمة المرور الآمنة' : 'Update Security Password' }}</h3>
+        <p class="section-subtitle">
+          {{ i18n.currentLang() === 'ar' ? 'ننصحك باستخدام كلمة مرور قوية تحتوي على رموز وأرقام وحروف لحماية حساب المشرف العام.' : 'Ensure a strong, unique password with symbols and numbers to protect root privileges.' }}
+        </p>
 
-      <form (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label>{{ i18n.currentLang() === 'ar' ? 'كلمة المرور الحالية' : 'Current Password' }} <span class="required">*</span></label>
-          <input type="password" [(ngModel)]="currentPassword" name="currentPassword" required placeholder="••••••••" />
+        <form (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label>{{ i18n.currentLang() === 'ar' ? 'كلمة المرور الحالية' : 'Current Password' }} <span class="required">*</span></label>
+            <input type="password" [(ngModel)]="currentPassword" name="currentPassword" required placeholder="••••••••" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ i18n.currentLang() === 'ar' ? 'كلمة المرور الجديدة' : 'New Password' }} <span class="required">*</span></label>
+            <input type="password" [(ngModel)]="newPassword" name="newPassword" required placeholder="••••••••" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ i18n.currentLang() === 'ar' ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password' }} <span class="required">*</span></label>
+            <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required placeholder="••••••••" />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-submit" [disabled]="isSubmitting()">
+              <span *ngIf="!isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'حفظ كلمة المرور الجديدة' : 'Save Password' }}</span>
+              <span *ngIf="isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'جاري الحفظ...' : 'Saving...' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- System Configurations Card -->
+      <div class="card form-card animate-reveal" style="margin-top: 24px;">
+        <h3 class="section-title">{{ i18n.currentLang() === 'ar' ? 'إعدادات النظام العامة' : 'Global System Configurations' }}</h3>
+        <p class="section-subtitle">
+          {{ i18n.currentLang() === 'ar' ? 'التحكم في دعم الشركات الذكي بالذكاء الاصطناعي وتنبيهات الخوادم.' : 'Control AI Support and server alerts across all registered clients.' }}
+        </p>
+
+        <div class="settings-toggle-group">
+          <div class="toggle-setting-item">
+            <div class="toggle-info">
+              <h4>{{ i18n.currentLang() === 'ar' ? 'إدارة التنبيهات لجميع الشركات' : 'Global Notification Management' }}</h4>
+              <p>{{ i18n.currentLang() === 'ar' ? 'إرسال إشعارات البريد وتنبيهات النظام للمشتركين بشكل دوري.' : 'Send global system notifications and email updates to all companies.' }}</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="enableGlobalNotifications" name="enableGlobalNotifications" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-setting-item" style="margin-top: 20px;">
+            <div class="toggle-info">
+              <h4>{{ i18n.currentLang() === 'ar' ? 'التحكم في الدعم بالذكاء الاصطناعي (AI Support)' : 'AI Support Control' }}</h4>
+              <p>{{ i18n.currentLang() === 'ar' ? 'تفعيل نظام الفحص الذكي لتشخيص وإصلاح أخطاء الشركات تلقائياً.' : 'Enable system diagnostic monitors to fix corporate server errors autonomously.' }}</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="enableAiSupport" name="enableAiSupport" />
+              <span class="slider round"></span>
+            </label>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>{{ i18n.currentLang() === 'ar' ? 'كلمة المرور الجديدة' : 'New Password' }} <span class="required">*</span></label>
-          <input type="password" [(ngModel)]="newPassword" name="newPassword" required placeholder="••••••••" />
-        </div>
-
-        <div class="form-group">
-          <label>{{ i18n.currentLang() === 'ar' ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password' }} <span class="required">*</span></label>
-          <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required placeholder="••••••••" />
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn-submit" [disabled]="isSubmitting()">
-            <span *ngIf="!isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'حفظ كلمة المرور الجديدة' : 'Save Password' }}</span>
-            <span *ngIf="isSubmitting()">{{ i18n.currentLang() === 'ar' ? 'جاري الحفظ...' : 'Saving...' }}</span>
+        <div class="form-actions" style="margin-top: 28px;">
+          <button class="btn btn-primary btn-submit" (click)="saveSystemConfig()" [disabled]="isSavingConfig()">
+            <span *ngIf="!isSavingConfig()">{{ i18n.currentLang() === 'ar' ? 'حفظ إعدادات النظام' : 'Save Settings' }}</span>
+            <span *ngIf="isSavingConfig()">{{ i18n.currentLang() === 'ar' ? 'جاري الحفظ...' : 'Saving...' }}</span>
           </button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>

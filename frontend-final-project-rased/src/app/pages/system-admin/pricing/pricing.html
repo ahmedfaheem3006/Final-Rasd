@@ -1,0 +1,125 @@
+<div class="page-container animate-fade-in" [class.rtl]="i18n.isRtl()">
+  <!-- Page Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        {{ i18n.currentLang() === 'ar' ? 'المشرف العام / إدارة الأسعار' : 'System Admin / Pricing Management' }}
+      </div>
+      <h1>{{ i18n.currentLang() === 'ar' ? 'إدارة باقات وأسعار الموقع' : 'Landing Page Pricing Settings' }}</h1>
+      <p class="subtitle">
+        {{ i18n.currentLang() === 'ar' ? 'تعديل أسعار الاشتراكات الشهرية وتفاصيل الخيارات المتاحة للباقات على الصفحة الرئيسية للمنصة.' : 'Modify monthly plans, prices, and features displayed dynamically on the platform landing page.' }}
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary btn-save-pricing" (click)="savePricing()" [disabled]="isSaving()">
+        <i class="fa-solid fa-floppy-disk"></i>
+        <span>{{ i18n.currentLang() === 'ar' ? 'حفظ التعديلات' : 'Save Pricing Plans' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading()">
+    <div class="spinner"></div>
+    <p>{{ i18n.currentLang() === 'ar' ? 'جاري تحميل الباقات...' : 'Loading plans...' }}</p>
+  </div>
+
+  <!-- Plans Editor Cards Grid -->
+  <div class="pricing-mgmt-grid" *ngIf="!isLoading()">
+    <div class="card plan-mgmt-card animate-reveal" *ngFor="let plan of plans(); let pIdx = index">
+      <!-- Card Header -->
+      <div class="plan-mgmt-header" [ngClass]="'header-' + plan.id">
+        <div class="plan-header-top">
+          <div class="plan-icon-badge">
+            <i class="fa-solid" [ngClass]="plan.id === 'starter' ? 'fa-seedling' : plan.id === 'professional' ? 'fa-rocket' : 'fa-building-columns'"></i>
+          </div>
+          <span class="plan-id-badge">{{ plan.id | uppercase }}</span>
+        </div>
+        <h3 class="plan-card-title">{{ i18n.currentLang() === 'ar' ? plan.nameAr : plan.nameEn }}</h3>
+      </div>
+
+      <!-- Card Body -->
+      <div class="plan-mgmt-body">
+        <!-- Basic Plan Configs -->
+        <div class="mgmt-section-title">
+          <i class="fa-solid fa-gears"></i>
+          <span>{{ i18n.currentLang() === 'ar' ? 'المعلومات الأساسية' : 'Basic Configurations' }}</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>{{ i18n.currentLang() === 'ar' ? 'الاسم (بالعربية)' : 'Name (Arabic)' }}</label>
+            <input type="text" [(ngModel)]="plan.nameAr" required />
+          </div>
+          <div class="form-group flex-1">
+            <label>{{ i18n.currentLang() === 'ar' ? 'الاسم (بالإنجليزية)' : 'Name (English)' }}</label>
+            <input type="text" [(ngModel)]="plan.nameEn" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>{{ i18n.currentLang() === 'ar' ? 'السعر ($)' : 'Price ($)' }}</label>
+            <input type="number" [(ngModel)]="plan.price" required />
+          </div>
+          <div class="form-group flex-1">
+            <label>{{ i18n.currentLang() === 'ar' ? 'الدورية (عربي)' : 'Period (Arabic)' }}</label>
+            <input type="text" [(ngModel)]="plan.periodAr" required />
+          </div>
+          <div class="form-group flex-1">
+            <label>{{ i18n.currentLang() === 'ar' ? 'الدورية (إنجليزي)' : 'Period (English)' }}</label>
+            <input type="text" [(ngModel)]="plan.periodEn" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'الوصف الترويجي (بالعربية)' : 'Tagline (Arabic)' }}</label>
+          <input type="text" [(ngModel)]="plan.taglineAr" required />
+        </div>
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'الوصف الترويجي (بالإنجليزية)' : 'Tagline (English)' }}</label>
+          <input type="text" [(ngModel)]="plan.taglineEn" required />
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Features/Checklist List -->
+        <div class="features-mgmt-section">
+          <div class="section-title-row">
+            <div class="mgmt-section-title">
+              <i class="fa-solid fa-list-check"></i>
+              <span>{{ i18n.currentLang() === 'ar' ? 'خيارات ومميزات الباقة' : 'Plan Features' }}</span>
+            </div>
+            <button class="btn-add-feature" (click)="addFeature(pIdx)">
+              <i class="fa-solid fa-circle-plus"></i>
+              <span>{{ i18n.currentLang() === 'ar' ? 'إضافة ميزة' : 'Add Feature' }}</span>
+            </button>
+          </div>
+
+          <div class="features-mgmt-list">
+            <div class="feature-mgmt-item animate-fade-in" *ngFor="let feat of plan.features; let fIdx = index">
+              <!-- Included check status toggle -->
+              <label class="toggle-included" [title]="i18n.currentLang() === 'ar' ? 'تفعيل/تعطيل الميزة' : 'Toggle feature inclusion'">
+                <input type="checkbox" [(ngModel)]="feat.included" />
+                <span class="custom-checkbox" [class.checked]="feat.included">
+                  <i class="fa-solid" [ngClass]="feat.included ? 'fa-check' : 'fa-xmark'"></i>
+                </span>
+              </label>
+
+              <!-- Text fields Ar/En -->
+              <div class="feature-inputs-row">
+                <input type="text" class="feature-text-input" [(ngModel)]="feat.textAr" [placeholder]="i18n.currentLang() === 'ar' ? 'الميزة بالعربية' : 'Feature text (Arabic)'" required />
+                <input type="text" class="feature-text-input" [(ngModel)]="feat.textEn" [placeholder]="i18n.currentLang() === 'ar' ? 'الميزة بالإنجليزية' : 'Feature text (English)'" required />
+              </div>
+
+              <!-- Delete feature btn -->
+              <button class="btn-delete-feature" (click)="removeFeature(pIdx, fIdx)" [title]="i18n.currentLang() === 'ar' ? 'حذف الميزة' : 'Remove feature'">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

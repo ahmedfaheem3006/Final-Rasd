@@ -44,6 +44,7 @@ builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IClientFinancialService, ClientFinancialService>();
 builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
 builder.Services.AddScoped<IContractService, ContractService>();
+builder.Services.AddScoped<IRecruitmentService, RecruitmentService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -168,6 +169,14 @@ using (var scope = app.Services.CreateScope())
                 Email = "sales@rasd.com",
                 RoleId = 5, // Sales (rep)
                 PasswordHash = "XC79lW2YM1/IxvvW+g0u9nU87lE8sbYdG95ZQMH4njM="
+            },
+            new RasdAI.DAL.Entities.User
+            {
+                TenantId = devTenantId,
+                FullName = "منى السالم",
+                Email = "hr@rasd.com",
+                RoleId = 8, // HR
+                PasswordHash = "XC79lW2YM1/IxvvW+g0u9nU87lE8sbYdG95ZQMH4njM=" // "123456"
             }
         };
 
@@ -225,6 +234,35 @@ using (var scope = app.Services.CreateScope())
             );
             dbContext.SaveChanges();
         }
+
+        // Seed recruitment data (Job Vacancies + Candidates)
+        var hasVacancies = dbContext.JobVacancies.IgnoreQueryFilters().Any(j => j.TenantId == devTenantId);
+        if (!hasVacancies)
+        {
+            var job1 = new RasdAI.DAL.Entities.JobVacancy { TenantId = devTenantId, Title = "Senior Angular Developer", Department = "القسم التقني", Status = "Open", CreatedBy = 1 };
+            var job2 = new RasdAI.DAL.Entities.JobVacancy { TenantId = devTenantId, Title = "UI/UX Designer", Department = "التصميم والهوية", Status = "Open", CreatedBy = 1 };
+            var job3 = new RasdAI.DAL.Entities.JobVacancy { TenantId = devTenantId, Title = "Sales Executive", Department = "إدارة المبيعات", Status = "Closed", CreatedBy = 1 };
+            var job4 = new RasdAI.DAL.Entities.JobVacancy { TenantId = devTenantId, Title = "Senior .NET Developer", Department = "القسم التقني", Status = "Open", CreatedBy = 1 };
+            var job5 = new RasdAI.DAL.Entities.JobVacancy { TenantId = devTenantId, Title = "HR Generalist", Department = "الموارد البشرية", Status = "Open", CreatedBy = 1 };
+
+            dbContext.JobVacancies.AddRange(job1, job2, job3, job4, job5);
+            dbContext.SaveChanges();
+
+            dbContext.Candidates.AddRange(
+                new RasdAI.DAL.Entities.Candidate { TenantId = devTenantId, Name = "أحمد الدوسري", AppliedRole = "Senior .NET Developer", Rating = 4, Stage = "applied", JobVacancyId = job4.Id, CreatedBy = 1 },
+                new RasdAI.DAL.Entities.Candidate { TenantId = devTenantId, Name = "سارة خالد", AppliedRole = "UI/UX Designer", Rating = 5, Stage = "interview", JobVacancyId = job2.Id, CreatedBy = 1 },
+                new RasdAI.DAL.Entities.Candidate { TenantId = devTenantId, Name = "سلطان العتيبي", AppliedRole = "Senior Angular Developer", Rating = 3, Stage = "test", JobVacancyId = job1.Id, CreatedBy = 1 },
+                new RasdAI.DAL.Entities.Candidate { TenantId = devTenantId, Name = "مريم علي", AppliedRole = "HR Generalist", Rating = 4, Stage = "offer", JobVacancyId = job5.Id, CreatedBy = 1 },
+                new RasdAI.DAL.Entities.Candidate { TenantId = devTenantId, Name = "عبدالله السعدون", AppliedRole = "Senior .NET Developer", Rating = 5, Stage = "hired", JobVacancyId = job4.Id, CreatedBy = 1 },
+                new RasdAI.DAL.Entities.Candidate { TenantId = devTenantId, Name = "خالد الفهد", AppliedRole = "Senior .NET Developer", Rating = 5, Stage = "interview", JobVacancyId = job4.Id, CreatedBy = 1 },
+                new RasdAI.DAL.Entities.Candidate { TenantId = devTenantId, Name = "منى العبدالله", AppliedRole = "UI/UX Designer", Rating = 4, Stage = "applied", JobVacancyId = job2.Id, CreatedBy = 1 },
+                new RasdAI.DAL.Entities.Candidate { TenantId = devTenantId, Name = "فيصل النعيم", AppliedRole = "Senior Angular Developer", Rating = 4, Stage = "offer", JobVacancyId = job1.Id, CreatedBy = 1 }
+            );
+            dbContext.SaveChanges();
+        }
+
+        // Seed a company with one account per role
+        RasdAI.DAL.DbSeeder.SeedCompanyWithAllRoles(dbContext);
 
         // Remove report seeding and clear existing reports for devTenantId so only user-created reports are shown
         var existingReports = dbContext.Reports.IgnoreQueryFilters().Where(r => r.TenantId == devTenantId).ToList();

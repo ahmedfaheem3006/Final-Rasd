@@ -89,18 +89,18 @@
         <div class="nav-user" (click)="toggleUserDropdown($event)">
           <div class="nav-user-info hide-mobile">
             <span class="nav-user-greeting">{{ i18n.t('navbar.greeting') }},</span>
-            <span class="nav-user-name">{{ currentUser()?.name }}</span>
+            <span class="nav-user-name">{{ currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'System Admin' : currentUser()?.name }}</span>
           </div>
           <div class="nav-avatar">
-            {{ currentUser()?.avatarInitials }}
+            {{ currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'SA' : currentUser()?.avatarInitials }}
           </div>
 
           <!-- User Dropdown Menu -->
           <div class="user-dropdown" [class.active]="showUserDropdown()" (click)="$event.stopPropagation()">
             <div class="user-dropdown-header">
-              <span class="user-dropdown-name">{{ currentUser()?.name }}</span>
+              <span class="user-dropdown-name">{{ currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'System Admin' : currentUser()?.name }}</span>
               <span class="user-dropdown-email">{{ currentUser()?.email }}</span>
-              <span [class]="'user-dropdown-role-badge role-' + currentUser()?.role">{{ i18n.getRoleLabel(currentUser()?.role) }}</span>
+              <span [class]="'user-dropdown-role-badge role-' + currentUser()?.role">{{ currentUser()?.role === 'system-admin' && i18n.currentLang() === 'en' ? 'System Admin' : i18n.getRoleLabel(currentUser()?.role) }}</span>
               <span class="user-dropdown-company">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                 <span>{{ i18n.getWorkspaceName(currentUser()?.workspaceName) }}</span>

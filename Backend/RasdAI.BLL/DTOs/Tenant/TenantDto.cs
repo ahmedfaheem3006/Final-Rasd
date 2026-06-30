@@ -21,4 +21,7 @@ public class TenantDto
     public bool IsTasksEnabled { get; set; } = true;
     public bool IsMeetingsEnabled { get; set; } = true;
     public bool IsAiEnabled { get; set; } = true;
+
+    public int AiUsageCount { get; set; }
+    public System.Collections.Generic.List<ActivityDto> RecentActivities { get; set; } = new();
 }

@@ -4,12 +4,18 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 export interface User {
+  id?: number;
   name: string;
   email: string;
-  role: 'system-admin' | 'owner-admin' | 'accountant' | 'sales-manager' | 'employee-manager' | 'employee' | 'sales-rep';
+  role: 'system-admin' | 'owner-admin' | 'accountant' | 'sales-manager' | 'employee-manager' | 'employee' | 'sales-rep' | 'hr';
   roleLabel: string;
   workspaceName: string;
   avatarInitials: string;
+  isCrmEnabled?: boolean;
+  isInvoicesEnabled?: boolean;
+  isTasksEnabled?: boolean;
+  isMeetingsEnabled?: boolean;
+  isAiEnabled?: boolean;
 }
 
 @Injectable({
@@ -29,6 +35,7 @@ export class AuthService {
 
   private mockUsers: Record<string, User> = {
     'admin@rasd.com': {
+      id: 1,
       name: 'محمد عبد الله',
       email: 'admin@rasd.com',
       role: 'system-admin',
@@ -37,6 +44,7 @@ export class AuthService {
       avatarInitials: 'مع'
     },
     'owner@rasd.com': {
+      id: 100,
       name: 'أحمد فهيم',
       email: 'owner@rasd.com',
       role: 'owner-admin',
@@ -45,6 +53,7 @@ export class AuthService {
       avatarInitials: 'أف'
     },
     'accountant@rasd.com': {
+      id: 102,
       name: 'سارة محمود',
       email: 'accountant@rasd.com',
       role: 'accountant',
@@ -53,6 +62,7 @@ export class AuthService {
       avatarInitials: 'سم'
     },
     'salesmgr@rasd.com': {
+      id: 103,
       name: 'خالد منصور',
       email: 'salesmgr@rasd.com',
       role: 'sales-manager',
@@ -61,6 +71,7 @@ export class AuthService {
       avatarInitials: 'خم'
     },
     'empmgr@rasd.com': {
+      id: 6,
       name: 'عمر فاروق',
       email: 'empmgr@rasd.com',
       role: 'employee-manager',
@@ -69,6 +80,7 @@ export class AuthService {
       avatarInitials: 'عف'
     },
     'employee@rasd.com': {
+      id: 7,
       name: 'يوسف حسن',
       email: 'employee@rasd.com',
       role: 'employee',
@@ -77,17 +89,45 @@ export class AuthService {
       avatarInitials: 'يح'
     },
     'sales@rasd.com': {
+      id: 19,
       name: 'رنا علي',
       email: 'sales@rasd.com',
       role: 'sales-rep',
       roleLabel: 'مندوب المبيعات',
       workspaceName: 'فريق المبيعات الميداني',
       avatarInitials: 'رع'
+    },
+    'hr@rasd.com': {
+      id: 8,
+      name: 'منى السالم',
+      email: 'hr@rasd.com',
+      role: 'hr',
+      roleLabel: 'مدير الموارد البشرية (HR)',
+      workspaceName: 'إدارة الموارد البشرية - رصد',
+      avatarInitials: 'مس'
     }
   };
 
   constructor() {
     this.loadSession();
+    // Defer execution to next macro-task to prevent circular dependency with authInterceptor
+    setTimeout(() => this.checkAndFillUserId(), 0);
+  }
+
+  private checkAndFillUserId() {
+    const user = this.currentUser();
+    if (user && !user.id) {
+      this.getProfile().subscribe({
+        next: (res) => {
+          if (res && res.success && res.data) {
+            user.id = res.data.id;
+            this.currentUser.set({ ...user });
+            localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(user));
+          }
+        },
+        error: (err) => console.error('Failed to fill user ID from profile', err)
+      });
+    }
   }
 
   private loadSession() {
@@ -95,10 +135,36 @@ export class AuthService {
     if (saved) {
       try {
         this.currentUser.set(JSON.parse(saved));
+        this.refreshPermissions();
       } catch (e) {
         localStorage.removeItem(AuthService.STORAGE_KEY);
       }
     }
+  }
+
+  refreshPermissions() {
+    const token = localStorage.getItem(AuthService.TOKEN_KEY);
+    if (!token) return;
+    this.http.get<any>(`${this.baseUrl}/permissions`).subscribe({
+      next: (res) => {
+        if (res?.success && res.data) {
+          const user = this.currentUser();
+          if (user) {
+            const updated = {
+              ...user,
+              isCrmEnabled: res.data.isCrmEnabled !== false,
+              isInvoicesEnabled: res.data.isInvoicesEnabled !== false,
+              isTasksEnabled: res.data.isTasksEnabled !== false,
+              isMeetingsEnabled: res.data.isMeetingsEnabled !== false,
+              isAiEnabled: res.data.isAiEnabled !== false,
+            };
+            this.currentUser.set(updated);
+            localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(updated));
+          }
+        }
+      },
+      error: () => {}
+    });
   }
 
   // Real API Login
@@ -114,12 +180,18 @@ export class AuthService {
           // Map API Role to Frontend Role
           const mappedRole = this.mapRole(apiUser.role);
           const mappedUser: User = {
+            id: apiUser.userId || apiUser.id,
             name: apiUser.fullName,
             email: apiUser.email,
             role: mappedRole,
             roleLabel: this.getRoleLabel(mappedRole),
             workspaceName: apiUser.companyName || (mappedRole === 'system-admin' ? 'لوحة التحكم الفنية' : 'مؤسسة رصد لتقنية المعلومات'),
-            avatarInitials: this.getInitials(apiUser.fullName)
+            avatarInitials: this.getInitials(apiUser.fullName),
+            isCrmEnabled: apiUser.isCrmEnabled !== false,
+            isInvoicesEnabled: apiUser.isInvoicesEnabled !== false,
+            isTasksEnabled: apiUser.isTasksEnabled !== false,
+            isMeetingsEnabled: apiUser.isMeetingsEnabled !== false,
+            isAiEnabled: apiUser.isAiEnabled !== false
           };
 
           this.currentUser.set(mappedUser);
@@ -176,6 +248,10 @@ export class AuthService {
     return this.http.get<any>(`${this.baseUrl}/users`);
   }
 
+  getProfile(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/profile`);
+  }
+
   updateUserRole(userId: number, roleId: number): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/users/${userId}/role`, { roleId });
   }
@@ -207,6 +283,7 @@ export class AuthService {
       case 'accountant': return 'accountant';
       case 'salesmanager': return 'sales-manager';
       case 'employeemanager': return 'employee-manager';
+      case 'hr': return 'hr';
       case 'employee': return 'employee';
       case 'sales': return 'sales-rep';
       default: return 'owner-admin';
@@ -219,7 +296,8 @@ export class AuthService {
       case 'owner-admin': return 'مالك الشركة';
       case 'accountant': return 'المحاسب المالي';
       case 'sales-manager': return 'مدير المبيعات';
-      case 'employee-manager': return 'مدير الموظفين (HR)';
+      case 'employee-manager': return 'مشرف الموظفين بالقسم';
+      case 'hr': return 'مدير الموارد البشرية (HR)';
       case 'employee': return 'موظف العمليات';
       case 'sales-rep': return 'مندوب المبيعات';
       default: return 'زائر';
@@ -251,6 +329,9 @@ export class AuthService {
         break;
       case 'employee-manager':
         this.router.navigate(['/app/emp-manager/team']);
+        break;
+      case 'hr':
+        this.router.navigate(['/app/hr/reports']);
         break;
       case 'employee':
         this.router.navigate(['/app/employee/tasks']);

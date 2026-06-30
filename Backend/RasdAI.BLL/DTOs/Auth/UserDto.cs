@@ -10,4 +10,5 @@ public class UserDto
     public int RoleId { get; set; }
     public string RoleName { get; set; } = string.Empty;
     public int? ManagerId { get; set; }
+    public string Status { get; set; } = "Active";
 }

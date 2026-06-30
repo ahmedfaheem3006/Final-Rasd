@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR,EmployeeManager")]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
@@ -54,6 +54,17 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { success = false, message = ex.Message });
         }
+    }
+
+    [Authorize]
+    [HttpGet("permissions")]
+    public async Task<IActionResult> GetPermissions()
+    {
+        if (_tenantContext.UserId == null)
+            return Unauthorized(new { success = false });
+
+        var permissions = await _authService.GetUserPermissionsAsync(_tenantContext.UserId.Value);
+        return Ok(new { success = true, data = permissions });
     }
 
     [Authorize]
@@ -85,7 +96,7 @@ public class AuthController : ControllerBase
         });
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR,EmployeeManager")]
     [HttpGet("users")]
     public async Task<IActionResult> GetUsers()
     {
@@ -98,7 +109,7 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, data = users });
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR")]
     [HttpPut("users/{id}/role")]
     public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateUserRoleDto updateDto)
     {
@@ -118,7 +129,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR")]
     [HttpDelete("users/{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
@@ -138,7 +149,7 @@ public class AuthController : ControllerBase
         }
     }
 
-        [Authorize(Roles = "Owner,SystemAdmin")]
+    [Authorize(Roles = "Owner,SystemAdmin,HR")]
     [HttpGet("users/dashboard-stats")]
     public async Task<IActionResult> GetDashboardStats()
     {

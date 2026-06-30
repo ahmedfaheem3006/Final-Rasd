@@ -1,0 +1,357 @@
+<div class="reports-container">
+  <!-- Top Title / Action Header -->
+  <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="page-title text-main font-weight-bold">{{ i18n.isRtl() ? 'تقارير وإحصائيات الموارد البشرية' : 'HR Analytics & Reports' }}</h1>
+      <p class="text-muted text-sm">{{ i18n.isRtl() ? 'توليد واستعراض تقارير الحضور، الإجازات، تقييم الأداء، والرواتب للموظفين.' : 'Generate and review employee attendance, leaves, performance, and payroll sheets.' }}</p>
+    </div>
+    <div>
+      <button class="btn btn-outline btn-sm d-flex align-items-center gap-2" (click)="exportAllHistory()">
+        <i class="fa-solid fa-file-export"></i>
+        <span>{{ i18n.isRtl() ? 'تصدير الأرشيف' : 'Export Archive' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 1. Report Selector Cards -->
+  <div class="report-categories-grid">
+    <!-- Card 1: Attendance -->
+    <div class="category-card" [class.active]="activeCategory() === 'attendance'" (click)="selectCategory('attendance')">
+      <div class="card-icon bg-attendance">
+        <i class="fa-solid fa-user-check"></i>
+      </div>
+      <div class="card-details">
+        <h3>{{ i18n.isRtl() ? 'حضور وانصراف الموظفين' : 'Attendance & Absences' }}</h3>
+        <p>{{ i18n.isRtl() ? 'نسب الانضباط، التأخير والغياب' : 'Rates, delays and absences' }}</p>
+      </div>
+    </div>
+
+    <!-- Card 2: Leaves -->
+    <div class="category-card" [class.active]="activeCategory() === 'leaves'" (click)="selectCategory('leaves')">
+      <div class="card-icon bg-leaves">
+        <i class="fa-solid fa-calendar-minus"></i>
+      </div>
+      <div class="card-details">
+        <h3>{{ i18n.isRtl() ? 'طلبات الإجازات المعتمدة' : 'Approved Leave Requests' }}</h3>
+        <p>{{ i18n.isRtl() ? 'الإجازات السنوية والمرضية والخاصة' : 'Annual, sick and special leaves' }}</p>
+      </div>
+    </div>
+
+    <!-- Card 3: Performance -->
+    <div class="category-card" [class.active]="activeCategory() === 'performance'" (click)="selectCategory('performance')">
+      <div class="card-icon bg-performance">
+        <i class="fa-solid fa-star-half-stroke"></i>
+      </div>
+      <div class="card-details">
+        <h3>{{ i18n.isRtl() ? 'تقييم أداء الموظفين' : 'Performance Evaluation' }}</h3>
+        <p>{{ i18n.isRtl() ? 'مستويات الإنتاجية والتقييمات' : 'Productivity scores & ratings' }}</p>
+      </div>
+    </div>
+
+    <!-- Card 4: Payroll -->
+    <div class="category-card" [class.active]="activeCategory() === 'payroll'" (click)="selectCategory('payroll')">
+      <div class="card-icon bg-payroll">
+        <i class="fa-solid fa-money-check-dollar"></i>
+      </div>
+      <div class="card-details">
+        <h3>{{ i18n.isRtl() ? 'كشف الرواتب والمستحقات' : 'Payroll & Dues Statement' }}</h3>
+        <p>{{ i18n.isRtl() ? 'الرواتب الأساسية، البدلات والخصومات' : 'Basic salary, bonuses & deductions' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Parameter Filters Panel -->
+  <div class="filter-panel">
+    <div class="filter-title">
+      <i class="fa-solid fa-sliders text-primary"></i>
+      <span>{{ i18n.isRtl() ? 'تخصيص معايير التقرير' : 'Customize Report Parameters' }}</span>
+    </div>
+    
+    <div class="filters-grid">
+      <!-- Month filter -->
+      <div class="form-group">
+        <label>{{ i18n.isRtl() ? 'عن شهر' : 'For Month' }}</label>
+        <select class="form-input" [(ngModel)]="filters.month">
+          @for (m of months; track m.value) {
+            <option [value]="m.value">{{ i18n.isRtl() ? m.nameAr : m.nameEn }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Year filter -->
+      <div class="form-group">
+        <label>{{ i18n.isRtl() ? 'السنة مالية' : 'Financial Year' }}</label>
+        <select class="form-input" [(ngModel)]="filters.year">
+          <option [value]="2026">2026</option>
+          <option [value]="2025">2025</option>
+        </select>
+      </div>
+
+      <!-- Department Filter -->
+      <div class="form-group">
+        <label>{{ i18n.isRtl() ? 'القسم / الإدارة' : 'Department' }}</label>
+        <select class="form-input" [(ngModel)]="filters.department">
+          <option value="all">{{ i18n.isRtl() ? 'كل الأقسام' : 'All Departments' }}</option>
+          <option value="hr">{{ i18n.isRtl() ? 'الموارد البشرية' : 'Human Resources' }}</option>
+          <option value="sales">{{ i18n.isRtl() ? 'المبيعات والتسويق' : 'Sales & Marketing' }}</option>
+          <option value="development">{{ i18n.isRtl() ? 'التطوير البرمجي' : 'Software Development' }}</option>
+          <option value="finance">{{ i18n.isRtl() ? 'الحسابات والمالية' : 'Finance & Accounting' }}</option>
+        </select>
+      </div>
+
+      <!-- Search / Employee Filter -->
+      <div class="form-group">
+        <label>{{ i18n.isRtl() ? 'فلترة باسم الموظف (اختياري)' : 'Filter by Employee (Optional)' }}</label>
+        <input 
+          type="text" 
+          class="form-input" 
+          [placeholder]="i18n.isRtl() ? 'مثال: أحمد، سارة...' : 'e.g. Ahmad, Sarah...'" 
+          [(ngModel)]="filters.employeeQuery"
+        />
+      </div>
+
+      <!-- Generate Button -->
+      <button 
+        class="btn-generate" 
+        [disabled]="generating()"
+        (click)="handleGenerate()"
+      >
+        @if (generating()) {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span>{{ i18n.isRtl() ? 'جاري التوليد...' : 'Generating...' }}</span>
+        } @else {
+          <i class="fa-solid fa-gears"></i>
+          <span>{{ i18n.isRtl() ? 'توليد واستعراض' : 'Generate & Preview' }}</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- 3. Report Results Workspace -->
+  @if (generating()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>{{ i18n.isRtl() ? 'يقوم نظام رصد AI بجمع وتحليل البيانات لإنشاء التقرير المطلوب...' : 'Rasd AI is compiling database logs and generating the report analytics...' }}</p>
+    </div>
+  } @else if (!showReport()) {
+    <div class="placeholder-container">
+      <div class="placeholder-icon">
+        <i class="fa-solid fa-file-invoice"></i>
+      </div>
+      <h2>{{ i18n.isRtl() ? 'لم يتم توليد أي تقرير بعد' : 'No Report Generated Yet' }}</h2>
+      <p>{{ i18n.isRtl() ? 'اختر فئة التقرير من الأعلى، واضبط الفلاتر ثم اضغط على زر "توليد واستعراض" لعرض البيانات.' : 'Select a report category, adjust parameters, and click "Generate & Preview" to view details.' }}</p>
+    </div>
+  } @else {
+    <!-- Main Results Grid (Preview + AI Insights sidebar) -->
+    <div class="report-results-grid">
+      <!-- A. Document Preview Card -->
+      <div class="report-preview-card">
+        <div class="preview-actions-header">
+          <div class="preview-title-info">
+            <i class="fa-solid fa-file-pdf text-danger"></i>
+            <span>{{ getReportTitle() }}</span>
+          </div>
+          <div class="action-buttons">
+            <button class="btn-action" (click)="handlePrint()">
+              <i class="fa-solid fa-print"></i>
+              <span>{{ i18n.isRtl() ? 'طباعة' : 'Print' }}</span>
+            </button>
+            <button class="btn-action btn-action-primary" (click)="handleDownload()">
+              <i class="fa-solid fa-download"></i>
+              <span>{{ i18n.isRtl() ? 'تحميل PDF' : 'Download PDF' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Official Print Document Markup -->
+        <div class="document-content">
+          <!-- Letterhead header -->
+          <div class="doc-header">
+            <div class="doc-logo">
+              <div class="logo-circle">ر</div>
+              <div class="logo-text">RASD AI</div>
+            </div>
+            <div class="doc-meta">
+              <div><strong>{{ i18n.isRtl() ? 'الشركة:' : 'Company:' }}</strong> {{ i18n.isRtl() ? 'مؤسسة رصد لتقنية المعلومات' : 'Rasd IT Corporation' }}</div>
+              <div><strong>{{ i18n.isRtl() ? 'تاريخ التوليد:' : 'Date Generated:' }}</strong> 27-06-2026</div>
+              <div><strong>{{ i18n.isRtl() ? 'المسؤول:' : 'Generated By:' }}</strong> عمر فاروق (مدير الموارد البشرية)</div>
+            </div>
+          </div>
+
+          <!-- Title -->
+          <div class="doc-title-section">
+            <h1>{{ getReportTitle() }}</h1>
+            <p class="doc-subtitle">{{ getFormattedPeriodText() }}</p>
+          </div>
+
+          <!-- Document stats overview (KPIs cards) -->
+          <div class="doc-stats-grid">
+            @for (stat of getReportKPIs(); track stat.label) {
+              <div class="doc-stat-card">
+                <div class="stat-label">{{ stat.label }}</div>
+                <div class="stat-value text-primary">{{ stat.value }}</div>
+              </div>
+            }
+          </div>
+
+          <!-- Dynamic Data Table based on Category -->
+          <div class="doc-table-wrapper">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  @for (col of getTableHeaders(); track col) {
+                    <th>{{ col }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Attendance Table Rows -->
+                @if (activeCategory() === 'attendance') {
+                  @for (row of filteredAttendanceData(); track row.name) {
+                    <tr>
+                      <td><strong>{{ row.name }}</strong></td>
+                      <td>{{ row.role }}</td>
+                      <td class="text-center text-success font-weight-bold">{{ row.present }} {{ i18n.isRtl() ? 'أيام' : 'days' }}</td>
+                      <td class="text-center" [class.text-danger]="row.absent > 0">{{ row.absent }}</td>
+                      <td class="text-center" [class.text-warning]="row.late > 0">{{ row.late }}</td>
+                      <td class="text-center">
+                        <span class="doc-badge" [class.doc-badge-success]="row.rate >= 95" [class.doc-badge-warning]="row.rate < 95 && row.rate >= 88" [class.doc-badge-danger]="row.rate < 88">
+                          {{ row.rate }}%
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                }
+
+                <!-- Leaves Table Rows -->
+                @if (activeCategory() === 'leaves') {
+                  @for (row of filteredLeavesData(); track row.name) {
+                    <tr>
+                      <td><strong>{{ row.name }}</strong></td>
+                      <td>{{ row.type }}</td>
+                      <td>{{ row.start }}</td>
+                      <td>{{ row.end }}</td>
+                      <td class="text-center font-weight-bold">{{ row.days }} {{ i18n.isRtl() ? 'أيام' : 'days' }}</td>
+                      <td>{{ row.approvedBy }}</td>
+                      <td>
+                        <span class="doc-badge" 
+                          [class.doc-badge-success]="row.status === 'Approved'"
+                          [class.doc-badge-warning]="row.status === 'Pending'"
+                          [class.doc-badge-danger]="row.status === 'Rejected'"
+                        >
+                          {{ row.status === 'Approved' ? (i18n.isRtl() ? 'معتمد' : 'Approved') : 
+                             row.status === 'Rejected' ? (i18n.isRtl() ? 'مرفوض' : 'Rejected') : 
+                             (i18n.isRtl() ? 'معلق' : 'Pending') }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                }
+
+                <!-- Performance Table Rows -->
+                @if (activeCategory() === 'performance') {
+                  @for (row of filteredPerformanceData(); track row.name) {
+                    <tr>
+                      <td><strong>{{ row.name }}</strong></td>
+                      <td>{{ row.role }}</td>
+                      <td>
+                        <div class="star-rating">
+                          @for (star of [1, 2, 3, 4, 5]; track star) {
+                            <i [class]="star <= row.stars ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                          }
+                        </div>
+                      </td>
+                      <td class="font-weight-bold text-primary">{{ row.score }}%</td>
+                      <td>{{ row.notes }}</td>
+                    </tr>
+                  }
+                }
+
+                <!-- Payroll Table Rows -->
+                @if (activeCategory() === 'payroll') {
+                  @for (row of filteredPayrollData(); track row.name) {
+                    <tr>
+                      <td><strong>{{ row.name }}</strong></td>
+                      <td>{{ row.basic | number }} {{ i18n.isRtl() ? 'ر.س' : 'SAR' }}</td>
+                      <td class="text-success">+{{ row.allowance | number }}</td>
+                      <td class="text-danger">-{{ row.deductions | number }}</td>
+                      <td class="font-weight-bold text-success">{{ (row.basic + row.allowance - row.deductions) | number }} {{ i18n.isRtl() ? 'ر.س' : 'SAR' }}</td>
+                      <td>
+                        <span class="doc-badge doc-badge-success">
+                          {{ i18n.isRtl() ? 'مدفوع' : 'Paid' }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Document Signatures Footer -->
+          <div class="doc-footer">
+            <div>{{ i18n.isRtl() ? 'رقم التقرير: RASD-HR-2026-' : 'Report Reference: RASD-HR-2026-' }}{{ getCategoryCode() }}</div>
+            <div class="signature-block">
+              <span>{{ i18n.isRtl() ? 'توقيع مدير الموارد البشرية:' : 'HR Manager Signature:' }}</span>
+              <div class="signature-line"></div>
+              <small>{{ i18n.isRtl() ? 'عمر فاروق' : 'Omar Farooq' }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B. AI Insights Sidebar -->
+      <div class="ai-insights-panel">
+        <!-- AI Card -->
+        <div class="ai-card">
+          <div class="ai-card-header">
+            <i class="fa-solid fa-wand-magic-sparkles ai-sparkle"></i>
+            <span>{{ i18n.isRtl() ? 'رصد AI - التدقيق الذكي' : 'Rasd AI - Smart Audit' }}</span>
+          </div>
+          
+          <div class="ai-card-content">
+            <p class="mb-3 text-sm text-light-muted">
+              {{ i18n.isRtl() ? 'تم فحص ومطابقة بيانات التقرير الحالي بالذكاء الاصطناعي، وإليك أهم الملاحظات التحليلية للمدير:' : 'The database report records have been audited using AI insights. Here are the key HR operational remarks:' }}
+            </p>
+
+            @for (insight of getReportAiInsights(); track insight.text) {
+              <div class="ai-bullet">
+                @if (insight.type === 'warning') {
+                  <i class="fa-solid fa-circle-exclamation ai-bullet-icon warning"></i>
+                } @else if (insight.type === 'success') {
+                  <i class="fa-solid fa-circle-check ai-bullet-icon"></i>
+                } @else {
+                  <i class="fa-solid fa-circle-info ai-bullet-icon info"></i>
+                }
+                <span>{{ insight.text }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="ai-card-footer">
+            <span>{{ i18n.isRtl() ? 'دقة التدقيق:' : 'Audit Confidence:' }} <strong class="text-success">98.4%</strong></span>
+            <span class="ai-tag">Grok v2</span>
+          </div>
+        </div>
+
+        <!-- Generated History Log -->
+        <div class="history-card">
+          <h3>{{ i18n.isRtl() ? 'التقارير المولدة مؤخراً' : 'Recently Generated' }}</h3>
+          <div class="history-list">
+            @for (hist of reportHistory(); track hist.title) {
+              <div class="history-item">
+                <div class="history-info">
+                  <span class="history-name">{{ hist.title }}</span>
+                  <span class="history-meta">{{ hist.period }} | {{ hist.size }}</span>
+                </div>
+                <button class="btn-download-icon" (click)="handleDownload(hist.title)">
+                  <i class="fa-solid fa-circle-down"></i>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

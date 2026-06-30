@@ -18,4 +18,5 @@ public interface IAuthService
     Task<bool> ResetPasswordAsync(string email, string otp, string newPassword);
     Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
     Task<UserDashboardStatsDto> GetUserDashboardStatsAsync(Guid tenantId);
+    Task<object> GetUserPermissionsAsync(int userId);
 }

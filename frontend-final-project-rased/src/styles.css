@@ -1388,6 +1388,40 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .modal-container.modal-sm { max-width: 420px !important; }
+
+/* Premium select inside modals */
+.form-select-modal {
+  width: 100% !important;
+  height: 44px !important;
+  border: 1.5px solid var(--border-light) !important;
+  border-radius: 10px !important;
+  padding: 0 16px !important;
+  background-color: var(--bg-card) !important;
+  color: var(--text-title) !important;
+  font-size: 14px !important;
+  font-family: inherit !important;
+  line-height: 44px !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+  -webkit-appearance: listbox !important; /* Fix Windows Chrome select styles */
+}
+
+.form-select-modal option {
+  background-color: var(--bg-card) !important;
+  color: var(--text-title) !important;
+}
+
+:root.light-theme .form-select-modal {
+  background-color: #ffffff !important;
+}
+
+.form-select-modal:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(92, 77, 255, 0.15) !important;
+}
 .modal-container.modal-lg { max-width: 640px !important; }
 
 /* Light mode overrides */
@@ -1548,6 +1582,22 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.72rem !important;
 }
 
+/* Global form row layouts for modals */
+.form-row {
+  display: flex !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+}
+.form-row > * {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+}
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column !important;
+  }
+}
+
 /* Inputs inside modal */
 .form-group-modal input,
 .form-group-modal select,
@@ -1566,11 +1616,21 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: none !important;
 }
 
+.form-group-modal select option {
+  background-color: #0b1437 !important;
+  color: #ffffff !important;
+}
+
 :root.light-theme .form-group-modal input,
 :root.light-theme .form-group-modal select,
 :root.light-theme .form-group-modal textarea {
   background: #f8fafc !important;
   border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+:root.light-theme .form-group-modal select option {
+  background-color: #ffffff !important;
   color: #1e293b !important;
 }
 
@@ -2842,5 +2902,18 @@ body.modal-open .content-panel-wrapper {
 [dir="ltr"] .employee-autocomplete {
   direction: ltr;
   text-align: left;
+}
+
+/* Global layout stacking adjustments when any modal overlay is active */
+.layout-wrapper:has(.modal-overlay.active) .app-sidebar-container {
+  z-index: 1 !important;
+}
+.layout-wrapper:has(.modal-overlay.active) .main-app-container {
+  z-index: 1000 !important;
+}
+.layout-wrapper:has(.modal-overlay.active) .content-panel-wrapper,
+.layout-wrapper:has(.modal-overlay.active) .page-container {
+  transform: none !important;
+  animation: none !important;
 }
 

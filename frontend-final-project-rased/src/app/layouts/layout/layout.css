@@ -7,6 +7,8 @@
   overflow-x: hidden;
 }
 
+
+
 .app-sidebar-container {
   width: var(--sidebar-width);
   min-width: var(--sidebar-width);

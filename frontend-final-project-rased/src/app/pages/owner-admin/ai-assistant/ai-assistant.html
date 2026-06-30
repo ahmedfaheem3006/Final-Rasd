@@ -7,6 +7,9 @@
       <p class="subtitle">{{ i18n.t('ai.subtitle') }}</p>
     </div>
     <div class="header-actions">
+      <button (click)="showHistoryModal.set(true)" class="btn btn-secondary history-modal-btn" [title]="i18n.currentLang() === 'ar' ? 'سجل المحادثات' : 'Conversation History'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </button>
       <button (click)="clearChat()" class="btn btn-secondary clear-btn animate-fade-in" [title]="i18n.currentLang() === 'ar' ? 'مسح المحادثة' : 'Clear Chat'">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/></svg>
         <span>{{ i18n.currentLang() === 'ar' ? 'مسح المحادثة' : 'Clear Chat' }}</span>
@@ -81,6 +84,38 @@
           }
         </div>
       </div>
+
     </div>
   </div>
 </div>
+
+<!-- History Modal -->
+@if (showHistoryModal()) {
+  <div class="history-modal-overlay" (click)="showHistoryModal.set(false)">
+    <div class="history-modal" (click)="$event.stopPropagation()">
+      <div class="history-modal-header">
+        <div class="history-modal-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>{{ i18n.currentLang() === 'ar' ? 'سجل المحادثات' : 'Conversations Log' }}</span>
+        </div>
+        <button class="history-modal-close" (click)="showHistoryModal.set(false)">✕</button>
+      </div>
+      <div class="history-modal-body">
+        @if (chatHistory().length === 0) {
+          <p class="history-empty">{{ i18n.currentLang() === 'ar' ? 'لا توجد محادثات سابقة' : 'No past conversations' }}</p>
+        }
+        @for (h of chatHistory(); track h.id) {
+          <div class="history-modal-item" [class.active]="activeConversationId() === h.id.toString()" (click)="loadConversation(h.id); showHistoryModal.set(false)">
+            <div class="history-modal-item-info">
+              <span class="history-modal-item-title">{{ h.title }}</span>
+              <span class="history-modal-item-date">{{ h.createdAt | date:'yyyy-MM-dd HH:mm' }}</span>
+            </div>
+            <button class="history-modal-delete" (click)="deleteConversation(h.id, $event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

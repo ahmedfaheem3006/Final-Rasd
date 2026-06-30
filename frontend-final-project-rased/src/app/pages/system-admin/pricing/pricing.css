@@ -1,0 +1,299 @@
+/* Pricing Management Grid */
+.pricing-mgmt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 30px;
+  margin-top: 30px;
+}
+
+/* Plan card layout */
+.plan-mgmt-card {
+  padding: 0 !important;
+  border-radius: 20px !important;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  background-color: var(--bg-card);
+}
+
+.plan-mgmt-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+}
+
+/* Card headers with specific plan gradients */
+.plan-mgmt-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-mgmt-header.header-starter {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.07) 0%, rgba(16, 185, 129, 0.01) 100%);
+  border-bottom-color: rgba(16, 185, 129, 0.15);
+}
+.plan-mgmt-header.header-starter .plan-icon-badge {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.plan-mgmt-header.header-professional {
+  background: linear-gradient(135deg, rgba(92, 77, 255, 0.07) 0%, rgba(92, 77, 255, 0.01) 100%);
+  border-bottom-color: rgba(92, 77, 255, 0.15);
+}
+.plan-mgmt-header.header-professional .plan-icon-badge {
+  background-color: rgba(92, 77, 255, 0.1);
+  color: #5c4dff;
+}
+
+.plan-mgmt-header.header-enterprise {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.07) 0%, rgba(139, 92, 246, 0.01) 100%);
+  border-bottom-color: rgba(139, 92, 246, 0.15);
+}
+.plan-mgmt-header.header-enterprise .plan-icon-badge {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.plan-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-icon-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+.plan-id-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background-color: rgba(148, 163, 184, 0.12);
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.plan-card-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-title);
+}
+
+/* Card Body Content */
+.plan-mgmt-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.mgmt-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-title);
+  border-left: 3px solid var(--primary, #5c4dff);
+  padding-left: 8px;
+}
+
+.rtl .mgmt-section-title {
+  border-left: none;
+  border-right: 3px solid var(--primary, #5c4dff);
+  padding-left: 0;
+  padding-right: 8px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.flex-1 {
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.form-group input {
+  height: 44px;
+  padding: 0 16px;
+  border: 1.5px solid var(--border-light);
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--text-title);
+  transition: all 0.2s ease;
+  background-color: var(--bg-body);
+}
+
+.form-group input:focus {
+  border-color: var(--primary, #5c4dff);
+  box-shadow: 0 0 0 3px rgba(92, 77, 255, 0.1);
+  background-color: var(--bg-card);
+  outline: none;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--border-light);
+  margin: 10px 0;
+}
+
+/* Features List Setup */
+.features-mgmt-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-add-feature {
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary, #5c4dff);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.btn-add-feature:hover {
+  background-color: rgba(92, 77, 255, 0.08);
+}
+
+.features-mgmt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.feature-mgmt-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--bg-body);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+}
+
+.toggle-included {
+  cursor: pointer;
+}
+
+.toggle-included input {
+  display: none;
+}
+
+.custom-checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.2s;
+  background-color: var(--bg-card);
+  color: #94a3b8;
+}
+
+.custom-checkbox.checked {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.feature-inputs-row {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 500px) {
+  .feature-inputs-row {
+    flex-direction: column;
+  }
+}
+
+.feature-text-input {
+  flex: 1;
+  height: 38px;
+  padding: 0 12px;
+  border: 1.5px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-title);
+  background-color: var(--bg-card);
+  transition: all 0.2s;
+}
+
+.feature-text-input:focus {
+  border-color: var(--primary, #5c4dff);
+  outline: none;
+}
+
+.btn-delete-feature {
+  border: none;
+  background: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-delete-feature:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+/* Save pricing button glow */
+.btn-save-pricing {
+  box-shadow: 0 4px 15px rgba(92, 77, 255, 0.35);
+  font-size: 0.95rem;
+  font-weight: 700;
+  gap: 8px;
+  margin-top:12px;
+}
+.btn-save-pricing i {
+  font-size: 16px;
+}

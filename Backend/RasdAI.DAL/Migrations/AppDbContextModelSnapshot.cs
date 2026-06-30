@@ -56,6 +56,92 @@ namespace RasdAI.DAL.Migrations
                     b.ToTable("AIConversations");
                 });
 
+            modelBuilder.Entity("RasdAI.DAL.Entities.Attendance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CheckInTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CheckOutTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("HoursWorked")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Attendances");
+                });
+
+            modelBuilder.Entity("RasdAI.DAL.Entities.Candidate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AppliedRole")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("JobVacancyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobVacancyId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Candidates");
+                });
+
             modelBuilder.Entity("RasdAI.DAL.Entities.Client", b =>
                 {
                     b.Property<int>("Id")
@@ -280,7 +366,7 @@ namespace RasdAI.DAL.Migrations
                     b.Property<string>("AttachmentsJson")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ClientId")
+                    b.Property<int?>("ClientId")
                         .HasColumnType("int");
 
                     b.Property<string>("ContractNumber")
@@ -749,6 +835,48 @@ namespace RasdAI.DAL.Migrations
                         });
                 });
 
+            modelBuilder.Entity("RasdAI.DAL.Entities.JobVacancy", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApplicantsCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("JobVacancies");
+                });
+
             modelBuilder.Entity("RasdAI.DAL.Entities.LeaveRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -836,6 +964,9 @@ namespace RasdAI.DAL.Migrations
                     b.Property<string>("AISummary")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
@@ -1121,6 +1252,11 @@ namespace RasdAI.DAL.Migrations
                         {
                             Id = 7,
                             Name = "Employee"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "HR"
                         });
                 });
 
@@ -1139,6 +1275,11 @@ namespace RasdAI.DAL.Migrations
 
                     b.Property<string>("IssueDescription")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasDefaultValue("Medium")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
@@ -1163,6 +1304,7 @@ namespace RasdAI.DAL.Migrations
                             AiActionDetails = "اكتشف الذكاء الاصطناعي ملفات سجلات (logs) ضخمة غير مضغوطة. الإجراء المقترح: ضغط وحذف ملفات السجلات القديمة تلقائياً لتوفير 40GB من المساحة.",
                             CreatedAt = new DateTime(2026, 6, 21, 14, 30, 0, 0, DateTimeKind.Utc),
                             IssueDescription = "استهلاك مساحة القرص الصلب تجاوز 95% على الخادم الرئيسي للشركة.",
+                            Severity = "Critical",
                             Status = "Pending",
                             TenantId = new Guid("33333333-3333-3333-3333-333333333333"),
                             TenantName = "رصد للتقنية"
@@ -1173,6 +1315,7 @@ namespace RasdAI.DAL.Migrations
                             AiActionDetails = "اكتشف الذكاء الاصطناعي خطأ في الاتصال مع سيرفر SMTP بسبب انتهاء صلاحية الرمز المميز (Token). الإجراء المقترح: إعادة الاتصال وإصدار توكن جديد لإرسال الفواتير المعلقة.",
                             CreatedAt = new DateTime(2026, 6, 22, 10, 0, 0, 0, DateTimeKind.Utc),
                             IssueDescription = "فشل متكرر في إرسال البريد الإلكتروني الخاص بالفواتير للعملاء.",
+                            Severity = "High",
                             Status = "Pending",
                             TenantId = new Guid("44444444-4444-4444-4444-444444444444"),
                             TenantName = "مؤسسة القمة"
@@ -1479,6 +1622,42 @@ namespace RasdAI.DAL.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("RasdAI.DAL.Entities.Attendance", b =>
+                {
+                    b.HasOne("RasdAI.DAL.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RasdAI.DAL.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RasdAI.DAL.Entities.Candidate", b =>
+                {
+                    b.HasOne("RasdAI.DAL.Entities.JobVacancy", "JobVacancy")
+                        .WithMany()
+                        .HasForeignKey("JobVacancyId");
+
+                    b.HasOne("RasdAI.DAL.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("JobVacancy");
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("RasdAI.DAL.Entities.Client", b =>
                 {
                     b.HasOne("RasdAI.DAL.Entities.User", "CreatedByUser")
@@ -1503,8 +1682,7 @@ namespace RasdAI.DAL.Migrations
                     b.HasOne("RasdAI.DAL.Entities.Client", "Client")
                         .WithMany("Contracts")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("RasdAI.DAL.Entities.User", "CreatedByUser")
                         .WithMany()
@@ -1604,6 +1782,17 @@ namespace RasdAI.DAL.Migrations
                     b.Navigation("CreatedByUser");
 
                     b.Navigation("Deal");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("RasdAI.DAL.Entities.JobVacancy", b =>
+                {
+                    b.HasOne("RasdAI.DAL.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Tenant");
                 });

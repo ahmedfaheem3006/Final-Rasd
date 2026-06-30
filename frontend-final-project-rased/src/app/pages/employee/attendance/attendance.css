@@ -1,5 +1,5 @@
-﻿.page-container { direction: rtl; display: flex; flex-direction: column; gap: 28px; }
-.page-header { display: flex; align-items: center; justify-content: space-between; }
+.page-container { direction: rtl; display: flex; flex-direction: column; gap: 28px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10; }
 .header-info h1 { font-size: 1.85rem; font-weight: 800; color: var(--text-title); margin: 4px 0; }
 .breadcrumbs { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
 .header-info .subtitle { font-size: 0.9rem; color: var(--text-body); }
@@ -64,7 +64,69 @@
 }
 
 @media (max-width: 320px) {
-  .header-info h1 { font-size: 1rem; }
+  .header-info h1 { font-size: 1.05rem; }
   .stat-value { font-size: 0.95rem; }
   .data-table th, .data-table td { padding: 6px 8px; font-size: 0.65rem; }
+}
+
+/* ── Month Selector Dropdown Styles ── */
+.dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 180px;
+}
+
+.dropdown-wrapper button.btn-secondary {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm, 10px);
+}
+
+.dropdown-menu-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background: #111c44 !important; /* Solid dark blue for absolute opacity */
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: var(--radius-md, 12px);
+  box-shadow: var(--shadow-xl);
+  padding: 6px;
+  display: none;
+  z-index: 1000 !important;
+}
+
+.dropdown-menu-list.show {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropdown-item {
+  background: transparent;
+  border: none;
+  color: var(--text-body) !important;
+  padding: 10px 14px;
+  text-align: right;
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-sidebar-hover, rgba(67, 24, 255, 0.08)) !important;
+  color: var(--text-title) !important;
+}
+
+.dropdown-item.active {
+  background: var(--primary, #4318ff) !important;
+  color: #ffffff !important;
+  font-weight: 700;
 }

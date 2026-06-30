@@ -5,6 +5,7 @@ namespace RasdAI.BLL.DTOs.Ai;
 
 public class ContractAnalysisResultDto
 {
+    public int Id { get; set; }
     public string Summary { get; set; } = string.Empty;
     public List<string> Parties { get; set; } = new();
     public string ExpiryDate { get; set; } = string.Empty;

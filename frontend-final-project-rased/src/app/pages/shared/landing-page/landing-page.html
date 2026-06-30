@@ -553,118 +553,33 @@
       <!-- Pricing Cards Grid -->
       <div class="pricing-grid">
 
-        <!-- ── Starter Plan ── -->
-        <div class="pricing-card">
-          <div class="plan-icon-wrap plan-icon-green">
-            <i class="fa-solid fa-seedling"></i>
-          </div>
-          <span class="plan-name">{{ i18n.currentLang() === 'ar' ? 'المبتدئ' : 'Starter' }}</span>
-          <div class="plan-price-row">
-            <span class="plan-currency">$</span>
-            <span class="plan-amount">49</span>
-            <span class="plan-period">/{{ i18n.currentLang() === 'ar' ? 'شهر' : 'mo' }}</span>
-          </div>
-          <p class="plan-tagline">{{ i18n.currentLang() === 'ar' ? 'مثالية للشركات الناشئة والمشروعات الصغيرة.' :
-            'Perfect for freelancers and small teams.' }}</p>
-
-          <div class="plan-divider"></div>
-
-          <ul class="plan-features">
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? '3 مستخدمين' : '3
-              Team Members' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? '200 طلب ذكاء
-              اصطناعي / شهر' : '200 AI Queries / mo' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'إدارة الصفقات
-              الأساسية' : 'Basic Deals Pipeline' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'تقارير شهرية' :
-              'Monthly Reports' }}</li>
-            <li><i class="fa-solid fa-circle-xmark feat-cross"></i> {{ i18n.currentLang() === 'ar' ? 'مساعد ذكي متقدم' :
-              'Advanced AI CoPilot' }}</li>
-            <li><i class="fa-solid fa-circle-xmark feat-cross"></i> {{ i18n.currentLang() === 'ar' ? 'دعم فني أولوي' :
-              'Priority Support' }}</li>
-          </ul>
-
-          <a routerLink="/register" class="btn-pricing btn-pricing-starter">
-            {{ i18n.currentLang() === 'ar' ? 'ابدأ الآن' : 'Get Started' }}
-            <i class="fa-solid fa-arrow-left" style="margin-right: 6px;" *ngIf="i18n.currentLang() === 'ar'"></i>
-            <i class="fa-solid fa-arrow-right" style="margin-left: 6px;" *ngIf="i18n.currentLang() !== 'ar'"></i>
-          </a>
-        </div>
-
-        <!-- ── Professional Plan (Popular) ── -->
-        <div class="pricing-card pricing-card-popular">
-          <div class="popular-ribbon">
+        <!-- Dynamic Plan Card Loop -->
+        <div class="pricing-card" *ngFor="let plan of pricingPlans(); let i = index" [class.pricing-card-popular]="plan.id === 'professional'">
+          <div class="popular-ribbon" *ngIf="plan.id === 'professional'">
             <i class="fa-solid fa-fire-flame-curved" style="margin-left:5px;margin-right:5px;"></i>
             {{ i18n.currentLang() === 'ar' ? 'الأكثر طلباً' : 'Most Popular' }}
           </div>
-          <div class="plan-icon-wrap plan-icon-blue">
-            <i class="fa-solid fa-rocket"></i>
+          <div class="plan-icon-wrap" [ngClass]="plan.id === 'starter' ? 'plan-icon-green' : plan.id === 'professional' ? 'plan-icon-blue' : 'plan-icon-purple'">
+            <i class="fa-solid" [ngClass]="plan.id === 'starter' ? 'fa-seedling' : plan.id === 'professional' ? 'fa-rocket' : 'fa-building-columns'"></i>
           </div>
-          <span class="plan-name">{{ i18n.currentLang() === 'ar' ? 'الاحترافية' : 'Professional' }}</span>
+          <span class="plan-name">{{ i18n.currentLang() === 'ar' ? plan.nameAr : plan.nameEn }}</span>
           <div class="plan-price-row">
             <span class="plan-currency">$</span>
-            <span class="plan-amount">199</span>
-            <span class="plan-period">/{{ i18n.currentLang() === 'ar' ? 'شهر' : 'mo' }}</span>
+            <span class="plan-amount">{{ plan.price }}</span>
+            <span class="plan-period">/{{ i18n.currentLang() === 'ar' ? plan.periodAr : plan.periodEn }}</span>
           </div>
-          <p class="plan-tagline">{{ i18n.currentLang() === 'ar' ? 'الباقة الأكثر طلباً للشركات المتوسطة والمتنامية.' :
-            'Ideal for growing companies scaling fast.' }}</p>
+          <p class="plan-tagline">{{ i18n.currentLang() === 'ar' ? plan.taglineAr : plan.taglineEn }}</p>
 
-          <div class="plan-divider plan-divider-blue"></div>
+          <div class="plan-divider" [class.plan-divider-blue]="plan.id === 'professional'"></div>
 
           <ul class="plan-features">
-            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ? '15
-              مستخدماً' : '15 Team Members' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
-              '5,000 طلب ذكاء اصطناعي / شهر' : '5,000 AI Queries / mo' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
-              'إدارة صفقات ومهام متقدمة' : 'Advanced Pipeline & Tasks' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
-              'مساعد ذكي CoPilot كامل' : 'Full AI CoPilot Access' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
-              'تقارير تدقيق متقدمة' : 'Advanced Audit Reports' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check feat-check-blue"></i> {{ i18n.currentLang() === 'ar' ?
-              'دعم فني أولوي 24/7' : 'Priority 24/7 Support' }}</li>
+            <li *ngFor="let feat of plan.features">
+              <i class="fa-solid" [ngClass]="feat.included ? 'fa-circle-check feat-check' : 'fa-circle-xmark feat-cross'" [class.feat-check-blue]="feat.included && plan.id === 'professional'"></i>
+              <span>{{ i18n.currentLang() === 'ar' ? feat.textAr : feat.textEn }}</span>
+            </li>
           </ul>
 
-          <a routerLink="/register" class="btn-pricing btn-pricing-primary">
-            {{ i18n.currentLang() === 'ar' ? 'ابدأ الآن' : 'Get Started' }}
-            <i class="fa-solid fa-arrow-left" style="margin-right: 6px;" *ngIf="i18n.currentLang() === 'ar'"></i>
-            <i class="fa-solid fa-arrow-right" style="margin-left: 6px;" *ngIf="i18n.currentLang() !== 'ar'"></i>
-          </a>
-        </div>
-
-        <!-- ── Enterprise Plan ── -->
-        <div class="pricing-card">
-          <div class="plan-icon-wrap plan-icon-purple">
-            <i class="fa-solid fa-building-columns"></i>
-          </div>
-          <span class="plan-name">{{ i18n.currentLang() === 'ar' ? 'المؤسسات' : 'Enterprise' }}</span>
-          <div class="plan-price-row">
-            <span class="plan-currency">$</span>
-            <span class="plan-amount">499</span>
-            <span class="plan-period">/{{ i18n.currentLang() === 'ar' ? 'شهر' : 'mo' }}</span>
-          </div>
-          <p class="plan-tagline">{{ i18n.currentLang() === 'ar' ? 'مخصصة للشركات الكبرى والمنشآت الضخمة.' : 'Built for
-            large enterprises with custom needs.' }}</p>
-
-          <div class="plan-divider"></div>
-
-          <ul class="plan-features">
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'مستخدمون غير
-              محدودون' : 'Unlimited Team Members' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'طلبات ذكاء اصطناعي
-              غير محدودة' : 'Unlimited AI Queries' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'خوادم مخصصة (SLA
-              99.9%)' : 'Dedicated Servers (SLA 99.9%)' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'تدقيق مالي مخصص' :
-              'Custom Financial Audit' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'مدير حساب مخصص' :
-              'Dedicated Account Manager' }}</li>
-            <li><i class="fa-solid fa-circle-check feat-check"></i> {{ i18n.currentLang() === 'ar' ? 'تكامل API مخصص' :
-              'Custom API Integration' }}</li>
-          </ul>
-
-          <a routerLink="/register" class="btn-pricing btn-pricing-enterprise">
+          <a routerLink="/register" class="btn-pricing" [ngClass]="plan.id === 'starter' ? 'btn-pricing-starter' : plan.id === 'professional' ? 'btn-pricing-primary' : 'btn-pricing-enterprise'">
             {{ i18n.currentLang() === 'ar' ? 'ابدأ الآن' : 'Get Started' }}
             <i class="fa-solid fa-arrow-left" style="margin-right: 6px;" *ngIf="i18n.currentLang() === 'ar'"></i>
             <i class="fa-solid fa-arrow-right" style="margin-left: 6px;" *ngIf="i18n.currentLang() !== 'ar'"></i>
@@ -699,7 +614,7 @@
         (mouseleave)="startTestimonialAutoPlay()">
 
         <div class="carousel-track-container">
-          <div class="carousel-track" [style.--idx]="currentTestimonialIndex()">
+          <div class="carousel-track" [style.transform]="getTestimonialTransform()">
 
             <div class="testimonial-card" *ngFor="let t of testimonials; let i = index">
               <div class="quote-icon"><i class="fa-solid fa-quote-right"></i></div>
@@ -720,8 +635,8 @@
 
         <!-- Carousel Navigation Controls -->
         <div class="carousel-controls">
-          <button class="nav-arrow prev-arrow" (click)="prevTestimonial()">
-            <i class="fa-solid" [ngClass]="i18n.currentLang() === 'ar' ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+          <button class="nav-arrow prev-arrow" (click)="i18n.currentLang() === 'ar' ? nextTestimonial() : prevTestimonial()" [title]="i18n.currentLang() === 'ar' ? 'التالي' : 'Previous'">
+            <i class="fa-solid fa-chevron-left"></i>
           </button>
 
           <div class="carousel-indicators">
@@ -730,9 +645,10 @@
             </span>
           </div>
 
-          <button class="nav-arrow next-arrow" (click)="nextTestimonial()">
-            <i class="fa-solid" [ngClass]="i18n.currentLang() === 'ar' ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
+          <button class="nav-arrow next-arrow" (click)="i18n.currentLang() === 'ar' ? prevTestimonial() : nextTestimonial()" [title]="i18n.currentLang() === 'ar' ? 'السابق' : 'Next'">
+            <i class="fa-solid fa-chevron-right"></i>
           </button>
+
         </div>
 
       </div>

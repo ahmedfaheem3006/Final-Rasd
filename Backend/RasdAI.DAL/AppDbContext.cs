@@ -31,10 +31,28 @@ public class AppDbContext : DbContext
     public DbSet<ContactMessage> ContactMessages { get; set; } = null!;
     public DbSet<Payment> Payments { get; set; } = null!;
     public DbSet<Expense> Expenses { get; set; } = null!;
+    public DbSet<JobVacancy> JobVacancies { get; set; } = null!;
+    public DbSet<Candidate> Candidates { get; set; } = null!;
+    public DbSet<Attendance> Attendances { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Attendance configuration to prevent cascade cycles
+        modelBuilder.Entity<Attendance>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         // Apply Global Query Filter for Multi-Tenancy
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -425,7 +443,8 @@ public class AppDbContext : DbContext
             new Role { Id = 4, Name = "SalesManager" },
             new Role { Id = 5, Name = "Sales" },
             new Role { Id = 6, Name = "EmployeeManager" },
-            new Role { Id = 7, Name = "Employee" }
+            new Role { Id = 7, Name = "Employee" },
+            new Role { Id = 8, Name = "HR" }
         );
 
         // Seed SystemAdmin Tenant

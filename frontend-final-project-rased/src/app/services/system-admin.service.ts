@@ -32,6 +32,10 @@ export class SystemAdminService {
     return this.http.put<any>(`${this.baseUrl}/tenants/${id}/pricing`, payload);
   }
 
+  updateTenantFull(id: string, payload: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/tenants/${id}/update-full`, payload);
+  }
+
   updateTenantPermissions(id: string, permissions: any): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/tenants/${id}/permissions`, permissions);
   }
@@ -46,5 +50,41 @@ export class SystemAdminService {
 
   resolveIssue(id: string, action: string): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/issues/${id}/action`, { action });
+  }
+
+  runAiScan(): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/run-ai-scan`, {});
+  }
+
+  runTenantScan(tenantId: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/run-ai-scan/${tenantId}`, {});
+  }
+
+  deleteIssue(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/issues/${id}`);
+  }
+
+  bulkAction(action: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/issues/bulk`, { action });
+  }
+
+  getDashboardStats(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/dashboard-stats`);
+  }
+
+  getPricingPlans(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/pricing-plans`);
+  }
+
+  updatePricingPlans(plans: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/pricing-plans`, plans);
+  }
+
+  getSettingsConfig(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/settings-config`);
+  }
+
+  updateSettingsConfig(config: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/settings-config`, config);
   }
 }

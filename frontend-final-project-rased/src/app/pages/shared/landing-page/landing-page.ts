@@ -192,6 +192,65 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
   currentTestimonialIndex = signal(0);
   private testimonialInterval: any;
 
+  defaultPlans = [
+    {
+      id: "starter",
+      nameAr: "المبتدئ",
+      nameEn: "Starter",
+      price: 49,
+      periodAr: "شهر",
+      periodEn: "mo",
+      taglineAr: "مثالية للشركات الناشئة والمشروعات الصغيرة.",
+      taglineEn: "Perfect for freelancers and small teams.",
+      features: [
+        { textAr: "3 مستخدمين", textEn: "3 Team Members", included: true },
+        { textAr: "200 طلب ذكاء اصطناعي / شهر", textEn: "200 AI Queries / mo", included: true },
+        { textAr: "إدارة الصفقات الأساسية", textEn: "Basic Deals Pipeline", included: true },
+        { textAr: "تقارير شهرية", textEn: "Monthly Reports", included: true },
+        { textAr: "مساعد ذكي متقدم", textEn: "Advanced AI CoPilot", included: false },
+        { textAr: "دعم فني أولوي", textEn: "Priority Support", included: false }
+      ]
+    },
+    {
+      id: "professional",
+      nameAr: "الاحترافية",
+      nameEn: "Professional",
+      price: 199,
+      periodAr: "شهر",
+      periodEn: "mo",
+      taglineAr: "الباقة الأكثر طلباً للشركات المتوسطة والمتنامية.",
+      taglineEn: "Ideal for growing companies scaling fast.",
+      features: [
+        { textAr: "15 مستخدماً", textEn: "15 Team Members", included: true },
+        { textAr: "5,000 طلب ذكاء اصطناعي / شهر", textEn: "5,000 AI Queries / mo", included: true },
+        { textAr: "إدارة صفقات ومهام متقدمة", textEn: "Advanced Pipeline & Tasks", included: true },
+        { textAr: "مساعد ذكي CoPilot كامل", textEn: "Full AI CoPilot Access", included: true },
+        { textAr: "تقارير تدقيق متقدمة", textEn: "Advanced Audit Reports", included: true },
+        { textAr: "دعم فني أولوي 24/7", textEn: "Priority 24/7 Support", included: true }
+      ]
+    },
+    {
+      id: "enterprise",
+      nameAr: "المؤسسات",
+      nameEn: "Enterprise",
+      price: 499,
+      periodAr: "شهر",
+      periodEn: "mo",
+      taglineAr: "مخصصة للشركات الكبرى والمنشآت الضخمة.",
+      taglineEn: "Built for large enterprises with custom needs.",
+      features: [
+        { textAr: "مستخدمون غير محدودون", textEn: "Unlimited Team Members", included: true },
+        { textAr: "طلبات ذكاء اصطناعي غير محدودة", textEn: "Unlimited AI Queries", included: true },
+        { textAr: "خوادم مخصصة (SLA 99.9%)", textEn: "Dedicated Servers (SLA 99.9%)", included: true },
+        { textAr: "تدقيق مالي مخصص", textEn: "Custom Financial Audit", included: true },
+        { textAr: "مدير حساب مخصص", textEn: "Dedicated Account Manager", included: true },
+        { textAr: "تكامل API مخصص", textEn: "Custom API Integration", included: true }
+      ]
+    }
+  ];
+
+  pricingPlans = signal<any[]>(this.defaultPlans);
+
   // Prompts and responses for AI Simulation (Arabic)
   promptsAr = [
     'هل توجد أي مشاكل معلقة في الصفقات اليوم؟',
@@ -226,6 +285,18 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
         this.showBackToTop.set(window.scrollY > 300);
       };
     window.addEventListener('scroll', this.scrollHandler, { passive: true });
+
+    // Load pricing plans from backend
+    this.http.get<any>('http://localhost:5092/api/SystemAdmin/pricing-plans').subscribe({
+      next: (res) => {
+        if (res && res.success && res.data) {
+          this.pricingPlans.set(res.data);
+        }
+      },
+      error: (err) => {
+        console.warn('Failed to load dynamic pricing plans, using fallbacks.', err);
+      }
+    });
 
     // Trigger first prompt by default on load
     setTimeout(() => {
@@ -516,5 +587,14 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
     }
     this.currentTestimonialIndex.set(index);
     this.startTestimonialAutoPlay();
+  }
+
+  getTestimonialTransform(): string {
+    const idx = this.currentTestimonialIndex();
+    const isRtl = this.i18n.isRtl();
+    const isMobile = window.innerWidth <= 900;
+    const step = isMobile ? 100 : 50;
+    const value = idx * step;
+    return isRtl ? `translateX(${value}%)` : `translateX(-${value}%)`;
   }
 }

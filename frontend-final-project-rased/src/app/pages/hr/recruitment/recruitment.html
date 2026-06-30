@@ -1,0 +1,277 @@
+<div class="recruitment-container animate-fade-in">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-info">
+      <div class="breadcrumbs">{{ i18n.isRtl() ? 'الموارد البشرية / التوظيف' : 'HR / Recruitment' }}</div>
+      <h1>{{ i18n.isRtl() ? 'بوابة إدارة التوظيف والمتقدمين (ATS)' : 'Recruitment & Applicant Tracking System' }}</h1>
+      <p class="subtitle">{{ i18n.isRtl() ? 'متابعة مسار تعيين المرشحين وإدارة الوظائف الشاغرة بمرونة واحترافية' : 'Manage candidate pipelines, hiring stages, and active job vacancies.' }}</p>
+    </div>
+  </header>
+
+  <!-- Metrics Dashboard Summary Row -->
+  <div class="recruitment-metrics">
+    <div class="metric-card col-blue">
+      <div class="metric-icon"><i class="fa-solid fa-users"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">{{ totalApplicants() }}</span>
+        <span class="metric-label">{{ i18n.isRtl() ? 'إجمالي المتقدمين' : 'Total Applicants' }}</span>
+      </div>
+    </div>
+    <div class="metric-card col-purple">
+      <div class="metric-icon"><i class="fa-solid fa-briefcase"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">{{ openVacanciesCount() }}</span>
+        <span class="metric-label">{{ i18n.isRtl() ? 'الوظائف الشاغرة النشطة' : 'Open Vacancies' }}</span>
+      </div>
+    </div>
+    <div class="metric-card col-amber">
+      <div class="metric-icon"><i class="fa-solid fa-comments"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">{{ inInterviewCount() }}</span>
+        <span class="metric-label">{{ i18n.isRtl() ? 'بانتظار المقابلات' : 'In Interview / Tech Test' }}</span>
+      </div>
+    </div>
+    <div class="metric-card col-emerald">
+      <div class="metric-icon"><i class="fa-solid fa-user-check"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">{{ hiredCount() }}</span>
+        <span class="metric-label">{{ i18n.isRtl() ? 'تم توظيفهم مؤخراً' : 'Hired Recently' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Actions Header Bar -->
+  <div class="recruitment-actions-bar card">
+    <div class="filter-controls">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input 
+          type="text" 
+          [placeholder]="i18n.isRtl() ? 'ابحث عن اسم مرشح أو دور...' : 'Search candidates, positions...'"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="filter-input"
+        />
+      </div>
+      <div class="select-box">
+        <select 
+          [ngModel]="selectedDepartment()" 
+          (ngModelChange)="selectedDepartment.set($event)" 
+          class="filter-select"
+        >
+          <option value="all">{{ i18n.isRtl() ? 'جميع الأقسام' : 'All Departments' }}</option>
+          @for (dept of departments(); track dept) {
+            <option [value]="dept">{{ dept }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    <div class="actions-buttons">
+      <button class="btn btn-secondary-outline" (click)="openJobModal()">
+        <i class="fa-solid fa-plus"></i> {{ i18n.isRtl() ? 'إضافة وظيفة' : 'Add Vacancy' }}
+      </button>
+      <button class="btn btn-primary" (click)="openCandidateModal()">
+        <i class="fa-solid fa-user-plus"></i> {{ i18n.isRtl() ? 'إضافة مرشح جديد' : 'Add Candidate' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Split Panel Layout: Pipeline vs Jobs -->
+  <div class="recruitment-workspace">
+    <!-- Active Vacancies Panel (Left) -->
+    <div class="vacancies-panel">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-folder-open"></i> {{ i18n.isRtl() ? 'قائمة الوظائف الشاغرة' : 'Active Vacancies' }}</h3>
+        </div>
+        
+        <div class="vacancies-list">
+          @for (job of filteredVacancies(); track job.id) {
+            <div class="vacancy-item" [class.closed]="job.status === 'Closed'">
+              <div class="job-meta">
+                <h4>{{ job.title }}</h4>
+                <div class="job-sub">
+                  <span class="dept-badge">{{ job.department }}</span>
+                  <span class="applicants-cnt"><i class="fa-solid fa-users"></i> {{ job.applicantsCount }}</span>
+                </div>
+              </div>
+              <div class="vacancy-actions">
+                <button 
+                  class="btn-status" 
+                  [class.open]="job.status === 'Open'" 
+                  (click)="toggleJobStatus(job.id)"
+                  [title]="i18n.isRtl() ? 'تغيير حالة الوظيفة' : 'Toggle vacancy status'"
+                >
+                  {{ job.status === 'Open' ? (i18n.isRtl() ? 'نشط' : 'Open') : (i18n.isRtl() ? 'مغلق' : 'Closed') }}
+                </button>
+                <button class="btn-delete" (click)="deleteJob(job.id, $event)" [title]="i18n.isRtl() ? 'حذف الوظيفة' : 'Delete Vacancy'">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-vacancies">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <p>{{ i18n.isRtl() ? 'لا توجد وظائف مطابقة للبحث' : 'No matching vacancies found' }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Candidate Kanban Board (Right) -->
+    <div class="pipeline-board-panel">
+      <div class="recruitment-pipeline-board">
+        @for (stage of stages; track stage.key) {
+          <div class="pipeline-column">
+            <div class="column-header" [style.border-top-color]="stage.color">
+              <span class="stage-name">{{ i18n.isRtl() ? stage.nameAr : stage.nameEn }}</span>
+              <span class="candidate-count" [style.background-color]="stage.color + '22'" [style.color]="stage.color">
+                {{ getCandidatesByStage(stage.key).length }}
+              </span>
+            </div>
+            
+            <div class="candidates-list-container">
+              @for (candidate of getCandidatesByStage(stage.key); track candidate.id) {
+                <div class="candidate-card animate-slide-in">
+                  <button class="btn-delete-candidate" (click)="deleteCandidate(candidate.id, $event)" [title]="i18n.isRtl() ? 'استبعاد المرشح' : 'Reject Candidate'">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                  <div class="candidate-avatar" [style.background-color]="stage.color + '1A'" [style.color]="stage.color">
+                    {{ getInitials(candidate.name) }}
+                  </div>
+                  <div class="candidate-header">
+                    <h4>{{ candidate.name }}</h4>
+                    <div class="rating">
+                      @for (star of [1,2,3,4,5]; track star) {
+                        <i class="fa-solid fa-star" [class.active]="star <= candidate.rating"></i>
+                      }
+                    </div>
+                  </div>
+                  <span class="role-badge">{{ candidate.appliedRole }}</span>
+                  
+                  <div class="candidate-card-footer">
+                    <button 
+                      (click)="moveCandidate(candidate.id, 'backward')" 
+                      [disabled]="stage.key === 'applied'"
+                      class="btn-nav-stage" 
+                      [title]="i18n.isRtl() ? 'المرحلة السابقة' : 'Previous Stage'"
+                    >
+                      <i class="fa-solid" [ngClass]="i18n.isRtl() ? 'fa-angle-right' : 'fa-angle-left'"></i>
+                    </button>
+                    
+                    <button 
+                      (click)="moveCandidate(candidate.id, 'forward')" 
+                      [disabled]="stage.key === 'hired'"
+                      class="btn-nav-stage" 
+                      [title]="i18n.isRtl() ? 'المرحلة التالية' : 'Next Stage'"
+                    >
+                      <i class="fa-solid" [ngClass]="i18n.isRtl() ? 'fa-angle-left' : 'fa-angle-right'"></i>
+                    </button>
+                  </div>
+                </div>
+              } @empty {
+                <div class="empty-stage-state">
+                  <i class="fa-solid fa-inbox"></i>
+                  <p>{{ i18n.isRtl() ? 'لا يوجد مرشحون' : 'No Candidates' }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 1: Add Vacancy -->
+  @if (showJobModal()) {
+    <div class="modal-overlay" (click)="closeJobModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-plus"></i> {{ i18n.isRtl() ? 'إضافة وظيفة شاغرة جديدة' : 'Add New Vacancy' }}</h3>
+          <button class="btn-close-modal" (click)="closeJobModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>{{ i18n.isRtl() ? 'المسمى الوظيفي' : 'Job Title' }}</label>
+            <input type="text" [(ngModel)]="newJobTitle" name="newJobTitle" placeholder="e.g. Senior Angular Developer" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>{{ i18n.isRtl() ? 'القسم المسؤول' : 'Department' }}</label>
+            <select [(ngModel)]="newJobDept" name="newJobDept" class="form-select">
+              <option value="القسم التقني">القسم التقني (Technology)</option>
+              <option value="إدارة المبيعات">إدارة المبيعات (Sales)</option>
+              <option value="التصميم والهوية">التصميم والهوية (Design & Branding)</option>
+              <option value="الموارد البشرية">الموارد البشرية (Human Resources)</option>
+              <option value="القسم المالي">القسم المالي (Finance)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary-outline" (click)="closeJobModal()">{{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}</button>
+          <button class="btn btn-primary" (click)="saveJob()">{{ i18n.isRtl() ? 'إضافة الوظيفة' : 'Add Job' }}</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal 2: Add Candidate -->
+  @if (showCandidateModal()) {
+    <div class="modal-overlay" (click)="closeCandidateModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-user-plus"></i> {{ i18n.isRtl() ? 'إضافة طلب مرشح جديد' : 'Add New Candidate' }}</h3>
+          <button class="btn-close-modal" (click)="closeCandidateModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>{{ i18n.isRtl() ? 'الاسم الكامل للمرشح' : 'Candidate Full Name' }}</label>
+            <input type="text" [(ngModel)]="newCandidateName" name="newCandidateName" placeholder="e.g. محمد الحربي" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>{{ i18n.isRtl() ? 'الوظيفة المتقدم لها' : 'Applying Position' }}</label>
+            @if (hasOpenVacancies()) {
+              <select [(ngModel)]="newCandidateRole" name="newCandidateRole" class="form-select">
+                @for (job of vacancies(); track job.id) {
+                  @if (job.status === 'Open') {
+                    <option [value]="job.title">{{ job.title }}</option>
+                  }
+                }
+              </select>
+            } @else {
+              <input 
+                type="text" 
+                [(ngModel)]="newCandidateRole" 
+                name="newCandidateRole" 
+                [placeholder]="i18n.isRtl() ? 'اكتب اسم الوظيفة...' : 'Type position title...'" 
+                class="form-input" 
+              />
+            }
+          </div>
+          <div class="form-group">
+            <label>{{ i18n.isRtl() ? 'المرحلة الأولية في التعيين' : 'Initial Hiring Stage' }}</label>
+            <select [(ngModel)]="newCandidateStage" name="newCandidateStage" class="form-select">
+              @for (stg of stages; track stg.key) {
+                <option [value]="stg.key">{{ i18n.isRtl() ? stg.nameAr : stg.nameEn }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ i18n.isRtl() ? 'التقييم الأولي (نجوم)' : 'Initial Rating (Stars)' }}</label>
+            <select [(ngModel)]="newCandidateRating" name="newCandidateRating" class="form-select">
+              <option [value]="1">⭐ (1)</option>
+              <option [value]="2">⭐⭐ (2)</option>
+              <option [value]="3">⭐⭐⭐ (3)</option>
+              <option [value]="4">⭐⭐⭐⭐ (4)</option>
+              <option [value]="5" selected>⭐⭐⭐⭐⭐ (5)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary-outline" (click)="closeCandidateModal()">{{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}</button>
+          <button class="btn btn-primary" (click)="saveCandidate()">{{ i18n.isRtl() ? 'إضافة المرشح' : 'Add Candidate' }}</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
