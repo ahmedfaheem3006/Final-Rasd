@@ -1,0 +1,259 @@
+<div class="page-container">
+  <header class="page-header animate-fade-in">
+    <div class="header-info">
+      <div class="breadcrumbs">
+        <i class="fa-solid fa-building"></i>
+        {{ i18n.t('clients.breadcrumbs') }}
+      </div>
+      <h1>{{ i18n.t('clients.title') }}</h1>
+      <p class="subtitle">{{ i18n.t('clients.subtitle') }}</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="onExport()">
+        <i class="fa-solid fa-file-export"></i>
+        <span>{{ i18n.t('common.export') }}</span>
+      </button>
+      <button class="btn btn-primary" (click)="openAddModal()">
+        <i class="fa-solid fa-plus"></i>
+        <span>{{ i18n.t('clients.btn.add') }}</span>
+      </button>
+    </div>
+  </header>
+
+  @if (loadingStats()) {
+    <div class="premium-stats-grid">
+      @for (s of [1,2,3,4]; track s) {
+        <div class="premium-stat-card skeleton">
+          <div class="premium-stat-content">
+            <div class="premium-stat-top"><div class="skeleton-icon"></div></div>
+            <div class="skeleton-value"></div>
+            <div class="skeleton-label"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="premium-stats-grid animate-reveal">
+      @for (card of stats(); track card.label; let i = $index) {
+        <div class="premium-stat-card accent-{{ card.color }}">
+          <div class="premium-stat-glow"></div>
+          <div class="premium-stat-gradient-bar"></div>
+          <div class="premium-stat-content">
+            <div class="premium-stat-top">
+              <div class="premium-stat-icon-wrap icon-{{ card.color }}">
+                <i class="fa-solid {{ card.icon }}"></i>
+              </div>
+            </div>
+            <div class="premium-stat-value">{{ card.value }}</div>
+            <div class="premium-stat-label">{{ i18n.t(card.label) }}</div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="card table-card animate-reveal">
+    <div class="card-header">
+      <div>
+        <h3>{{ i18n.t('clients.list.title') }}</h3>
+        <p class="subtitle">{{ i18n.t('clients.list.subtitle') }}</p>
+      </div>
+      <div class="filters-row">
+        <select class="filter-select" [value]="filterStatus()" (change)="onStatusFilter($event)">
+          <option value="all">{{ i18n.t('clients.filter.all') }}</option>
+          <option value="active">{{ i18n.t('users.status.active') }}</option>
+          <option value="inactive">{{ i18n.t('users.status.inactive') }}</option>
+        </select>
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" [placeholder]="i18n.t('clients.search.placeholder')" (input)="onSearch($event)" />
+        </div>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('clients.table.company') }}</th>
+            <th>{{ i18n.t('clients.table.owner') }}</th>
+            <th>{{ i18n.t('clients.table.email') }}</th>
+            <th>{{ i18n.t('clients.table.phone') }}</th>
+            <th>{{ i18n.t('clients.table.industry') }}</th>
+            <th>{{ i18n.t('clients.table.balance') }}</th>
+            <th>{{ i18n.t('clients.table.status') }}</th>
+            <th>{{ i18n.t('clients.table.date') }}</th>
+            <th>{{ i18n.t('clients.table.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (clientsLoading()) {
+            <tr>
+              <td colspan="9" style="text-align:center;padding:40px 20px">
+                <div class="table-state">
+                  <i class="fa-solid fa-spinner fa-spin" style="font-size:1.4rem;color:var(--text-muted)"></i>
+                  <p style="margin:10px 0 0;color:var(--text-muted);font-size:0.9rem">{{ i18n.t('common.loading') }}</p>
+                </div>
+              </td>
+            </tr>
+          } @else if (filteredClients().length === 0) {
+            <tr>
+              <td colspan="9" style="text-align:center;padding:40px 20px">
+                <div class="table-state">
+                  <i class="fa-solid fa-building" style="font-size:1.4rem;color:var(--text-muted)"></i>
+                  <p style="margin:10px 0 0;color:var(--text-muted);font-size:0.9rem">{{ i18n.t('clients.no_data') }}</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (client of filteredClients(); track client.id) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-sm" style="background:rgba(67,24,255,0.08);color:#4318ff">
+                      <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="user-info">
+                      <div class="user-name-cell">{{ client.companyName }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-muted" style="font-weight:500;color:var(--text-title)">{{ client.ownerName }}</td>
+                <td class="text-muted">{{ client.email }}</td>
+                <td class="text-muted">{{ client.phone }}</td>
+                <td class="text-muted">{{ client.industry ? i18n.t('clients.industry.' + client.industry) : '—' }}</td>
+                <td class="text-muted" style="font-weight:600">${{ client.outstandingBalance?.toLocaleString() || '0' }}</td>
+                <td>
+                  @if (client.status === 'Active') {
+                    <span class="badge badge-success"><i class="fa-solid fa-circle" style="font-size:6px"></i> {{ i18n.t('users.status.active') }}</span>
+                  } @else {
+                    <span class="badge badge-secondary"><i class="fa-solid fa-circle" style="font-size:6px"></i> {{ i18n.t('users.status.inactive') }}</span>
+                  }
+                </td>
+                <td class="text-muted">{{ formatDate(client.createdAt) }}</td>
+                <td>
+                  <div class="actions">
+                    <button class="action-btn edit" (click)="openDetailModal(client.id)" [title]="i18n.t('common.view')">
+                      <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button class="action-btn edit" (click)="openEditModal(client)" [title]="i18n.t('common.edit')">
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="action-btn delete" (click)="onDelete(client)" [title]="i18n.t('common.delete')">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div #modalOverlay class="premium-modal-overlay" [class.active]="showAddModal()" [class.light]="isLightTheme" (click)="closeAddModal()">
+  <div #premiumModal class="premium-modal" [class.active]="showAddModal()" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    @if (showSuccess()) {
+      <div class="premium-success">
+        <div class="success-particles"><span class="particle p1"></span><span class="particle p2"></span><span class="particle p3"></span></div>
+        <div class="success-icon-wrap">
+          <div class="success-glow"></div>
+          <div class="success-ring"></div>
+          <div class="success-circle">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8" /></svg>
+          </div>
+        </div>
+        <div class="success-badge">{{ i18n.t('clients.success_title') }}</div>
+        <h3 class="success-title">{{ i18n.t('clients.success_msg') }}</h3>
+        <p class="success-desc">{{ i18n.t('clients.success_desc') }}</p>
+        <div class="success-divider"></div>
+        <div class="success-actions">
+          <button class="success-btn success-btn-primary" (click)="closeAddModal()"><i class="fa-solid fa-building"></i> {{ i18n.t('clients.view_list') }}</button>
+          <button class="success-btn success-btn-ghost" (click)="closeAddModal()">{{ i18n.t('common.close') }}</button>
+        </div>
+      </div>
+    } @else {
+      <div class="premium-header">
+        <div class="premium-header-left">
+          <div class="premium-header-icon"><i class="fa-solid fa-building"></i></div>
+          <div class="premium-header-text">
+            <h2 class="premium-title">{{ isEditing() ? i18n.t('clients.modal.edit_title') : i18n.t('clients.modal.title') }}</h2>
+            <p class="premium-subtitle">{{ i18n.t('clients.modal.subtitle') }}</p>
+          </div>
+        </div>
+        <button class="premium-close-btn" (click)="closeAddModal()" type="button"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="premium-header-divider"></div>
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="premium-body">
+          <div class="premium-section">
+            <div class="premium-section-header"><i class="fa-solid fa-building"></i> <span>{{ i18n.t('clients.form.company_info') }}</span></div>
+            <div class="premium-form-grid">
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <input id="cCompany" type="text" [(ngModel)]="companyName" name="companyName" required placeholder=" " class="premium-input" />
+                  <i class="fa-solid fa-building premium-input-icon"></i>
+                  <label for="cCompany" class="premium-label">{{ i18n.t('clients.form.company_name') }}</label>
+                </div>
+              </div>
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <input id="cOwner" type="text" [(ngModel)]="ownerName" name="ownerName" required placeholder=" " class="premium-input" />
+                  <i class="fa-solid fa-user premium-input-icon"></i>
+                  <label for="cOwner" class="premium-label">{{ i18n.t('clients.form.owner_name') }}</label>
+                </div>
+              </div>
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <input id="cEmail" type="email" [(ngModel)]="email" name="email" required placeholder=" " class="premium-input" dir="ltr" />
+                  <i class="fa-solid fa-envelope premium-input-icon"></i>
+                  <label for="cEmail" class="premium-label">{{ i18n.t('common.email') }}</label>
+                </div>
+              </div>
+              <div class="premium-field">
+                <div class="premium-input-wrapper">
+                  <input id="cPhone" type="tel" [(ngModel)]="phone" name="phone" required placeholder=" " class="premium-input" dir="ltr" />
+                  <i class="fa-solid fa-phone premium-input-icon"></i>
+                  <label for="cPhone" class="premium-label">{{ i18n.t('clients.table.phone') }}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="premium-section">
+            <div class="premium-section-header"><i class="fa-solid fa-toggle-on"></i> <span>{{ i18n.t('common.status') }}</span></div>
+            <div class="premium-role-grid" style="grid-template-columns:1fr 1fr">
+              <div class="premium-role-card" [class.selected]="clientStatus === 'Active'" (click)="clientStatus = 'Active'">
+                <div class="premium-role-card-icon" [class.selected]="clientStatus === 'Active'"><i class="fa-solid fa-check-circle"></i></div>
+                <div class="premium-role-card-info"><span class="premium-role-card-title">{{ i18n.t('users.status.active') }}</span></div>
+                @if (clientStatus === 'Active') { <div class="premium-role-card-check"><i class="fa-solid fa-check"></i></div> }
+              </div>
+              <div class="premium-role-card" [class.selected]="clientStatus === 'Inactive'" (click)="clientStatus = 'Inactive'">
+                <div class="premium-role-card-icon" [class.selected]="clientStatus === 'Inactive'"><i class="fa-solid fa-ban"></i></div>
+                <div class="premium-role-card-info"><span class="premium-role-card-title">{{ i18n.t('users.status.inactive') }}</span></div>
+                @if (clientStatus === 'Inactive') { <div class="premium-role-card-check"><i class="fa-solid fa-check"></i></div> }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="premium-footer">
+          <button type="button" class="premium-btn premium-btn-ghost" (click)="closeAddModal()"><i class="fa-solid fa-xmark"></i> {{ i18n.t('common.cancel') }}</button>
+          <button type="submit" class="premium-btn premium-btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="premium-btn-loader"></span> {{ i18n.t('common.loading') }}
+            } @else {
+              <i class="fa-solid fa-check"></i> {{ isEditing() ? i18n.t('common.save') : i18n.t('clients.btn.add') }}
+            }
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>
+
+@if (selectedDetailId()) {
+  <app-client-detail [clientId]="selectedDetailId()" (close)="closeDetailModal()"></app-client-detail>
+}

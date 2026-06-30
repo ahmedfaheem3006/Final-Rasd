@@ -37,12 +37,12 @@ public class InvoicesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceDto createInvoiceDto)
     {
-        if (_tenantContext.TenantId == null)
+        if (_tenantContext.TenantId == null || _tenantContext.UserId == null)
         {
-            return BadRequest(new { success = false, message = "معرف الشركة غير متوفر في السياق" });
+            return BadRequest(new { success = false, message = "بيانات السياق غير مكتملة" });
         }
 
-        var result = await _invoiceService.CreateInvoiceAsync(createInvoiceDto, _tenantContext.TenantId.Value);
+        var result = await _invoiceService.CreateInvoiceAsync(createInvoiceDto, _tenantContext.TenantId.Value, _tenantContext.UserId.Value);
         return Ok(new { success = true, message = "تم إنشاء الفاتورة بنجاح", data = result });
     }
 

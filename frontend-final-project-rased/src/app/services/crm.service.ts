@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class CrmService {
   private http = inject(HttpClient);
-  private customersUrl = 'http://localhost:5092/api/Customers';
-  private dealsUrl = 'http://localhost:5092/api/Deals';
+  private customersUrl = 'http://localhost:5292/api/Customers';
+  private dealsUrl = 'http://localhost:5292/api/Deals';
 
   getClients(): Observable<any> {
     return this.http.get<any>(this.customersUrl);

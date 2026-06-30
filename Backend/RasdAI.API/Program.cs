@@ -38,6 +38,12 @@ builder.Services.AddScoped<IMeetingService, MeetingService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IAccountantService, AccountantService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IClientFinancialService, ClientFinancialService>();
+builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
+builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IRecruitmentService, RecruitmentService>();
 
 // Configure JWT Authentication

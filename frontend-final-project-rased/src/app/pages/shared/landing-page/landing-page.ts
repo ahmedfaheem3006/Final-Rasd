@@ -526,7 +526,7 @@ export class LandingPage implements OnInit, OnDestroy, AfterViewInit {
       message: this.contactData.message
     };
 
-    this.http.post<any>('http://localhost:5092/api/Contact/submit', payload).subscribe({
+    this.http.post<any>('http://localhost:5292/api/Contact/submit', payload).subscribe({
       next: (res) => {
         this.isSubmittingContact.set(false);
         this.contactFeedbackSuccess.set(true);

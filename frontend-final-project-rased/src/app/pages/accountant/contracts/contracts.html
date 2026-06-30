@@ -1,0 +1,139 @@
+<div class="page-container" [attr.data-theme]="isLightTheme ? 'light' : 'dark'">
+
+  <!-- ══ PAGE HEADER ══ -->
+  <div class="page-header glass-header">
+    <div class="header-left">
+      <div class="header-icon-wrap">
+        <i class="fa-solid fa-file-contract"></i>
+      </div>
+      <div class="header-titles">
+        <h1 class="gradient-text">{{ i18n.currentLang() === 'ar' ? 'العقود' : 'Contracts' }}</h1>
+        <p class="subtitle">{{ i18n.currentLang() === 'ar' ? 'عرض وإدارة جميع عقود العملاء' : 'View and manage all client contracts' }}</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input
+          id="contracts-search"
+          type="text"
+          class="search-input"
+          [placeholder]="i18n.currentLang() === 'ar' ? 'بحث عن عقد أو عميل...' : 'Search contract or client...'"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STAT CARDS ══ -->
+  <div class="stats-grid">
+    <div class="stat-card" *ngFor="let stat of stats(); let i = index" [ngClass]="'card-' + stat.color" [style.animation-delay]="(i * 80) + 'ms'">
+      <div class="stat-card-glow"></div>
+      <div class="stat-icon-wrap" [ngClass]="'icon-' + stat.color">
+        <i class="fa-solid" [ngClass]="stat.icon"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
+      </div>
+      <div class="stat-trend-line" [ngClass]="'trend-' + stat.color"></div>
+    </div>
+  </div>
+
+  <!-- ══ CONTRACTS TABLE ══ -->
+  <div class="table-panel glass-card">
+    <div class="table-panel-header">
+      <div class="table-title-wrap">
+        <i class="fa-solid fa-table-list text-primary"></i>
+        <span class="table-title">{{ i18n.currentLang() === 'ar' ? 'قائمة العقود' : 'Contracts List' }}</span>
+        <span class="contracts-count-badge">{{ contracts().length }}</span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="contracts-table">
+        <thead>
+          <tr>
+            <th>{{ i18n.currentLang() === 'ar' ? 'رقم العقد' : 'Contract #' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'عنوان العقد' : 'Title' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'العميل' : 'Client' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'القيمة' : 'Value' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'تاريخ البدء' : 'Start' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'تاريخ الانتهاء' : 'End' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'الحالة' : 'Status' }}</th>
+            <th>{{ i18n.currentLang() === 'ar' ? 'إجراءات' : 'Actions' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of contracts(); let i = index" class="table-row" [style.animation-delay]="(i * 40) + 'ms'">
+            <td>
+              <span class="contract-number-badge">
+                <i class="fa-solid fa-hashtag"></i>
+                {{ c.contractNumber }}
+              </span>
+            </td>
+            <td>
+              <div class="contract-title-cell">
+                <div class="contract-dot"></div>
+                <span class="contract-title-text">{{ c.title }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="client-cell">
+                <div class="client-avatar">{{ c.client.charAt(0) }}</div>
+                <span class="client-name">{{ c.client }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="amount-chip">{{ c.amount }}</span>
+            </td>
+            <td>
+              <span class="date-cell">
+                <i class="fa-regular fa-calendar"></i>
+                {{ c.startDate }}
+              </span>
+            </td>
+            <td>
+              <span class="date-cell end-date">
+                <i class="fa-regular fa-calendar-xmark"></i>
+                {{ c.endDate }}
+              </span>
+            </td>
+            <td>
+              <span class="status-pill" [ngClass]="'status-' + c.status.toLowerCase()">
+                <span class="status-dot"></span>
+                {{ c.status === 'active'  ? (i18n.currentLang() === 'ar' ? 'نشط'    : 'Active')   :
+                   c.status === 'draft'   ? (i18n.currentLang() === 'ar' ? 'مسودة'  : 'Draft')    :
+                   c.status === 'expired' ? (i18n.currentLang() === 'ar' ? 'منتهي'  : 'Expired')  : c.status }}
+              </span>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn view-btn"
+                  [title]="i18n.currentLang() === 'ar' ? 'عرض التفاصيل' : 'View Details'"
+                  [routerLink]="['/app/accountant/contracts', c.id]">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="contracts().length === 0">
+            <td colspan="8">
+              <div class="empty-state">
+                <div class="empty-icon-wrap">
+                  <i class="fa-regular fa-folder-open"></i>
+                </div>
+                <p class="empty-title">{{ i18n.currentLang() === 'ar' ? 'لا توجد عقود' : 'No Contracts Found' }}</p>
+                <p class="empty-sub">{{ i18n.currentLang() === 'ar' ? 'لا توجد عقود تطابق بحثك الحالي' : 'No contracts match your current search' }}</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

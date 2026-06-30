@@ -7,7 +7,7 @@ import { Observable, tap } from 'rxjs';
 })
 export class LeaveService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5092/api/LeaveRequests';
+  private baseUrl = 'http://localhost:5292/api/LeaveRequests';
 
   public pendingCount = signal<number>(0);
 

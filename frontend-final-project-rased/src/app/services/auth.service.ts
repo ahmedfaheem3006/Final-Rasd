@@ -27,7 +27,7 @@ export class AuthService {
 
   private router = inject(Router);
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5092/api/Auth';
+  private baseUrl = 'http://localhost:5292/api/Auth';
 
   currentUser = signal<User | null>(null);
   isAuthenticated = computed(() => this.currentUser() !== null);

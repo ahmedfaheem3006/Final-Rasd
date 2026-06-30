@@ -8,7 +8,7 @@ namespace RasdAI.BLL.Interfaces;
 public interface IInvoiceService
 {
     Task<List<InvoiceDto>> GetInvoicesAsync(Guid tenantId);
-    Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceDto createInvoiceDto, Guid tenantId);
+    Task<InvoiceDto> CreateInvoiceAsync(CreateInvoiceDto createInvoiceDto, Guid tenantId, int userId);
     Task<byte[]> GenerateInvoicePdfAsync(int invoiceId, Guid tenantId);
     Task<bool> UpdateInvoiceStatusAsync(int invoiceId, string status, Guid tenantId);
 }

@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class TaskService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5092/api/Tasks';
+  private baseUrl = 'http://localhost:5292/api/Tasks';
 
   getTasks(): Observable<any> {
     return this.http.get<any>(this.baseUrl);
