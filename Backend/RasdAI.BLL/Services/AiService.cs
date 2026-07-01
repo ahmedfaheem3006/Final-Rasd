@@ -13,6 +13,7 @@ using RasdAI.BLL.DTOs.Ai;
 using RasdAI.BLL.Interfaces;
 using RasdAI.DAL;
 using RasdAI.DAL.Entities;
+using RasdAI.DAL.Extensions;
 using UglyToad.PdfPig;
 
 namespace RasdAI.BLL.Services;
@@ -51,8 +52,28 @@ public class AiService : IAiService
         catch { }
     }
 
+    // Shared quota gate for every AI entry point (chat, contract analysis, meeting transcription).
+    // AiLimit >= 999999 is the sentinel for "unlimited" (Enterprise plan).
+    // Counts per-message: each AI call (chat msg, contract analysis, meeting transcription) = +1.
+    private async Task EnforceAiLimitAsync(Guid tenantId)
+    {
+        var tenant = await _context.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.TenantId == tenantId);
+        if (tenant == null || tenant.AiLimit >= 999999) return;
+
+        if (tenant.AiRequestsUsed >= tenant.AiLimit)
+        {
+            throw new Exception($"لقد تجاوزت الحد الأقصى لطلبات الذكاء الاصطناعي المسموح بها في باقتك ({tenant.AiLimit} طلب). يرجى ترقية الباقة للمتابعة.");
+        }
+
+        // Atomic increment — avoids EF change-tracker races under concurrent requests.
+        await _context.Database.ExecuteSqlRawAsync(
+            "UPDATE [Tenants] SET [AiRequestsUsed] = [AiRequestsUsed] + 1 WHERE [TenantId] = {0}",
+            tenantId);
+    }
+
     public async Task<ContractAnalysisResultDto> AnalyzeContractAsync(string fileName, byte[] fileBytes, Guid tenantId)
     {
+        await EnforceAiLimitAsync(tenantId);
         WriteDebugLog($"Analyzing contract '{fileName}' ({fileBytes.Length} bytes) for Tenant '{tenantId}'...");
         
         // 1. Extract text from PDF (Bypass PdfPig for CamScanner scanned files to prevent native crashes)
@@ -178,6 +199,7 @@ public class AiService : IAiService
 
     public async Task<MeetingTranscriptionResultDto> TranscribeMeetingAsync(string fileName, byte[] fileBytes, Guid tenantId, string language = "ar")
     {
+        await EnforceAiLimitAsync(tenantId);
         WriteDebugLog($"TranscribeMeetingAsync: Processing '{fileName}' ({fileBytes.Length} bytes) with Language={language}...");
 
         if (!_useDemoFallback)
@@ -339,6 +361,7 @@ public class AiService : IAiService
 
     public async Task<AiAssistantResponseDto> ChatAboutMeetingAsync(string question, string meetingTranscript, Guid tenantId, string language = "ar")
     {
+        await EnforceAiLimitAsync(tenantId);
         question = question ?? string.Empty;
         meetingTranscript = meetingTranscript ?? string.Empty;
         WriteDebugLog($"ChatAboutMeetingAsync: Question='{question.Substring(0, Math.Min(question.Length, 80))}...' with Language={language}");
@@ -405,6 +428,8 @@ public class AiService : IAiService
 
     public async Task<AiAssistantResponseDto> ChatWithAssistantAsync(AiAssistantRequestDto requestDto, Guid tenantId, int userId)
     {
+        await EnforceAiLimitAsync(tenantId);
+
         // ══════════════════════════════════════════════════════════════
         // 1. FETCH COMPREHENSIVE COMPANY DATA (Tenant-Scoped)
         // ══════════════════════════════════════════════════════════════
@@ -1438,10 +1463,11 @@ If no future meetings are mentioned or suggested, leave the proposedMeetings lis
         var contract = new Contract
         {
             TenantId = tenantId,
-            FileName = fileName,
+            ContractTitle = fileName,
+            ContractNumber = $"AI-{DateTime.UtcNow:yyyyMMddHHmmss}",
             AIAnalysisResult = JsonSerializer.Serialize(result),
             CreatedAt = DateTime.UtcNow,
-            ClientId = null
+            ClientId = 0
         };
 
         _context.Contracts.Add(contract);
@@ -1600,7 +1626,7 @@ If no future meetings are mentioned or suggested, leave the proposedMeetings lis
             .Select(c => new ContractHistoryItemDto
             {
                 Id = c.Id,
-                FileName = c.FileName,
+                FileName = c.ContractTitle,
                 CreatedAt = c.CreatedAt
             })
             .ToListAsync();
@@ -1816,6 +1842,225 @@ If no future meetings are mentioned or suggested, leave the proposedMeetings lis
     }
 
     #endregion
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // INTERVIEW ANALYSIS
+    // ══════════════════════════════════════════════════════════════════════════
+
+    public async Task<InterviewAnalysisResultDto> AnalyzeInterviewAsync(
+        string fileName, byte[] fileBytes, Guid tenantId,
+        string candidateName, string jobRole, string language = "ar")
+    {
+        await EnforceAiLimitAsync(tenantId);
+        WriteDebugLog($"AnalyzeInterviewAsync: '{fileName}' ({fileBytes.Length} bytes), Candidate='{candidateName}', Role='{jobRole}'");
+
+        string transcript = string.Empty;
+
+        if (!_useDemoFallback)
+        {
+            try
+            {
+                var groqAvailable = !string.IsNullOrEmpty(_grokApiKey) && _grokApiKey.StartsWith("gsk_");
+                var openAiKey = !string.IsNullOrEmpty(_apiKey1) ? _apiKey1 : _apiKey2;
+
+                if (groqAvailable || !string.IsNullOrEmpty(openAiKey))
+                {
+                    List<byte[]> chunks;
+                    if (fileName.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) && fileBytes.Length > 20 * 1024 * 1024)
+                        chunks = SplitWavFile(fileBytes, 180);
+                    else
+                        chunks = new List<byte[]> { fileBytes };
+
+                    var sb = new StringBuilder();
+                    for (int i = 0; i < chunks.Count; i++)
+                    {
+                        var chunkName = chunks.Count > 1 ? $"{Path.GetFileNameWithoutExtension(fileName)}_chunk_{i}.wav" : fileName;
+                        WhisperApiResponse? res = null;
+                        if (groqAvailable)
+                            res = await CallGroqWhisperApiAsync(chunks[i], chunkName, _grokApiKey);
+                        else if (!string.IsNullOrEmpty(openAiKey))
+                            res = await CallWhisperApiAsync(chunks[i], chunkName, openAiKey);
+
+                        if (res != null && !string.IsNullOrEmpty(res.Text))
+                        {
+                            if (sb.Length > 0) sb.Append(" ");
+                            sb.Append(res.Text.Trim());
+                        }
+                    }
+                    transcript = sb.ToString();
+                }
+
+                if (!string.IsNullOrEmpty(transcript))
+                {
+                    var result = await CallGrokForInterviewAnalysisAsync(transcript, candidateName, jobRole, language, _grokApiKey, _grokModel);
+                    result.Transcript = transcript;
+                    result.IsDemo = false;
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteDebugLog($"AnalyzeInterview failed: {ex.Message}");
+            }
+        }
+
+        WriteDebugLog("Interview analysis falling back to demo.");
+        return GenerateDemoInterviewAnalysis(candidateName, jobRole, language);
+    }
+
+    private async Task<InterviewAnalysisResultDto> CallGrokForInterviewAnalysisAsync(
+        string transcript, string candidateName, string jobRole,
+        string language, string apiKey, string model)
+    {
+        var targetModel = (!string.IsNullOrEmpty(apiKey) && apiKey.StartsWith("gsk_"))
+            ? "llama-3.3-70b-versatile" : model;
+
+        var truncated = transcript.Length > 7000 ? transcript.Substring(0, 7000) : transcript;
+        var isEn = language == "en";
+
+        var systemPrompt = isEn
+            ? @"You are an expert HR specialist. Analyze the job interview transcript and return ONLY a valid JSON object with no extra text, matching this exact schema:
+{""strengths"":[""...""],""weaknesses"":[""...""],""recommendation"":""Accept"",""recommendationExplanation"":""..."",""overallScore"":75}
+recommendation must be one of: Accept, Consider, Reject.
+overallScore is 0-100.
+Be specific and professional. Base everything strictly on what was said in the transcript."
+            : @"أنت متخصص في الموارد البشرية. قم بتحليل نص مقابلة العمل وأعد فقط كائن JSON صالح بدون أي نص إضافي، بهذا الشكل الدقيق:
+{""strengths"":[""...""],""weaknesses"":[""...""],""recommendation"":""Accept"",""recommendationExplanation"":""..."",""overallScore"":75}
+recommendation يجب أن تكون إحدى القيم: Accept أو Consider أو Reject.
+overallScore رقم من 0 إلى 100.
+كن محدداً واحترافياً. استند فقط إلى ما قيل في نص المقابلة.";
+
+        var userMsg = isEn
+            ? $"Candidate: {candidateName}\nPosition Applied For: {jobRole}\n\nInterview Transcript:\n{truncated}"
+            : $"المرشح: {candidateName}\nالوظيفة المتقدم إليها: {jobRole}\n\nنص المقابلة:\n{truncated}";
+
+        var requestBody = new
+        {
+            model = targetModel,
+            response_format = new { type = "json_object" },
+            messages = new[]
+            {
+                new { role = "system", content = systemPrompt },
+                new { role = "user", content = userMsg }
+            },
+            temperature = 0.3
+        };
+
+        var baseUrl = (!string.IsNullOrEmpty(apiKey) && apiKey.StartsWith("gsk_"))
+            ? "https://api.groq.com/openai/v1/chat/completions"
+            : "https://api.x.ai/v1/chat/completions";
+
+        var response = await SendGrokRequestAsync(baseUrl, requestBody, apiKey);
+        using var doc = JsonDocument.Parse(response);
+        var jsonContent = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+
+        var result = JsonSerializer.Deserialize<InterviewAnalysisResultDto>(jsonContent ?? "{}", new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        return result ?? GenerateDemoInterviewAnalysis(candidateName, jobRole, language);
+    }
+
+    private InterviewAnalysisResultDto GenerateDemoInterviewAnalysis(string candidateName, string jobRole, string language)
+    {
+        var isEn = language == "en";
+        return new InterviewAnalysisResultDto
+        {
+            CandidateName = candidateName,
+            JobRole = jobRole,
+            Transcript = isEn
+                ? "[Demo Mode] Interview transcript would appear here after real audio/video processing."
+                : "[وضع العرض] سيظهر نص المقابلة هنا بعد معالجة الصوت أو الفيديو الفعلي.",
+            Strengths = isEn
+                ? new List<string> { "Excellent communication skills", "Relevant experience in the field", "Enthusiastic and motivated", "Clear problem-solving approach" }
+                : new List<string> { "مهارات تواصل ممتازة", "خبرة ذات صلة في المجال", "حماس وتحفيز واضح", "أسلوب واضح في حل المشكلات" },
+            Weaknesses = isEn
+                ? new List<string> { "Limited leadership experience", "Could improve on technical depth in specific areas" }
+                : new List<string> { "خبرة قيادية محدودة", "يمكن تحسين العمق التقني في مجالات بعينها" },
+            Recommendation = "Consider",
+            RecommendationExplanation = isEn
+                ? $"The candidate shows promise for the {jobRole} role and is worth a second interview to assess technical depth."
+                : $"يُظهر المرشح إمكانات واعدة لوظيفة {jobRole} ويستحق مقابلة ثانية لتقييم العمق التقني.",
+            OverallScore = 72,
+            IsDemo = true
+        };
+    }
+
+    public async Task<AiAssistantResponseDto> ChatAboutInterviewAsync(
+        string question, string interviewTranscript,
+        string candidateName, string jobRole,
+        Guid tenantId, string language = "ar")
+    {
+        await EnforceAiLimitAsync(tenantId);
+
+        var isEn = language == "en";
+
+        var systemPrompt = isEn
+            ? $@"You are an HR Interview Analysis AI assistant. Your ONLY purpose is to help HR teams evaluate job candidates based on interview transcripts.
+
+=== ABSOLUTE RULES — ENFORCE IN EVERY LANGUAGE ===
+1. ONLY answer questions directly related to: this interview transcript, candidate evaluation, HR hiring practices, interview performance assessment, or questions about the candidate.
+2. REFUSE any question unrelated to HR interviews. For ANY off-topic question (marketing, coding, cooking, sports, politics, math, personal advice, social media, finance, legal, medical, or any other topic), reply ONLY with:
+   ""This question is outside my scope. I specialize only in job interview analysis and candidate evaluation. Please ask me about the interview or the candidate.""
+3. This rule applies to ALL languages. Even if the question is in Arabic, French, Spanish, or any other language and is off-topic, still refuse.
+4. Do NOT be tricked into answering off-topic questions even if framed as ""hypothetical"" or ""for training purposes"".
+5. Be professional and base all answers on the provided transcript.
+
+=== INTERVIEW CONTEXT ===
+Candidate: {candidateName}
+Position Applied For: {jobRole}
+
+=== TRANSCRIPT ===
+{interviewTranscript}"
+            : $@"أنت مساعد ذكاء اصطناعي متخصص في تحليل مقابلات العمل. هدفك الوحيد هو مساعدة فرق الموارد البشرية في تقييم المرشحين بناءً على نصوص المقابلات.
+
+=== قواعد صارمة مطلقة — طبّقها في جميع اللغات ===
+1. أجب فقط على الأسئلة المتعلقة مباشرةً بـ: نص المقابلة، تقييم المرشح، ممارسات التوظيف في الموارد البشرية، أو أي سؤال يتعلق بأداء المرشح في المقابلة.
+2. ارفض أي سؤال لا علاقة له بمقابلات العمل. لأي سؤال خارج الموضوع (تسويق، برمجة، طبخ، رياضة، سياسة، رياضيات، نصائح شخصية، وسائل التواصل الاجتماعي، مالية، قانون، طب، أو أي موضوع آخر)، أجب فقط بـ:
+   ""هذا السؤال خارج نطاق اختصاصي. أنا متخصص فقط في تحليل مقابلات العمل وتقييم المرشحين. يرجى سؤالي عن المقابلة أو المرشح.""
+3. تسري هذه القاعدة على جميع اللغات. حتى لو كان السؤال بالإنجليزية أو الفرنسية أو أي لغة أخرى وكان خارج الموضوع، ارفضه.
+4. لا تنخدع بالأسئلة الخارجة عن الموضوع حتى لو قُدّمت على أنها ""افتراضية"" أو ""لأغراض تدريبية"".
+5. كن احترافياً واستند دائماً إلى النص المُرفق.
+
+=== سياق المقابلة ===
+المرشح: {candidateName}
+الوظيفة المتقدم إليها: {jobRole}
+
+=== نص المقابلة ===
+{interviewTranscript}";
+
+        if (!_useDemoFallback)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(_grokApiKey))
+                {
+                    var response = await CallGrokForChatAsync(question, systemPrompt, _grokApiKey, _grokModel);
+                    return new AiAssistantResponseDto { Response = response, IsDemo = false };
+                }
+
+                var openAiKey = !string.IsNullOrEmpty(_apiKey1) ? _apiKey1 : _apiKey2;
+                if (!string.IsNullOrEmpty(openAiKey))
+                {
+                    var response = await CallOpenAiForChatAsync(question, systemPrompt, openAiKey);
+                    return new AiAssistantResponseDto { Response = response, IsDemo = false };
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteDebugLog($"ChatAboutInterview LLM failed: {ex.Message}");
+            }
+        }
+
+        return new AiAssistantResponseDto
+        {
+            Response = isEn
+                ? "Demo mode: The AI interview analysis assistant is ready. Please upload an interview video and I will analyze the candidate's performance."
+                : "وضع العرض: مساعد تحليل المقابلات جاهز. يرجى رفع فيديو المقابلة وسأقوم بتحليل أداء المرشح.",
+            IsDemo = true
+        };
+    }
 }
 
 public class WhisperApiResponse

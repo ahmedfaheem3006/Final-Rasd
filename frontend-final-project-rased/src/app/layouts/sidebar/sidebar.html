@@ -493,6 +493,13 @@
           </div>
           <span class="nav-label">{{ i18n.t('sidebar.transcribe_meeting') }}</span>
         </a>
+
+        <a routerLink="/app/hr/interview-analysis" routerLinkActive="active" class="nav-item highlight" (click)="closeMobile()">
+          <div class="nav-icon ai-icon" style="filter: hue-rotate(135deg);">
+            <i class="fa-solid fa-user-magnifying-glass"></i>
+          </div>
+          <span class="nav-label">{{ i18n.isRtl() ? 'تحليل المقابلات' : 'Interview Analysis' }}</span>
+        </a>
       }
 
       <a routerLink="/app/owner/settings" routerLinkActive="active" class="nav-item" (click)="closeMobile()">

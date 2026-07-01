@@ -1,4 +1,5 @@
 <div class="recruitment-container animate-fade-in">
+
   <!-- Header -->
   <header class="page-header">
     <div class="header-info">
@@ -8,45 +9,45 @@
     </div>
   </header>
 
-  <!-- Metrics Dashboard Summary Row -->
+  <!-- Metrics Row -->
   <div class="recruitment-metrics">
     <div class="metric-card col-blue">
       <div class="metric-icon"><i class="fa-solid fa-users"></i></div>
       <div class="metric-info">
-        <span class="metric-value">{{ totalApplicants() }}</span>
+        <span class="metric-value">{{ isLoading() ? '—' : totalApplicants() }}</span>
         <span class="metric-label">{{ i18n.isRtl() ? 'إجمالي المتقدمين' : 'Total Applicants' }}</span>
       </div>
     </div>
     <div class="metric-card col-purple">
       <div class="metric-icon"><i class="fa-solid fa-briefcase"></i></div>
       <div class="metric-info">
-        <span class="metric-value">{{ openVacanciesCount() }}</span>
+        <span class="metric-value">{{ isLoading() ? '—' : openVacanciesCount() }}</span>
         <span class="metric-label">{{ i18n.isRtl() ? 'الوظائف الشاغرة النشطة' : 'Open Vacancies' }}</span>
       </div>
     </div>
     <div class="metric-card col-amber">
       <div class="metric-icon"><i class="fa-solid fa-comments"></i></div>
       <div class="metric-info">
-        <span class="metric-value">{{ inInterviewCount() }}</span>
+        <span class="metric-value">{{ isLoading() ? '—' : inInterviewCount() }}</span>
         <span class="metric-label">{{ i18n.isRtl() ? 'بانتظار المقابلات' : 'In Interview / Tech Test' }}</span>
       </div>
     </div>
     <div class="metric-card col-emerald">
       <div class="metric-icon"><i class="fa-solid fa-user-check"></i></div>
       <div class="metric-info">
-        <span class="metric-value">{{ hiredCount() }}</span>
+        <span class="metric-value">{{ isLoading() ? '—' : hiredCount() }}</span>
         <span class="metric-label">{{ i18n.isRtl() ? 'تم توظيفهم مؤخراً' : 'Hired Recently' }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Filters & Actions Header Bar -->
+  <!-- Filters & Actions Bar -->
   <div class="recruitment-actions-bar card">
     <div class="filter-controls">
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input 
-          type="text" 
+        <input
+          type="text"
           [placeholder]="i18n.isRtl() ? 'ابحث عن اسم مرشح أو دور...' : 'Search candidates, positions...'"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
@@ -54,9 +55,9 @@
         />
       </div>
       <div class="select-box">
-        <select 
-          [ngModel]="selectedDepartment()" 
-          (ngModelChange)="selectedDepartment.set($event)" 
+        <select
+          [ngModel]="selectedDepartment()"
+          (ngModelChange)="selectedDepartment.set($event)"
           class="filter-select"
         >
           <option value="all">{{ i18n.isRtl() ? 'جميع الأقسام' : 'All Departments' }}</option>
@@ -76,114 +77,148 @@
     </div>
   </div>
 
-  <!-- Split Panel Layout: Pipeline vs Jobs -->
+  <!-- Workspace -->
   <div class="recruitment-workspace">
-    <!-- Active Vacancies Panel (Left) -->
+
+    <!-- Vacancies Panel -->
     <div class="vacancies-panel">
       <div class="glass-card">
         <div class="card-header">
           <h3><i class="fa-solid fa-folder-open"></i> {{ i18n.isRtl() ? 'قائمة الوظائف الشاغرة' : 'Active Vacancies' }}</h3>
         </div>
-        
-        <div class="vacancies-list">
-          @for (job of filteredVacancies(); track job.id) {
-            <div class="vacancy-item" [class.closed]="job.status === 'Closed'">
-              <div class="job-meta">
-                <h4>{{ job.title }}</h4>
-                <div class="job-sub">
-                  <span class="dept-badge">{{ job.department }}</span>
-                  <span class="applicants-cnt"><i class="fa-solid fa-users"></i> {{ job.applicantsCount }}</span>
-                </div>
-              </div>
-              <div class="vacancy-actions">
-                <button 
-                  class="btn-status" 
-                  [class.open]="job.status === 'Open'" 
-                  (click)="toggleJobStatus(job.id)"
-                  [title]="i18n.isRtl() ? 'تغيير حالة الوظيفة' : 'Toggle vacancy status'"
-                >
-                  {{ job.status === 'Open' ? (i18n.isRtl() ? 'نشط' : 'Open') : (i18n.isRtl() ? 'مغلق' : 'Closed') }}
-                </button>
-                <button class="btn-delete" (click)="deleteJob(job.id, $event)" [title]="i18n.isRtl() ? 'حذف الوظيفة' : 'Delete Vacancy'">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              </div>
-            </div>
-          } @empty {
-            <div class="empty-vacancies">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-              <p>{{ i18n.isRtl() ? 'لا توجد وظائف مطابقة للبحث' : 'No matching vacancies found' }}</p>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
 
-    <!-- Candidate Kanban Board (Right) -->
-    <div class="pipeline-board-panel">
-      <div class="recruitment-pipeline-board">
-        @for (stage of stages; track stage.key) {
-          <div class="pipeline-column">
-            <div class="column-header" [style.border-top-color]="stage.color">
-              <span class="stage-name">{{ i18n.isRtl() ? stage.nameAr : stage.nameEn }}</span>
-              <span class="candidate-count" [style.background-color]="stage.color + '22'" [style.color]="stage.color">
-                {{ getCandidatesByStage(stage.key).length }}
-              </span>
-            </div>
-            
-            <div class="candidates-list-container">
-              @for (candidate of getCandidatesByStage(stage.key); track candidate.id) {
-                <div class="candidate-card animate-slide-in">
-                  <button class="btn-delete-candidate" (click)="deleteCandidate(candidate.id, $event)" [title]="i18n.isRtl() ? 'استبعاد المرشح' : 'Reject Candidate'">
-                    <i class="fa-solid fa-xmark"></i>
+        @if (isLoading()) {
+          <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span>{{ i18n.isRtl() ? 'جاري التحميل...' : 'Loading...' }}</span>
+          </div>
+        } @else {
+          <div class="vacancies-list">
+            @for (job of filteredVacancies(); track job.id) {
+              <div class="vacancy-item" [class.closed]="job.status === 'Closed'">
+                <div class="job-meta">
+                  <h4>{{ job.title }}</h4>
+                  <div class="job-sub">
+                    <span class="dept-badge">{{ job.department }}</span>
+                    <span class="applicants-cnt"><i class="fa-solid fa-users"></i> {{ job.applicantsCount }}</span>
+                  </div>
+                </div>
+                <div class="vacancy-actions">
+                  <button
+                    class="btn-status"
+                    [class.open]="job.status === 'Open'"
+                    (click)="toggleJobStatus(job.id)"
+                    [title]="i18n.isRtl() ? 'تغيير حالة الوظيفة' : 'Toggle status'"
+                  >
+                    {{ job.status === 'Open' ? (i18n.isRtl() ? 'نشط' : 'Open') : (i18n.isRtl() ? 'مغلق' : 'Closed') }}
                   </button>
-                  <div class="candidate-avatar" [style.background-color]="stage.color + '1A'" [style.color]="stage.color">
-                    {{ getInitials(candidate.name) }}
-                  </div>
-                  <div class="candidate-header">
-                    <h4>{{ candidate.name }}</h4>
-                    <div class="rating">
-                      @for (star of [1,2,3,4,5]; track star) {
-                        <i class="fa-solid fa-star" [class.active]="star <= candidate.rating"></i>
-                      }
-                    </div>
-                  </div>
-                  <span class="role-badge">{{ candidate.appliedRole }}</span>
-                  
-                  <div class="candidate-card-footer">
-                    <button 
-                      (click)="moveCandidate(candidate.id, 'backward')" 
-                      [disabled]="stage.key === 'applied'"
-                      class="btn-nav-stage" 
-                      [title]="i18n.isRtl() ? 'المرحلة السابقة' : 'Previous Stage'"
-                    >
-                      <i class="fa-solid" [ngClass]="i18n.isRtl() ? 'fa-angle-right' : 'fa-angle-left'"></i>
-                    </button>
-                    
-                    <button 
-                      (click)="moveCandidate(candidate.id, 'forward')" 
-                      [disabled]="stage.key === 'hired'"
-                      class="btn-nav-stage" 
-                      [title]="i18n.isRtl() ? 'المرحلة التالية' : 'Next Stage'"
-                    >
-                      <i class="fa-solid" [ngClass]="i18n.isRtl() ? 'fa-angle-left' : 'fa-angle-right'"></i>
-                    </button>
-                  </div>
+                  <button class="btn-delete" (click)="deleteJob(job.id, $event)" [title]="i18n.isRtl() ? 'حذف الوظيفة' : 'Delete Vacancy'">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
                 </div>
-              } @empty {
-                <div class="empty-stage-state">
-                  <i class="fa-solid fa-inbox"></i>
-                  <p>{{ i18n.isRtl() ? 'لا يوجد مرشحون' : 'No Candidates' }}</p>
-                </div>
-              }
-            </div>
+              </div>
+            } @empty {
+              <div class="empty-vacancies">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p>{{ i18n.isRtl() ? 'لا توجد وظائف مطابقة' : 'No vacancies found' }}</p>
+              </div>
+            }
           </div>
         }
       </div>
     </div>
+
+    <!-- Kanban Pipeline -->
+    <div class="pipeline-board-panel">
+      @if (isLoading()) {
+        <div class="loading-state-wide">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span>{{ i18n.isRtl() ? 'جاري تحميل المرشحين...' : 'Loading candidates...' }}</span>
+        </div>
+      } @else {
+        <div class="recruitment-pipeline-board">
+          @for (stage of stages; track stage.key) {
+            <div class="pipeline-column">
+              <div class="column-header" [style.border-top-color]="stage.color">
+                <span class="stage-name">{{ i18n.isRtl() ? stage.nameAr : stage.nameEn }}</span>
+                <span class="candidate-count"
+                  [style.background-color]="stage.color + '22'"
+                  [style.color]="stage.color">
+                  {{ getCandidatesByStage(stage.key).length }}
+                </span>
+              </div>
+
+              <div class="candidates-list-container">
+                @for (candidate of getCandidatesByStage(stage.key); track candidate.id) {
+                  <div class="candidate-card animate-slide-in">
+                    <button
+                      class="btn-delete-candidate"
+                      (click)="deleteCandidate(candidate.id, $event)"
+                      [title]="i18n.isRtl() ? 'استبعاد المرشح' : 'Reject Candidate'"
+                    >
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+
+                    <div class="candidate-avatar"
+                      [style.background-color]="stage.color + '1A'"
+                      [style.color]="stage.color">
+                      {{ getInitials(candidate.name) }}
+                    </div>
+
+                    <div class="candidate-header">
+                      <h4>{{ candidate.name }}</h4>
+                      <!-- Interactive star rating -->
+                      <div class="rating"
+                        (mouseleave)="ratingHover.set(null)"
+                        [title]="i18n.isRtl() ? 'انقر لتحديث التقييم' : 'Click to update rating'">
+                        @for (star of [1,2,3,4,5]; track star) {
+                          <i
+                            class="fa-solid fa-star"
+                            [class.active]="getEffectiveStar(candidate, star)"
+                            [class.hover-glow]="ratingHover()?.id === candidate.id && star <= (ratingHover()?.star ?? 0)"
+                            (mouseenter)="ratingHover.set({ id: candidate.id, star })"
+                            (click)="setRating(candidate.id, star)"
+                          ></i>
+                        }
+                      </div>
+                    </div>
+
+                    <span class="role-badge">{{ candidate.appliedRole }}</span>
+
+                    <div class="candidate-card-footer">
+                      <button
+                        (click)="moveCandidate(candidate.id, 'backward')"
+                        [disabled]="stage.key === 'applied'"
+                        class="btn-nav-stage"
+                        [title]="i18n.isRtl() ? 'المرحلة السابقة' : 'Previous Stage'"
+                      >
+                        <i class="fa-solid" [ngClass]="i18n.isRtl() ? 'fa-angle-right' : 'fa-angle-left'"></i>
+                      </button>
+                      <button
+                        (click)="moveCandidate(candidate.id, 'forward')"
+                        [disabled]="stage.key === 'hired'"
+                        class="btn-nav-stage"
+                        [title]="i18n.isRtl() ? 'المرحلة التالية' : 'Next Stage'"
+                      >
+                        <i class="fa-solid" [ngClass]="i18n.isRtl() ? 'fa-angle-left' : 'fa-angle-right'"></i>
+                      </button>
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="empty-stage-state">
+                    <i class="fa-solid fa-inbox"></i>
+                    <p>{{ i18n.isRtl() ? 'لا يوجد مرشحون' : 'No Candidates' }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
   </div>
 
-  <!-- Modal 1: Add Vacancy -->
+  <!-- Modal: Add Vacancy -->
   @if (showJobModal()) {
     <div class="modal-overlay" (click)="closeJobModal()">
       <div class="modal-card" (click)="$event.stopPropagation()">
@@ -193,29 +228,32 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>{{ i18n.isRtl() ? 'المسمى الوظيفي' : 'Job Title' }}</label>
-            <input type="text" [(ngModel)]="newJobTitle" name="newJobTitle" placeholder="e.g. Senior Angular Developer" class="form-input" />
+            <label>{{ i18n.isRtl() ? 'المسمى الوظيفي *' : 'Job Title *' }}</label>
+            <input type="text" [(ngModel)]="newJobTitle" placeholder="e.g. Senior Angular Developer" class="form-input" />
           </div>
           <div class="form-group">
-            <label>{{ i18n.isRtl() ? 'القسم المسؤول' : 'Department' }}</label>
-            <select [(ngModel)]="newJobDept" name="newJobDept" class="form-select">
-              <option value="القسم التقني">القسم التقني (Technology)</option>
-              <option value="إدارة المبيعات">إدارة المبيعات (Sales)</option>
-              <option value="التصميم والهوية">التصميم والهوية (Design & Branding)</option>
-              <option value="الموارد البشرية">الموارد البشرية (Human Resources)</option>
-              <option value="القسم المالي">القسم المالي (Finance)</option>
+            <label>{{ i18n.isRtl() ? 'القسم المسؤول *' : 'Department *' }}</label>
+            <select [(ngModel)]="newJobDept" class="form-select">
+              <option value="القسم التقني">{{ i18n.isRtl() ? 'القسم التقني' : 'Technology' }}</option>
+              <option value="إدارة المبيعات">{{ i18n.isRtl() ? 'إدارة المبيعات' : 'Sales' }}</option>
+              <option value="التصميم والهوية">{{ i18n.isRtl() ? 'التصميم والهوية' : 'Design & Branding' }}</option>
+              <option value="الموارد البشرية">{{ i18n.isRtl() ? 'الموارد البشرية' : 'Human Resources' }}</option>
+              <option value="القسم المالي">{{ i18n.isRtl() ? 'القسم المالي' : 'Finance' }}</option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary-outline" (click)="closeJobModal()">{{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}</button>
-          <button class="btn btn-primary" (click)="saveJob()">{{ i18n.isRtl() ? 'إضافة الوظيفة' : 'Add Job' }}</button>
+          <button class="btn btn-primary" (click)="saveJob()" [disabled]="isSubmitting()">
+            @if (isSubmitting()) { <i class="fa-solid fa-spinner fa-spin"></i> }
+            {{ i18n.isRtl() ? 'إضافة الوظيفة' : 'Add Job' }}
+          </button>
         </div>
       </div>
     </div>
   }
 
-  <!-- Modal 2: Add Candidate -->
+  <!-- Modal: Add Candidate -->
   @if (showCandidateModal()) {
     <div class="modal-overlay" (click)="closeCandidateModal()">
       <div class="modal-card" (click)="$event.stopPropagation()">
@@ -225,13 +263,13 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>{{ i18n.isRtl() ? 'الاسم الكامل للمرشح' : 'Candidate Full Name' }}</label>
-            <input type="text" [(ngModel)]="newCandidateName" name="newCandidateName" placeholder="e.g. محمد الحربي" class="form-input" />
+            <label>{{ i18n.isRtl() ? 'الاسم الكامل للمرشح *' : 'Candidate Full Name *' }}</label>
+            <input type="text" [(ngModel)]="newCandidateName" placeholder="e.g. محمد الحربي" class="form-input" />
           </div>
           <div class="form-group">
-            <label>{{ i18n.isRtl() ? 'الوظيفة المتقدم لها' : 'Applying Position' }}</label>
+            <label>{{ i18n.isRtl() ? 'الوظيفة المتقدم لها *' : 'Applying Position *' }}</label>
             @if (hasOpenVacancies()) {
-              <select [(ngModel)]="newCandidateRole" name="newCandidateRole" class="form-select">
+              <select [(ngModel)]="newCandidateRole" class="form-select">
                 @for (job of vacancies(); track job.id) {
                   @if (job.status === 'Open') {
                     <option [value]="job.title">{{ job.title }}</option>
@@ -239,37 +277,39 @@
                 }
               </select>
             } @else {
-              <input 
-                type="text" 
-                [(ngModel)]="newCandidateRole" 
-                name="newCandidateRole" 
-                [placeholder]="i18n.isRtl() ? 'اكتب اسم الوظيفة...' : 'Type position title...'" 
-                class="form-input" 
+              <input
+                type="text"
+                [(ngModel)]="newCandidateRole"
+                [placeholder]="i18n.isRtl() ? 'اكتب اسم الوظيفة...' : 'Type position title...'"
+                class="form-input"
               />
             }
           </div>
           <div class="form-group">
-            <label>{{ i18n.isRtl() ? 'المرحلة الأولية في التعيين' : 'Initial Hiring Stage' }}</label>
-            <select [(ngModel)]="newCandidateStage" name="newCandidateStage" class="form-select">
+            <label>{{ i18n.isRtl() ? 'المرحلة الأولية' : 'Initial Stage' }}</label>
+            <select [(ngModel)]="newCandidateStage" class="form-select">
               @for (stg of stages; track stg.key) {
                 <option [value]="stg.key">{{ i18n.isRtl() ? stg.nameAr : stg.nameEn }}</option>
               }
             </select>
           </div>
           <div class="form-group">
-            <label>{{ i18n.isRtl() ? 'التقييم الأولي (نجوم)' : 'Initial Rating (Stars)' }}</label>
-            <select [(ngModel)]="newCandidateRating" name="newCandidateRating" class="form-select">
+            <label>{{ i18n.isRtl() ? 'التقييم الأولي' : 'Initial Rating' }}</label>
+            <select [(ngModel)]="newCandidateRating" class="form-select">
               <option [value]="1">⭐ (1)</option>
               <option [value]="2">⭐⭐ (2)</option>
               <option [value]="3">⭐⭐⭐ (3)</option>
               <option [value]="4">⭐⭐⭐⭐ (4)</option>
-              <option [value]="5" selected>⭐⭐⭐⭐⭐ (5)</option>
+              <option [value]="5">⭐⭐⭐⭐⭐ (5)</option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary-outline" (click)="closeCandidateModal()">{{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}</button>
-          <button class="btn btn-primary" (click)="saveCandidate()">{{ i18n.isRtl() ? 'إضافة المرشح' : 'Add Candidate' }}</button>
+          <button class="btn btn-primary" (click)="saveCandidate()" [disabled]="isSubmitting()">
+            @if (isSubmitting()) { <i class="fa-solid fa-spinner fa-spin"></i> }
+            {{ i18n.isRtl() ? 'إضافة المرشح' : 'Add Candidate' }}
+          </button>
         </div>
       </div>
     </div>

@@ -425,6 +425,7 @@ export class I18nService {
       'role.salesmanager': 'مدير مبيعات',
       'role.sales': 'مندوب مبيعات',
       'role.employeemanager': 'مدير الموظفين',
+      'role.hr': 'موارد بشرية',
       'role.employee': 'موظف',
       'role.sales_rep': 'مندوب مبيعات',
       'role.unknown': 'موظف',
@@ -560,6 +561,7 @@ export class I18nService {
       'users.role.salesmanager.desc': 'إدارة فريق المبيعات وتحليل الأداء وإقفال الصفقات',
       'users.role.sales.desc': 'متابعة العملاء وإدارة صفقات المبيعات اليومية',
       'users.role.employeemanager.desc': 'إدارة شؤون الموظفين والإجازات والمهام',
+      'users.role.hr.desc': 'إدارة الموارد البشرية وشؤون التوظيف والرواتب',
       'users.role.employee.desc': 'متابعة المهام الشخصية وسجل الحضور والإجازات',
 
       // ── Leave Requests ──
@@ -1369,7 +1371,8 @@ export class I18nService {
       'role.accountant': 'Accountant',
       'role.salesmanager': 'Sales Manager',
       'role.sales': 'Sales Rep',
-      'role.employeemanager': 'HR Manager',
+      'role.employeemanager': 'Employee Manager',
+      'role.hr': 'HR',
       'role.employee': 'Employee',
       'role.sales_rep': 'Sales Rep',
       'role.unknown': 'Employee',
@@ -1505,6 +1508,7 @@ export class I18nService {
       'users.role.salesmanager.desc': 'Lead the sales team, analyze performance, and close deals',
       'users.role.sales.desc': 'Follow up with customers and manage daily sales deals',
       'users.role.employeemanager.desc': 'Manage employee affairs, leaves, and tasks',
+      'users.role.hr.desc': 'Manage human resources, hiring, and payroll',
       'users.role.employee.desc': 'Track personal tasks, attendance, and leave records',
 
       // ── Leave Requests ──

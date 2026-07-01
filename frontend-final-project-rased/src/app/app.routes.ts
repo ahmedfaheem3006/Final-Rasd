@@ -353,6 +353,12 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['hr', 'owner-admin'], permission: 'isInvoicesEnabled' }
       },
+      {
+        path: 'hr/interview-analysis',
+        loadComponent: () => import('./pages/hr/interview-analysis/interview-analysis').then(m => m.HRInterviewAnalysis),
+        canActivate: [roleGuard],
+        data: { roles: ['hr', 'owner-admin'], permission: 'isAiEnabled' }
+      },
 
 
 

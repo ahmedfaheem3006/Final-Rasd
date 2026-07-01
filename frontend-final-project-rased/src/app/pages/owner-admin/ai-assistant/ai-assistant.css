@@ -1,3 +1,31 @@
+/* ── Subscription Limit Modal ── */
+.limit-modal-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+.limit-modal-box {
+  background: var(--card-bg, #1e2536);
+  border: 1px solid rgba(239,68,68,0.4); border-radius: 16px;
+  padding: 36px 32px 28px; max-width: 420px; width: 90%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(239,68,68,0.15);
+  animation: slideUp 0.2s ease;
+}
+.limit-modal-icon { font-size: 2.6rem; margin-bottom: 12px; }
+.limit-modal-title { font-size: 1.1rem; font-weight: 700; color: #ef4444; margin: 0 0 12px; }
+.limit-modal-message { font-size: 0.9rem; line-height: 1.7; color: var(--text-body, #94a3b8); margin: 0 0 24px; }
+.limit-modal-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 32px; border: none; border-radius: 8px;
+  background: #ef4444; color: #fff; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  transition: background 0.15s;
+}
+.limit-modal-btn:hover { background: #dc2626; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
 .ai-container {
   display: flex;
   flex-direction: column;

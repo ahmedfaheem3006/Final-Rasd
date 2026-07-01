@@ -11,6 +11,7 @@ public interface IAuthService
     Task<bool> RegisterUserAsync(RegisterDto registerDto, Guid tenantId);
     Task<User?> GetUserByIdAsync(int id);
     Task<List<UserDto>> GetTenantUsersAsync(Guid tenantId);
+    Task<bool> UpdateUserHRProfileAsync(int userId, Guid tenantId, UpdateUserHRProfileDto dto);
     Task<bool> UpdateUserRoleAsync(int targetUserId, int newRoleId, Guid tenantId, int currentUserId);
     Task<bool> DeleteUserAsync(int userId, Guid tenantId, int currentUserId);
     Task<bool> GeneratePasswordResetOtpAsync(string email);

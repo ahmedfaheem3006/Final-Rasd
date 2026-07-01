@@ -15,8 +15,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/api/auth/login',
     '/api/auth/forgot-password',
     '/api/auth/verify-otp',
-    '/api/auth/reset-password',
-    '/api/auth/register'
+    '/api/auth/reset-password'
   ];
   const isPublic = publicUrls.some(url => req.url.toLowerCase().includes(url.toLowerCase()));
 

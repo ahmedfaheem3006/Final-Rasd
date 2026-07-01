@@ -27,6 +27,7 @@ export class AddTenant implements OnInit {
   location = '';
   price = 50;
   aiLimit = 200;
+  maxUsers = 3;
 
   // Module check boxes
   isCrmEnabled = true;
@@ -47,26 +48,25 @@ export class AddTenant implements OnInit {
     this.systemAdminService.getPricingPlans().subscribe({
       next: (res) => {
         if (res && res.success && res.data && Array.isArray(res.data)) {
-          this.availablePlans = res.data.map((p: any) => {
-            let limit = 200;
-            if (p.id === 'starter' || p.price <= 50) limit = 200;
-            else if (p.id === 'professional' || p.price <= 200) limit = 5000;
-            else if (p.id === 'enterprise' || p.price >= 300) limit = 999999;
-            return {
+          // Paid plans only — free trial tenants are created via self-service registration, not by an admin.
+          this.availablePlans = res.data
+            .filter((p: any) => p.id !== 'free' && p.price > 0)
+            .map((p: any) => ({
               id: p.id,
               nameAr: p.nameAr,
               nameEn: p.nameEn,
               price: p.price,
-              aiLimit: limit,
+              aiLimit: p.aiLimit ?? 200,
+              maxUsers: p.maxUsers ?? 3,
               periodAr: p.periodAr || 'شهر',
               periodEn: p.periodEn || 'mo'
-            };
-          });
+            }));
 
           // Set default selected price and aiLimit
           if (this.availablePlans.length > 0) {
             this.price = this.availablePlans[0].price;
             this.aiLimit = this.availablePlans[0].aiLimit;
+            this.maxUsers = this.availablePlans[0].maxUsers ?? 3;
           }
         } else {
           this.setFallbackPlans();
@@ -81,18 +81,20 @@ export class AddTenant implements OnInit {
 
   setFallbackPlans() {
     this.availablePlans = [
-      { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 50, aiLimit: 200, periodAr: 'شهر', periodEn: 'mo' },
-      { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 200, aiLimit: 5000, periodAr: 'شهر', periodEn: 'mo' },
-      { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 300, aiLimit: 999999, periodAr: 'شهر', periodEn: 'mo' }
+      { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 50, aiLimit: 200, maxUsers: 3, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 200, aiLimit: 5000, maxUsers: 15, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 350, aiLimit: 999999, maxUsers: 999999, periodAr: 'شهر', periodEn: 'mo' }
     ];
     this.price = 50;
     this.aiLimit = 200;
+    this.maxUsers = 3;
   }
 
   onPricePlanChange() {
     const selected = this.availablePlans.find(p => p.price === Number(this.price));
     if (selected) {
       this.aiLimit = selected.aiLimit;
+      this.maxUsers = selected.maxUsers ?? 3;
     }
   }
 
@@ -113,6 +115,7 @@ export class AddTenant implements OnInit {
       ownerPassword: this.ownerPassword,
       price: Number(this.price),
       aiLimit: Number(this.aiLimit),
+      maxUsers: Number(this.maxUsers),
       isCrmEnabled: this.isCrmEnabled,
       isInvoicesEnabled: this.isInvoicesEnabled,
       isTasksEnabled: this.isTasksEnabled,

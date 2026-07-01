@@ -9,6 +9,7 @@ using RasdAI.BLL.DTOs.Tenant;
 using RasdAI.BLL.Interfaces;
 using RasdAI.DAL;
 using RasdAI.DAL.Entities;
+using RasdAI.DAL.Extensions;
 
 namespace RasdAI.BLL.Services;
 
@@ -88,10 +89,7 @@ public class TenantService : ITenantService
         var owner = tenant.Users.FirstOrDefault(u => u.RoleId == 2);
 
         // Calculate actual total AI requests count
-        var aiConvsCount = await _context.AIConversations.IgnoreQueryFilters().CountAsync(c => c.TenantId == id);
-        var contractsCount = await _context.Contracts.IgnoreQueryFilters().CountAsync(c => c.TenantId == id && c.AIAnalysisResult != null && c.AIAnalysisResult != "");
-        var meetingsCount = await _context.Meetings.IgnoreQueryFilters().CountAsync(m => m.TenantId == id);
-        var aiUsageCount = aiConvsCount + contractsCount + meetingsCount;
+        var aiUsageCount = await _context.GetAiUsageCountAsync(id);
 
         var activities = new List<ActivityDto>();
 
@@ -198,6 +196,8 @@ public class TenantService : ITenantService
             IsActive = tenant.IsActive,
             Price = tenant.Price,
             AiLimit = tenant.AiLimit,
+            MaxUsers = tenant.MaxUsers,
+            CurrentUserCount = tenant.Users.Count,
             OwnerName = owner?.FullName ?? "غير محدد",
             OwnerEmail = owner?.Email ?? "غير محدد",
             OwnerStatus = owner?.Status ?? "Active",
@@ -228,15 +228,12 @@ public class TenantService : ITenantService
             .Include(t => t.Users)
             .ToListAsync();
 
-        return tenants.Select(t => {
+        var result = new List<TenantDto>();
+        foreach (var t in tenants)
+        {
             var owner = t.Users.FirstOrDefault(u => u.RoleId == 2);
-            var tid = t.TenantId;
-            var aicCount = _context.AIConversations.IgnoreQueryFilters().Count(c => c.TenantId == tid);
-            var ccCount = _context.Contracts.IgnoreQueryFilters().Count(c => c.TenantId == tid && c.AIAnalysisResult != null && c.AIAnalysisResult != "");
-            var mcCount = _context.Meetings.IgnoreQueryFilters().Count(m => m.TenantId == tid);
-            var usageCount = aicCount + ccCount + mcCount;
-
-            return new TenantDto
+            var usageCount = await _context.GetAiUsageCountAsync(t.TenantId);
+            result.Add(new TenantDto
             {
                 TenantId = t.TenantId,
                 Name = t.Name,
@@ -244,6 +241,8 @@ public class TenantService : ITenantService
                 IsActive = t.IsActive,
                 Price = t.Price,
                 AiLimit = t.AiLimit,
+                MaxUsers = t.MaxUsers,
+                CurrentUserCount = t.Users.Count,
                 OwnerName = owner?.FullName ?? "غير محدد",
                 OwnerEmail = owner?.Email ?? "غير محدد",
                 OwnerStatus = owner?.Status ?? "Active",
@@ -255,8 +254,9 @@ public class TenantService : ITenantService
                 IsMeetingsEnabled = t.IsMeetingsEnabled,
                 IsAiEnabled = t.IsAiEnabled,
                 AiUsageCount = usageCount
-            };
-        }).ToList();
+            });
+        }
+        return result;
     }
 
     public async Task<TenantDto> CreateTenantByAdminAsync(CreateTenantAdminDto createTenantAdminDto)
@@ -284,6 +284,7 @@ public class TenantService : ITenantService
             IsActive = true,
             Price = createTenantAdminDto.Price,
             AiLimit = createTenantAdminDto.AiLimit,
+            MaxUsers = createTenantAdminDto.MaxUsers,
             Address = createTenantAdminDto.Address,
             Phone = createTenantAdminDto.Phone,
             IsCrmEnabled = createTenantAdminDto.IsCrmEnabled,
@@ -320,6 +321,8 @@ public class TenantService : ITenantService
             IsActive = tenant.IsActive,
             Price = tenant.Price,
             AiLimit = tenant.AiLimit,
+            MaxUsers = tenant.MaxUsers,
+            CurrentUserCount = 1,
             OwnerName = ownerUser.FullName,
             OwnerEmail = ownerUser.Email,
             Address = tenant.Address,
@@ -345,7 +348,7 @@ public class TenantService : ITenantService
         return true;
     }
 
-    public async Task<bool> UpdateTenantPricingAsync(Guid tenantId, decimal price, int aiLimit)
+    public async Task<bool> UpdateTenantPricingAsync(Guid tenantId, decimal price, int aiLimit, int maxUsers)
     {
         var tenant = await _context.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.TenantId == tenantId);
         if (tenant == null)
@@ -355,6 +358,7 @@ public class TenantService : ITenantService
 
         tenant.Price = price;
         tenant.AiLimit = aiLimit;
+        tenant.MaxUsers = maxUsers;
         await _context.SaveChangesAsync();
         return true;
     }

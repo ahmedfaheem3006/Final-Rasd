@@ -445,10 +445,44 @@
   margin: 0 0 0.2rem 0;
 }
 
+/* Loading states */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted, #718096);
+  font-size: 0.875rem;
+}
+.loading-state i { color: var(--primary, #4318ff); font-size: 1.1rem; }
+
+.loading-state-wide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 4rem 1rem;
+  color: var(--text-muted, #718096);
+  font-size: 0.9rem;
+  background: var(--bg-card, rgba(6,11,40,0.74));
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.08));
+  border-radius: 16px;
+}
+.loading-state-wide i { color: var(--primary, #4318ff); font-size: 1.25rem; }
+
+/* Star rating — interactive */
+.rating {
+  display: flex;
+  gap: 1px;
+  cursor: pointer;
+}
+
 .rating i {
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.15);
   margin-right: 1px;
+  transition: color 0.1s, transform 0.1s;
 }
 
 [dir="rtl"] .rating i {
@@ -458,6 +492,15 @@
 
 .rating i.active {
   color: #ffb547;
+}
+
+.rating i.hover-glow {
+  color: #ffd080;
+  transform: scale(1.2);
+}
+
+.rating i:hover {
+  transform: scale(1.15);
 }
 
 .role-badge {

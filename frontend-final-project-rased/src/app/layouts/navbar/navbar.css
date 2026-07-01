@@ -327,6 +327,7 @@
   top: calc(100% + 10px);
   inset-inline-end: 0;
   width: 320px;
+  max-width: calc(100vw - 16px);
   max-height: 400px;
   background: var(--bg-card-solid);
   border: 1px solid var(--border);
@@ -342,10 +343,7 @@
   transition: all 0.2s ease-out;
 }
 
-:host-context([dir="rtl"]) .notifications-dropdown {
-  inset-inline-end: auto;
-  inset-inline-start: 0;
-}
+/* inset-inline-end: 0 already maps to left:0 in RTL — no override needed */
 
 .notifications-dropdown.active {
   visibility: visible;
@@ -456,6 +454,7 @@
   top: calc(100% + 10px);
   inset-inline-end: 0;
   width: 240px;
+  max-width: calc(100vw - 16px);
   background: var(--bg-card-solid);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -471,10 +470,7 @@
   cursor: default;
 }
 
-:host-context([dir="rtl"]) .user-dropdown {
-  inset-inline-end: auto;
-  inset-inline-start: 0;
-}
+/* inset-inline-end: 0 already maps to left:0 in RTL — no override needed */
 
 .user-dropdown.active {
   visibility: visible;

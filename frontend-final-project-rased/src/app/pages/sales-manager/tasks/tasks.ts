@@ -1,16 +1,17 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TaskService } from '../../../services/task.service';
+import { AuthService } from '../../../services/auth.service';
 
 interface Task {
   id: number;
-  text: string;
-  client: string;
-  repName: string;
+  title: string;
+  assignedUserId: number | null;
+  assignedUserName: string;
+  status: 'Todo' | 'InProgress' | 'Done';
   dueDate: string;
-  type: 'call' | 'proposal' | 'meeting' | 'followup';
-  priority: 'high' | 'medium' | 'low';
-  completed: boolean;
+  createdAt: string;
 }
 
 @Component({
@@ -19,82 +20,109 @@ interface Task {
   templateUrl: './tasks.html',
   styleUrl: './tasks.css'
 })
-export class SalesManagerTasks {
+export class SalesManagerTasks implements OnInit {
+  private taskService = inject(TaskService);
+  private authService = inject(AuthService);
+
   filterTab = signal<'all' | 'pending' | 'completed'>('all');
   selectedRepFilter = signal<string>('all');
+  isLoading = signal(true);
 
-  reps = signal([
-    { name: 'فهد المطيري' },
-    { name: 'نورة السعيد' },
-    { name: 'خالد الدوسري' },
-    { name: 'منى العسيري' },
-    { name: 'ريم الجهني' }
-  ]);
+  tasks = signal<Task[]>([]);
+  users = signal<{ id: number; fullName: string }[]>([]);
 
-  tasks = signal<Task[]>([
-    { id: 1, text: 'متابعة العرض المالي الجديد لشركة التكامل التقني', client: 'مجموعة التكامل التقني', repName: 'فهد المطيري', dueDate: '2026-06-16', type: 'proposal', priority: 'high', completed: false },
-    { id: 2, text: 'جدولة مكالمة تفاوض لشروط عقد الخدمات الفنية', client: 'سعودي كورب للخدمات', repName: 'خالد الدوسري', dueDate: '2026-06-17', type: 'call', priority: 'high', completed: false },
-    { id: 3, text: 'إعداد عرض السعر الاستشاري النهائي للشركة', client: 'شركة الأمل للاستشارات', repName: 'نورة السعيد', dueDate: '2026-06-18', type: 'proposal', priority: 'medium', completed: true },
-    { id: 4, text: 'اجتماع ربع سنوي مراجعة الأداء والاحتياجات', client: 'منظومة الأعمال الذكية', repName: 'منى العسيري', dueDate: '2026-06-19', type: 'meeting', priority: 'medium', completed: false },
-    { id: 5, text: 'مكالمة ترحيبية للتعريف بالخدمات والعروض المتوفرة', client: 'ريم للتقنية', repName: 'ريم الجهني', dueDate: '2026-06-20', type: 'call', priority: 'low', completed: false },
-  ]);
-
-  // Modal control
+  // Modal state
   isModalOpen = signal(false);
-  newText = '';
-  newClient = '';
-  newRepName = 'فهد المطيري';
-  newType: 'call' | 'proposal' | 'meeting' | 'followup' = 'call';
-  newPriority: 'high' | 'medium' | 'low' = 'medium';
+  isSaving = signal(false);
+  newTitle = '';
+  newAssignedUserId: number | null = null;
+  newStatus: 'Todo' | 'InProgress' | 'Done' = 'Todo';
   newDueDate = '';
 
   filteredTasks = computed(() => {
     let list = this.tasks();
-
-    // Filter by tab
     const tab = this.filterTab();
-    if (tab === 'pending') {
-      list = list.filter(t => !t.completed);
-    } else if (tab === 'completed') {
-      list = list.filter(t => t.completed);
-    }
+    if (tab === 'pending') list = list.filter(t => t.status !== 'Done');
+    else if (tab === 'completed') list = list.filter(t => t.status === 'Done');
 
-    // Filter by rep
     const rep = this.selectedRepFilter();
-    if (rep !== 'all') {
-      list = list.filter(t => t.repName === rep);
-    }
+    if (rep !== 'all') list = list.filter(t => t.assignedUserName === rep);
 
     return list;
   });
 
-  // Stats computed values
   stats = computed(() => {
     const all = this.tasks();
-    const total = all.length;
-    const completed = all.filter(t => t.completed).length;
-    const pending = total - completed;
-    const highPriority = all.filter(t => t.priority === 'high' && !t.completed).length;
-
-    return { total, completed, pending, highPriority };
+    const today = new Date().toISOString().split('T')[0];
+    return {
+      total: all.length,
+      completed: all.filter(t => t.status === 'Done').length,
+      pending: all.filter(t => t.status !== 'Done').length,
+      overdue: all.filter(t => t.status !== 'Done' && t.dueDate < today).length
+    };
   });
 
-  toggleTask(id: number) {
-    this.tasks.update(prev =>
-      prev.map(t => (t.id === id ? { ...t, completed: !t.completed } : t))
-    );
+  uniqueReps = computed(() => {
+    const names = [...new Set(this.tasks().map(t => t.assignedUserName).filter(Boolean))];
+    return names;
+  });
+
+  ngOnInit() {
+    this.loadTasks();
+    this.loadUsers();
+  }
+
+  loadTasks() {
+    this.isLoading.set(true);
+    this.taskService.getTasks().subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.tasks.set(res.data.map((t: any) => ({
+            id: t.id,
+            title: t.title,
+            assignedUserId: t.assignedUserId,
+            assignedUserName: t.assignedUserName || 'غير محدد',
+            status: t.status as 'Todo' | 'InProgress' | 'Done',
+            dueDate: t.dueDate?.split('T')[0] ?? '',
+            createdAt: t.createdAt
+          })));
+        }
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false)
+    });
+  }
+
+  loadUsers() {
+    this.authService.getUsers().subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.users.set(res.data.map((u: any) => ({ id: u.id, fullName: u.fullName })));
+        }
+      }
+    });
+  }
+
+  updateStatus(id: number, status: string) {
+    this.taskService.updateTaskStatus(id, status).subscribe({
+      next: () => {
+        this.tasks.update(prev =>
+          prev.map(t => t.id === id ? { ...t, status: status as 'Todo' | 'InProgress' | 'Done' } : t)
+        );
+      }
+    });
   }
 
   deleteTask(id: number) {
-    this.tasks.update(prev => prev.filter(t => t.id !== id));
+    this.taskService.deleteTask(id).subscribe({
+      next: () => this.tasks.update(prev => prev.filter(t => t.id !== id))
+    });
   }
 
   openModal() {
-    this.newText = '';
-    this.newClient = '';
-    this.newRepName = this.reps()[0]?.name || '';
-    this.newType = 'call';
-    this.newPriority = 'medium';
+    this.newTitle = '';
+    this.newAssignedUserId = null;
+    this.newStatus = 'Todo';
     this.newDueDate = new Date().toISOString().split('T')[0];
     this.isModalOpen.set(true);
   }
@@ -104,23 +132,40 @@ export class SalesManagerTasks {
   }
 
   addTask() {
-    if (!this.newText.trim() || !this.newClient.trim()) {
-      alert('الرجاء إدخال تفاصيل المهمة والعميل.');
-      return;
-    }
+    if (!this.newTitle.trim() || !this.newDueDate) return;
 
-    const newTask: Task = {
-      id: Date.now(),
-      text: this.newText,
-      client: this.newClient,
-      repName: this.newRepName,
-      dueDate: this.newDueDate || new Date().toISOString().split('T')[0],
-      type: this.newType,
-      priority: this.newPriority,
-      completed: false
-    };
+    this.isSaving.set(true);
+    this.taskService.createTask({
+      title: this.newTitle.trim(),
+      assignedUserId: this.newAssignedUserId ?? undefined,
+      dueDate: this.newDueDate
+    }).subscribe({
+      next: (res) => {
+        this.isSaving.set(false);
+        if (res.success && res.data) {
+          const t = res.data;
+          this.tasks.update(prev => [{
+            id: t.id,
+            title: t.title,
+            assignedUserId: t.assignedUserId,
+            assignedUserName: t.assignedUserName || 'غير محدد',
+            status: t.status as 'Todo' | 'InProgress' | 'Done',
+            dueDate: t.dueDate?.split('T')[0] ?? this.newDueDate,
+            createdAt: t.createdAt
+          }, ...prev]);
+        }
+        this.closeModal();
+      },
+      error: () => this.isSaving.set(false)
+    });
+  }
 
-    this.tasks.update(prev => [newTask, ...prev]);
-    this.closeModal();
+  statusLabel(status: string): string {
+    return status === 'Done' ? 'منجز' : status === 'InProgress' ? 'قيد التنفيذ' : 'قيد الانتظار';
+  }
+
+  isOverdue(task: Task): boolean {
+    if (task.status === 'Done') return false;
+    return task.dueDate < new Date().toISOString().split('T')[0];
   }
 }

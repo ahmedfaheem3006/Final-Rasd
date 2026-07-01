@@ -62,4 +62,21 @@ public class TasksController : ControllerBase
 
         return Ok(new { success = true, message = "تم تحديث حالة المهمة بنجاح" });
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteTask(int id)
+    {
+        if (_tenantContext.TenantId == null)
+        {
+            return BadRequest(new { success = false, message = "معرف الشركة غير متوفر في السياق" });
+        }
+
+        var success = await _taskService.DeleteTaskAsync(id, _tenantContext.TenantId.Value);
+        if (!success)
+        {
+            return NotFound(new { success = false, message = "المهمة غير موجودة أو لا تنتمي لشركتك" });
+        }
+
+        return Ok(new { success = true, message = "تم حذف المهمة بنجاح" });
+    }
 }

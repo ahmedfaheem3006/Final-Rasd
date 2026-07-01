@@ -17,6 +17,10 @@ public class User : ITenantEntity
     public string? PhoneNumber { get; set; }
     public string Status { get; set; } = "Active";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? ContractStart { get; set; }
+    public DateTime? ContractEnd { get; set; }
+    public decimal Salary { get; set; } = 0;
+    public decimal Allowances { get; set; } = 0;
 
     // Navigation properties
     public Tenant Tenant { get; set; } = null!;

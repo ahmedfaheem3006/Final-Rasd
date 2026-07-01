@@ -79,7 +79,7 @@ public class SystemAdminController : ControllerBase
     {
         try
         {
-            var success = await _tenantService.UpdateTenantPricingAsync(id, pricingDto.Price, pricingDto.AiLimit);
+            var success = await _tenantService.UpdateTenantPricingAsync(id, pricingDto.Price, pricingDto.AiLimit, pricingDto.MaxUsers);
             return Ok(new { success = true, message = "تم تحديث سعر الاشتراك والحد الأقصى للذكاء الاصطناعي بنجاح" });
         }
         catch (Exception ex)
@@ -104,6 +104,7 @@ public class SystemAdminController : ControllerBase
             tenant.Name = dto.Name;
             tenant.Price = dto.Price;
             tenant.AiLimit = dto.AiLimit;
+            tenant.MaxUsers = dto.MaxUsers;
             tenant.IsActive = dto.IsActive;
             tenant.IsCrmEnabled = dto.IsCrmEnabled;
             tenant.IsInvoicesEnabled = dto.IsInvoicesEnabled;
@@ -527,6 +528,7 @@ public class UpdateTenantPricingDto
 {
     public decimal Price { get; set; }
     public int AiLimit { get; set; }
+    public int MaxUsers { get; set; }
 }
 
 public class IssueActionDto
@@ -557,6 +559,7 @@ public class UpdateTenantFullDto
     public bool IsTasksEnabled { get; set; }
     public bool IsMeetingsEnabled { get; set; }
     public bool IsAiEnabled { get; set; }
+    public int MaxUsers { get; set; } = 3;
     public string? Address { get; set; }
     public string? Phone { get; set; }
 }

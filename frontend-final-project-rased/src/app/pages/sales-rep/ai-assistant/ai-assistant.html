@@ -16,7 +16,7 @@
   <div class="ai-layout animate-reveal" style="margin-top: 24px;">
     <!-- Chat Window -->
     <div class="chat-window card">
-      <div class="chat-messages">
+      <div class="chat-messages" #chatScrollContainer>
         @for (msg of messages(); track $index) {
           <div class="chat-message" [ngClass]="msg.role">
             @if (msg.role === 'assistant') {
@@ -25,7 +25,7 @@
               </div>
             }
             <div class="msg-bubble" [ngClass]="msg.role">
-              <p class="msg-text" style="white-space: pre-line;">{{ msg.text }}</p>
+              <div class="msg-text" [innerHTML]="msg.safeText || msg.text"></div>
               @if (msg.time) { <span class="msg-time">{{ msg.time }}</span> }
             </div>
             @if (msg.role === 'user') {
@@ -96,3 +96,15 @@
     </div>
   </div>
 </div>
+
+<!-- Subscription Limit Modal -->
+@if (showLimitModal()) {
+  <div class="limit-modal-overlay" (click)="closeLimitModal()">
+    <div class="limit-modal-box" (click)="$event.stopPropagation()">
+      <div class="limit-modal-icon">🔒</div>
+      <h3 class="limit-modal-title">تنبيه الاشتراك</h3>
+      <p class="limit-modal-message">{{ limitModalMessage() }}</p>
+      <button class="limit-modal-btn" (click)="closeLimitModal()">حسناً</button>
+    </div>
+  </div>
+}

@@ -42,6 +42,13 @@
             <span *ngIf="aiLimit >= 999999" class="unlimited-badge">{{ i18n.currentLang() === 'ar' ? 'غير محدود' : 'Unlimited' }}</span>
           </div>
         </div>
+        <div class="form-group">
+          <label>{{ i18n.currentLang() === 'ar' ? 'الحد الأقصى لعدد المستخدمين' : 'Max Team Members' }}</label>
+          <div class="ai-limit-wrapper">
+            <input type="number" [(ngModel)]="maxUsers" name="maxUsers" min="1" readonly />
+            <span *ngIf="maxUsers >= 999999" class="unlimited-badge">{{ i18n.currentLang() === 'ar' ? 'غير محدود' : 'Unlimited' }}</span>
+          </div>
+        </div>
       </div>
 
       <div class="form-row col-2">

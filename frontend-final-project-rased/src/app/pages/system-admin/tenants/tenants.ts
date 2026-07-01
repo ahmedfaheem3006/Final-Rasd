@@ -69,6 +69,7 @@ export class Tenants implements OnInit {
   selectedTenantName = '';
   editPrice = 0;
   editAiLimit = 100;
+  editMaxUsers = 3;
   availablePlans = signal<any[]>([]);
 
   ngOnInit() {
@@ -94,21 +95,44 @@ export class Tenants implements OnInit {
 
   setFallbackPlans() {
     this.availablePlans.set([
-      { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 49, aiLimit: 200, periodAr: 'شهر', periodEn: 'mo' },
-      { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 199, aiLimit: 5000, periodAr: 'شهر', periodEn: 'mo' },
-      { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 300, aiLimit: 999999, periodAr: 'شهر', periodEn: 'mo' }
+      { id: 'free', nameAr: 'الباقة المجانية', nameEn: 'Free Trial', price: 0, aiLimit: 100, maxUsers: 1, periodAr: '3 أيام', periodEn: '3 days' },
+      { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 50, aiLimit: 200, maxUsers: 3, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 200, aiLimit: 5000, maxUsers: 15, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 350, aiLimit: 999999, maxUsers: 999999, periodAr: 'شهر', periodEn: 'mo' }
     ]);
   }
 
   onPricePlanChange() {
-    const price = Number(this.editPrice);
-    if (price === 49) {
-      this.editAiLimit = 200;
-    } else if (price === 199) {
-      this.editAiLimit = 5000;
-    } else {
-      this.editAiLimit = 999999;
-    }
+    this.editAiLimit = this.getPlanDefaultAiLimit(this.editPrice);
+    this.editMaxUsers = this.getPlanDefaultMaxUsers(this.editPrice);
+  }
+
+  getPlanDefaultAiLimit(price: number): number {
+    const p = Number(price);
+    const selected = this.availablePlans().find(plan => Number(plan.price) === p && plan.aiLimit != null);
+    if (selected) return selected.aiLimit;
+    if (p === 0) return 100;
+    if (p <= 50) return 200;
+    if (p <= 200) return 5000;
+    return 999999;
+  }
+
+  resetAiLimitToPlanDefault() {
+    this.editAiLimit = this.getPlanDefaultAiLimit(this.editPrice);
+  }
+
+  getPlanDefaultMaxUsers(price: number): number {
+    const p = Number(price);
+    const selected = this.availablePlans().find(plan => Number(plan.price) === p && plan.maxUsers != null);
+    if (selected) return selected.maxUsers;
+    if (p === 0) return 1;
+    if (p <= 50) return 3;
+    if (p <= 200) return 15;
+    return 999999;
+  }
+
+  resetMaxUsersToPlanDefault() {
+    this.editMaxUsers = this.getPlanDefaultMaxUsers(this.editPrice);
   }
 
   loadTenants() {
@@ -126,7 +150,9 @@ export class Tenants implements OnInit {
             date: new Date(t.createdAt).toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
             revenue: `$${t.price}/${isAr ? 'شهر' : 'mo'}`,
             price: t.price,
-            aiLimit: t.aiLimit
+            aiLimit: t.aiLimit,
+            maxUsers: t.maxUsers,
+            currentUserCount: t.currentUserCount
           })));
         }
       },
@@ -141,6 +167,7 @@ export class Tenants implements OnInit {
 
   mapPriceToPlan(price: number): string {
     const isAr = this.i18n.currentLang() === 'ar';
+    if (price === 0) return isAr ? 'تجريبية مجانية' : 'Free Trial';
     if (price < 100) return isAr ? 'أساسي' : 'Basic';
     if (price < 300) return isAr ? 'احترافي' : 'Professional';
     return isAr ? 'مؤسسات' : 'Enterprise';
@@ -193,7 +220,8 @@ export class Tenants implements OnInit {
       ownerEmail: this.newOwnerEmail,
       ownerPassword: this.newOwnerPassword,
       price: Number(this.newPrice),
-      aiLimit: Number(this.newAiLimit)
+      aiLimit: Number(this.newAiLimit),
+      maxUsers: Number(this.getPlanDefaultMaxUsers(this.newPrice))
     };
 
     this.systemAdminService.createTenant(payload).subscribe({
@@ -219,6 +247,7 @@ export class Tenants implements OnInit {
     this.selectedTenantName = tenant.name;
     this.editPrice = tenant.price;
     this.editAiLimit = tenant.aiLimit;
+    this.editMaxUsers = tenant.maxUsers ?? this.getPlanDefaultMaxUsers(tenant.price);
     this.showEditPricingModal.set(true);
   }
 
@@ -237,7 +266,8 @@ export class Tenants implements OnInit {
 
     const payload = {
       price: Number(this.editPrice),
-      aiLimit: Number(this.editAiLimit)
+      aiLimit: Number(this.editAiLimit),
+      maxUsers: Number(this.editMaxUsers)
     };
 
     this.systemAdminService.updateTenantPricing(this.selectedTenantId, payload).subscribe({

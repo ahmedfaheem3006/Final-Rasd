@@ -10,6 +10,8 @@ public interface IAiService
     Task<MeetingTranscriptionResultDto> TranscribeMeetingAsync(string fileName, byte[] fileBytes, Guid tenantId, string language = "ar");
     Task<AiAssistantResponseDto> ChatWithAssistantAsync(AiAssistantRequestDto requestDto, Guid tenantId, int userId);
     Task<AiAssistantResponseDto> ChatAboutMeetingAsync(string question, string meetingTranscript, Guid tenantId, string language = "ar");
+    Task<InterviewAnalysisResultDto> AnalyzeInterviewAsync(string fileName, byte[] fileBytes, Guid tenantId, string candidateName, string jobRole, string language = "ar");
+    Task<AiAssistantResponseDto> ChatAboutInterviewAsync(string question, string interviewTranscript, string candidateName, string jobRole, Guid tenantId, string language = "ar");
 
     // Smart Assistant History
     Task<List<AiConversationHistoryItemDto>> GetChatHistoryAsync(Guid tenantId, int userId);

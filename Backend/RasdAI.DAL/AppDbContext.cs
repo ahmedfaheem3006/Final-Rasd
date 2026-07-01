@@ -479,6 +479,8 @@ public class AppDbContext : DbContext
                 IsActive = true,
                 Price = 0.0m,
                 AiLimit = 99999,
+                AiRequestsUsed = 0,
+                MaxUsers = 999999,
                 IsCrmEnabled = true,
                 IsInvoicesEnabled = true,
                 IsTasksEnabled = true,
@@ -493,10 +495,15 @@ public class AppDbContext : DbContext
             {
                 Id = 1,
                 TenantId = adminTenantId,
-                RoleId = 1, // SystemAdmin
+                RoleId = 1,
                 FullName = "مدير النظام العام",
                 Email = "faheem.admin@gmail.com",
-                PasswordHash = "XC79lW2YM1/IxvvW+g0u9nU87lE8sbYdG95ZQMH4njM="
+                PasswordHash = "XC79lW2YM1/IxvvW+g0u9nU87lE8sbYdG95ZQMH4njM=",
+                PhoneNumber = "+966500000001",
+                ContractStart = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                ContractEnd = new DateTime(2026, 12, 31, 0, 0, 0, DateTimeKind.Utc),
+                Salary = 20000m,
+                Allowances = 4000m
             }
         );
 
@@ -513,6 +520,8 @@ public class AppDbContext : DbContext
                 IsActive = true,
                 Price = 499.99m,
                 AiLimit = 1000,
+                AiRequestsUsed = 0,
+                MaxUsers = 999999,
                 IsCrmEnabled = true,
                 IsInvoicesEnabled = true,
                 IsTasksEnabled = true,
@@ -524,10 +533,10 @@ public class AppDbContext : DbContext
         var demoPassHash = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI="; // SHA256("123456")
 
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 100, TenantId = demoTenantId, RoleId = 2, FullName = "أحمد فهيم (المالك)", Email = "owner@rasd.com", PasswordHash = demoPassHash },
-            new User { Id = 101, TenantId = demoTenantId, RoleId = 5, FullName = "عمر البائع (مندوب مبيعات)", Email = "sales@rasd.com", PasswordHash = demoPassHash },
-            new User { Id = 102, TenantId = demoTenantId, RoleId = 3, FullName = "منى الحسابات (المحاسب)", Email = "accountant@rasd.com", PasswordHash = demoPassHash },
-            new User { Id = 103, TenantId = demoTenantId, RoleId = 4, FullName = "محمد المبيعات (مدير المبيعات)", Email = "salesmgr@rasd.com", PasswordHash = demoPassHash }
+            new User { Id = 100, TenantId = demoTenantId, RoleId = 2, FullName = "أحمد فهيم (المالك)", Email = "owner@rasd.com", PasswordHash = demoPassHash, PhoneNumber = "+966501234100", ContractStart = new DateTime(2024, 1, 15, 0, 0, 0, DateTimeKind.Utc), ContractEnd = new DateTime(2026, 1, 14, 0, 0, 0, DateTimeKind.Utc), Salary = 25000m, Allowances = 5000m },
+            new User { Id = 101, TenantId = demoTenantId, RoleId = 5, FullName = "عمر البائع (مندوب مبيعات)", Email = "sales@rasd.com", PasswordHash = demoPassHash, PhoneNumber = "+966501234101", ContractStart = new DateTime(2024, 2, 1, 0, 0, 0, DateTimeKind.Utc), ContractEnd = new DateTime(2026, 1, 31, 0, 0, 0, DateTimeKind.Utc), Salary = 9500m, Allowances = 3000m },
+            new User { Id = 102, TenantId = demoTenantId, RoleId = 3, FullName = "منى الحسابات (المحاسب)", Email = "accountant@rasd.com", PasswordHash = demoPassHash, PhoneNumber = "+966501234102", ContractStart = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc), ContractEnd = new DateTime(2026, 2, 28, 0, 0, 0, DateTimeKind.Utc), Salary = 12000m, Allowances = 2000m },
+            new User { Id = 103, TenantId = demoTenantId, RoleId = 4, FullName = "محمد المبيعات (مدير المبيعات)", Email = "salesmgr@rasd.com", PasswordHash = demoPassHash, PhoneNumber = "+966501234103", ContractStart = new DateTime(2024, 4, 1, 0, 0, 0, DateTimeKind.Utc), ContractEnd = new DateTime(2026, 3, 31, 0, 0, 0, DateTimeKind.Utc), Salary = 16000m, Allowances = 4500m }
         );
 
         modelBuilder.Entity<Client>().HasData(
@@ -560,6 +569,8 @@ public class AppDbContext : DbContext
                 IsActive = true,
                 Price = 199.99m,
                 AiLimit = 2000,
+                AiRequestsUsed = 0,
+                MaxUsers = 15,
                 IsCrmEnabled = true,
                 IsInvoicesEnabled = true,
                 IsTasksEnabled = true,
@@ -569,9 +580,9 @@ public class AppDbContext : DbContext
         );
 
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 7, TenantId = joeTenantId, RoleId = 2, FullName = "جو المالك", Email = "joe@rasd.com", PasswordHash = joePassHash, Status = "Active" },
-            new User { Id = 19, TenantId = joeTenantId, RoleId = 5, FullName = "صالح مندوب جو", Email = "sales_joe@rasd.com", PasswordHash = joePassHash, Status = "Active" },
-            new User { Id = 20, TenantId = joeTenantId, RoleId = 5, FullName = "عمر مندوب جو", Email = "sales2_joe@rasd.com", PasswordHash = joePassHash, Status = "Active" }
+            new User { Id = 7, TenantId = joeTenantId, RoleId = 2, FullName = "جو المالك", Email = "joe@rasd.com", PasswordHash = joePassHash, Status = "Active", PhoneNumber = "+966507000007", ContractStart = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc), ContractEnd = new DateTime(2028, 6, 24, 0, 0, 0, DateTimeKind.Utc), Salary = 25000m, Allowances = 5000m },
+            new User { Id = 19, TenantId = joeTenantId, RoleId = 5, FullName = "صالح مندوب جو", Email = "sales_joe@rasd.com", PasswordHash = joePassHash, Status = "Active", PhoneNumber = "+966507000019", ContractStart = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc), ContractEnd = new DateTime(2028, 6, 24, 0, 0, 0, DateTimeKind.Utc), Salary = 9500m, Allowances = 3000m },
+            new User { Id = 20, TenantId = joeTenantId, RoleId = 5, FullName = "عمر مندوب جو", Email = "sales2_joe@rasd.com", PasswordHash = joePassHash, Status = "Active", PhoneNumber = "+966507000020", ContractStart = new DateTime(2026, 6, 25, 0, 0, 0, DateTimeKind.Utc), ContractEnd = new DateTime(2028, 6, 24, 0, 0, 0, DateTimeKind.Utc), Salary = 9500m, Allowances = 3000m }
         );
 
         modelBuilder.Entity<Client>().HasData(

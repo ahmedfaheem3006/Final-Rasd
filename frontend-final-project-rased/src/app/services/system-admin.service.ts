@@ -20,6 +20,7 @@ export class SystemAdminService {
     ownerPassword?: string;
     price: number;
     aiLimit: number;
+    maxUsers: number;
   }): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/tenants`, tenant);
   }

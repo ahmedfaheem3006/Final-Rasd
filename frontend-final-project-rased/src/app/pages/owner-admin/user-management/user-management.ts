@@ -109,7 +109,8 @@ export class UserManagement implements OnInit, AfterViewInit, OnDestroy {
     { id: 4, name: 'SalesManager', label: 'role.salesmanager' },
     { id: 5, name: 'Sales', label: 'role.sales' },
     { id: 6, name: 'EmployeeManager', label: 'role.employeemanager' },
-    { id: 7, name: 'Employee', label: 'role.employee' }
+    { id: 7, name: 'Employee', label: 'role.employee' },
+    { id: 8, name: 'HR', label: 'role.hr' }
   ]);
 
   roleCards: RoleCard[] = [
@@ -118,6 +119,7 @@ export class UserManagement implements OnInit, AfterViewInit, OnDestroy {
     { id: 5, name: 'Sales', label: 'role.sales', icon: 'fa-handshake', description: 'users.role.sales.desc' },
     { id: 6, name: 'EmployeeManager', label: 'role.employeemanager', icon: 'fa-users-gear', description: 'users.role.employeemanager.desc' },
     { id: 7, name: 'Employee', label: 'role.employee', icon: 'fa-user-tie', description: 'users.role.employee.desc' },
+    { id: 8, name: 'HR', label: 'role.hr', icon: 'fa-user-nurse', description: 'users.role.hr.desc' },
   ];
 
   selectableRoles = computed(() => this.availableRoles().filter(r => r.id !== 1 && r.id !== 2));

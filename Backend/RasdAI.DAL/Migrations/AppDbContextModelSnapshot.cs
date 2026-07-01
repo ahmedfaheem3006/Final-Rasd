@@ -17,7 +17,7 @@ namespace RasdAI.DAL.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -415,7 +415,8 @@ namespace RasdAI.DAL.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FileName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<decimal>("FinalAmount")
                         .HasPrecision(18, 2)
@@ -728,7 +729,7 @@ namespace RasdAI.DAL.Migrations
                             DueDate = new DateTime(2026, 4, 15, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrandTotal = 150000m,
                             InvoiceNumber = "INV-100",
-                            IssueDate = new DateTime(2026, 6, 30, 11, 35, 54, 941, DateTimeKind.Utc).AddTicks(2964),
+                            IssueDate = new DateTime(2026, 7, 1, 1, 12, 7, 946, DateTimeKind.Utc).AddTicks(3241),
                             PaidAmount = 150000m,
                             RemainingBalance = 0m,
                             Status = "Paid",
@@ -748,7 +749,7 @@ namespace RasdAI.DAL.Migrations
                             DueDate = new DateTime(2026, 6, 10, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrandTotal = 75000m,
                             InvoiceNumber = "INV-101",
-                            IssueDate = new DateTime(2026, 6, 30, 11, 35, 54, 941, DateTimeKind.Utc).AddTicks(5235),
+                            IssueDate = new DateTime(2026, 7, 1, 1, 12, 7, 946, DateTimeKind.Utc).AddTicks(5398),
                             PaidAmount = 75000m,
                             RemainingBalance = 0m,
                             Status = "Paid",
@@ -768,7 +769,7 @@ namespace RasdAI.DAL.Migrations
                             DueDate = new DateTime(2026, 7, 25, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrandTotal = 200000m,
                             InvoiceNumber = "JINV-102",
-                            IssueDate = new DateTime(2026, 6, 30, 11, 35, 54, 941, DateTimeKind.Utc).AddTicks(5753),
+                            IssueDate = new DateTime(2026, 7, 1, 1, 12, 7, 946, DateTimeKind.Utc).AddTicks(5974),
                             PaidAmount = 200000m,
                             RemainingBalance = 0m,
                             Status = "Paid",
@@ -788,7 +789,7 @@ namespace RasdAI.DAL.Migrations
                             DueDate = new DateTime(2026, 7, 10, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrandTotal = 50000m,
                             InvoiceNumber = "JINV-103",
-                            IssueDate = new DateTime(2026, 6, 30, 11, 35, 54, 941, DateTimeKind.Utc).AddTicks(5758),
+                            IssueDate = new DateTime(2026, 7, 1, 1, 12, 7, 946, DateTimeKind.Utc).AddTicks(5978),
                             PaidAmount = 0m,
                             RemainingBalance = 50000m,
                             Status = "Unpaid",
@@ -808,7 +809,7 @@ namespace RasdAI.DAL.Migrations
                             DueDate = new DateTime(2026, 8, 9, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrandTotal = 85000m,
                             InvoiceNumber = "JINV-104",
-                            IssueDate = new DateTime(2026, 6, 30, 11, 35, 54, 941, DateTimeKind.Utc).AddTicks(5761),
+                            IssueDate = new DateTime(2026, 7, 1, 1, 12, 7, 946, DateTimeKind.Utc).AddTicks(5981),
                             PaidAmount = 0m,
                             RemainingBalance = 85000m,
                             Status = "Unpaid",
@@ -828,7 +829,7 @@ namespace RasdAI.DAL.Migrations
                             DueDate = new DateTime(2026, 6, 15, 0, 0, 0, 0, DateTimeKind.Utc),
                             GrandTotal = 120000m,
                             InvoiceNumber = "JINV-105",
-                            IssueDate = new DateTime(2026, 6, 30, 11, 35, 54, 941, DateTimeKind.Utc).AddTicks(5764),
+                            IssueDate = new DateTime(2026, 7, 1, 1, 12, 7, 946, DateTimeKind.Utc).AddTicks(5984),
                             PaidAmount = 0m,
                             RemainingBalance = 120000m,
                             Status = "Overdue",
@@ -1084,75 +1085,6 @@ namespace RasdAI.DAL.Migrations
                     b.ToTable("Notes");
                 });
 
-            modelBuilder.Entity("RasdAI.DAL.Entities.PendingCompanyRegistration", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("AiLimit")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("OwnerEmail")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("OwnerFirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("OwnerLastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("OwnerPasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OwnerPhone")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("SubscriptionPlan")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PendingCompanyRegistrations");
-                });
             modelBuilder.Entity("RasdAI.DAL.Entities.Payment", b =>
                 {
                     b.Property<int>("Id")
@@ -1229,6 +1161,76 @@ namespace RasdAI.DAL.Migrations
                     b.HasIndex("TenantId");
 
                     b.ToTable("Payments", (string)null);
+                });
+
+            modelBuilder.Entity("RasdAI.DAL.Entities.PendingCompanyRegistration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("AiLimit")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OwnerEmail")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("OwnerFirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("OwnerLastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("OwnerPasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OwnerPhone")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("SubscriptionPlan")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PendingCompanyRegistrations");
                 });
 
             modelBuilder.Entity("RasdAI.DAL.Entities.Report", b =>
@@ -1450,6 +1452,9 @@ namespace RasdAI.DAL.Migrations
                     b.Property<int>("AiLimit")
                         .HasColumnType("int");
 
+                    b.Property<int>("AiRequestsUsed")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1470,6 +1475,9 @@ namespace RasdAI.DAL.Migrations
 
                     b.Property<bool>("IsTasksEnabled")
                         .HasColumnType("bit");
+
+                    b.Property<int>("MaxUsers")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1493,6 +1501,7 @@ namespace RasdAI.DAL.Migrations
                         {
                             TenantId = new Guid("11111111-1111-1111-1111-111111111111"),
                             AiLimit = 99999,
+                            AiRequestsUsed = 0,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             IsAiEnabled = true,
@@ -1500,6 +1509,7 @@ namespace RasdAI.DAL.Migrations
                             IsInvoicesEnabled = true,
                             IsMeetingsEnabled = true,
                             IsTasksEnabled = true,
+                            MaxUsers = 999999,
                             Name = "System Administration",
                             Price = 0.0m
                         },
@@ -1507,6 +1517,7 @@ namespace RasdAI.DAL.Migrations
                         {
                             TenantId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                             AiLimit = 1000,
+                            AiRequestsUsed = 0,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             IsAiEnabled = true,
@@ -1514,6 +1525,7 @@ namespace RasdAI.DAL.Migrations
                             IsInvoicesEnabled = true,
                             IsMeetingsEnabled = true,
                             IsTasksEnabled = true,
+                            MaxUsers = 999999,
                             Name = "شركة رصد للتطوير والاستشارات",
                             Price = 499.99m
                         },
@@ -1521,6 +1533,7 @@ namespace RasdAI.DAL.Migrations
                         {
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9"),
                             AiLimit = 2000,
+                            AiRequestsUsed = 0,
                             CreatedAt = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             IsAiEnabled = true,
@@ -1528,6 +1541,7 @@ namespace RasdAI.DAL.Migrations
                             IsInvoicesEnabled = true,
                             IsMeetingsEnabled = true,
                             IsTasksEnabled = true,
+                            MaxUsers = 15,
                             Name = "شركة جو للخدمات",
                             Price = 199.99m
                         });
@@ -1540,6 +1554,15 @@ namespace RasdAI.DAL.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Allowances")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ContractEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ContractStart")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -1574,6 +1597,9 @@ namespace RasdAI.DAL.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Salary")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1595,88 +1621,128 @@ namespace RasdAI.DAL.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 6, 30, 11, 35, 54, 940, DateTimeKind.Utc).AddTicks(6445),
+                            Allowances = 4000m,
+                            ContractEnd = new DateTime(2026, 12, 31, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ContractStart = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 1, 1, 12, 7, 945, DateTimeKind.Utc).AddTicks(5611),
                             Email = "faheem.admin@gmail.com",
                             FullName = "مدير النظام العام",
                             PasswordHash = "XC79lW2YM1/IxvvW+g0u9nU87lE8sbYdG95ZQMH4njM=",
+                            PhoneNumber = "+966500000001",
                             RoleId = 1,
+                            Salary = 20000m,
                             Status = "Active",
                             TenantId = new Guid("11111111-1111-1111-1111-111111111111")
                         },
                         new
                         {
                             Id = 100,
-                            CreatedAt = new DateTime(2026, 6, 30, 11, 35, 54, 940, DateTimeKind.Utc).AddTicks(7636),
+                            Allowances = 5000m,
+                            ContractEnd = new DateTime(2026, 1, 14, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ContractStart = new DateTime(2024, 1, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 1, 1, 12, 7, 945, DateTimeKind.Utc).AddTicks(7953),
                             Email = "owner@rasd.com",
                             FullName = "أحمد فهيم (المالك)",
                             PasswordHash = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=",
+                            PhoneNumber = "+966501234100",
                             RoleId = 2,
+                            Salary = 25000m,
                             Status = "Active",
                             TenantId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
                         },
                         new
                         {
                             Id = 101,
-                            CreatedAt = new DateTime(2026, 6, 30, 11, 35, 54, 940, DateTimeKind.Utc).AddTicks(7639),
+                            Allowances = 3000m,
+                            ContractEnd = new DateTime(2026, 1, 31, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ContractStart = new DateTime(2024, 2, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 1, 1, 12, 7, 945, DateTimeKind.Utc).AddTicks(7959),
                             Email = "sales@rasd.com",
                             FullName = "عمر البائع (مندوب مبيعات)",
                             PasswordHash = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=",
+                            PhoneNumber = "+966501234101",
                             RoleId = 5,
+                            Salary = 9500m,
                             Status = "Active",
                             TenantId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
                         },
                         new
                         {
                             Id = 102,
-                            CreatedAt = new DateTime(2026, 6, 30, 11, 35, 54, 940, DateTimeKind.Utc).AddTicks(7641),
+                            Allowances = 2000m,
+                            ContractEnd = new DateTime(2026, 2, 28, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ContractStart = new DateTime(2024, 3, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 1, 1, 12, 7, 945, DateTimeKind.Utc).AddTicks(7986),
                             Email = "accountant@rasd.com",
                             FullName = "منى الحسابات (المحاسب)",
                             PasswordHash = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=",
+                            PhoneNumber = "+966501234102",
                             RoleId = 3,
+                            Salary = 12000m,
                             Status = "Active",
                             TenantId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
                         },
                         new
                         {
                             Id = 103,
-                            CreatedAt = new DateTime(2026, 6, 30, 11, 35, 54, 940, DateTimeKind.Utc).AddTicks(7643),
+                            Allowances = 4500m,
+                            ContractEnd = new DateTime(2026, 3, 31, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ContractStart = new DateTime(2024, 4, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 1, 1, 12, 7, 945, DateTimeKind.Utc).AddTicks(7989),
                             Email = "salesmgr@rasd.com",
                             FullName = "محمد المبيعات (مدير المبيعات)",
                             PasswordHash = "jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=",
+                            PhoneNumber = "+966501234103",
                             RoleId = 4,
+                            Salary = 16000m,
                             Status = "Active",
                             TenantId = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
                         },
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2026, 6, 30, 11, 35, 54, 941, DateTimeKind.Utc).AddTicks(5447),
+                            Allowances = 5000m,
+                            ContractEnd = new DateTime(2028, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ContractStart = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 1, 1, 12, 7, 946, DateTimeKind.Utc).AddTicks(5619),
                             Email = "joe@rasd.com",
                             FullName = "جو المالك",
                             PasswordHash = "0ocFH8CB123YXvwpHXdNY00CYOXsehVfYI7i3qOWcGY=",
+                            PhoneNumber = "+966507000007",
                             RoleId = 2,
+                            Salary = 25000m,
                             Status = "Active",
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9")
                         },
                         new
                         {
                             Id = 19,
-                            CreatedAt = new DateTime(2026, 6, 30, 11, 35, 54, 941, DateTimeKind.Utc).AddTicks(5678),
+                            Allowances = 3000m,
+                            ContractEnd = new DateTime(2028, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ContractStart = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 1, 1, 12, 7, 946, DateTimeKind.Utc).AddTicks(5865),
                             Email = "sales_joe@rasd.com",
                             FullName = "صالح مندوب جو",
                             PasswordHash = "0ocFH8CB123YXvwpHXdNY00CYOXsehVfYI7i3qOWcGY=",
+                            PhoneNumber = "+966507000019",
                             RoleId = 5,
+                            Salary = 9500m,
                             Status = "Active",
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9")
                         },
                         new
                         {
                             Id = 20,
-                            CreatedAt = new DateTime(2026, 6, 30, 11, 35, 54, 941, DateTimeKind.Utc).AddTicks(5680),
+                            Allowances = 3000m,
+                            ContractEnd = new DateTime(2028, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            ContractStart = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedAt = new DateTime(2026, 7, 1, 1, 12, 7, 946, DateTimeKind.Utc).AddTicks(5871),
                             Email = "sales2_joe@rasd.com",
                             FullName = "عمر مندوب جو",
                             PasswordHash = "0ocFH8CB123YXvwpHXdNY00CYOXsehVfYI7i3qOWcGY=",
+                            PhoneNumber = "+966507000020",
                             RoleId = 5,
+                            Salary = 9500m,
                             Status = "Active",
                             TenantId = new Guid("76e445e1-6232-431e-a152-15a18c36e1a9")
                         });

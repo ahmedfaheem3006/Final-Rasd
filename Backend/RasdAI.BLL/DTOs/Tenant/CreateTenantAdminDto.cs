@@ -12,6 +12,10 @@ public class CreateTenantAdminDto : CreateTenantDto
     [Range(0, int.MaxValue, ErrorMessage = "حد استهلاك الذكاء الاصطناعي لا يمكن أن يكون سالباً")]
     public int AiLimit { get; set; }
 
+    [Required(ErrorMessage = "الحد الأقصى لعدد المستخدمين مطلوب")]
+    [Range(1, int.MaxValue, ErrorMessage = "الحد الأقصى لعدد المستخدمين يجب أن يكون على الأقل 1")]
+    public int MaxUsers { get; set; } = 3;
+
     public bool IsCrmEnabled { get; set; } = true;
     public bool IsInvoicesEnabled { get; set; } = true;
     public bool IsTasksEnabled { get; set; } = true;

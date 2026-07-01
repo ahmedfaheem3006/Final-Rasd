@@ -81,41 +81,56 @@
     top: 0;
     inset-inline-end: 0;
     bottom: 0;
-    width: 300px !important;
-    min-width: 300px !important;
+    width: 280px !important;
+    min-width: 280px !important;
     height: 100vh !important;
     z-index: 999 !important;
-    transform: translateX(var(--slide-out-offset, 100%));
+    transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-inline-end: 1px solid var(--border);
+    border-inline-end: none;
+    border-inline-start: 1px solid var(--border);
     border-bottom: none;
     overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: none;
+    /* Solid background — prevents sidebar blending into the dark overlay */
+    background: var(--bg-card-solid) !important;
+    /* Remove backdrop-filter on mobile: two overlapping backdrop-filters
+       cause the sidebar to vanish on iOS Safari / mobile Chrome */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   .app-sidebar-container.sidebar-open {
-    transform: translateX(0);
-    box-shadow: var(--shadow-lg);
+    transform: translateX(0) !important;
+    box-shadow: -4px 0 32px rgba(0, 0, 0, 0.4);
   }
 
   [dir="ltr"] .app-sidebar-container {
-    inset-inline-end: auto;
-    inset-inline-start: 0;
-    transform: translateX(var(--slide-in-offset, -100%));
+    inset-inline-end: auto !important;
+    inset-inline-start: 0 !important;
+    right: auto !important;
+    left: 0 !important;
+    transform: translateX(-100%);
+    border-inline-end: 1px solid var(--border) !important;
+    border-inline-start: none !important;
   }
 
   [dir="ltr"] .app-sidebar-container.sidebar-open {
-    transform: translateX(0);
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.4);
   }
 
   [dir="rtl"] .app-sidebar-container {
-    inset-inline-start: auto;
-    inset-inline-end: 0;
-    transform: translateX(var(--slide-out-offset, 100%));
+    inset-inline-start: auto !important;
+    inset-inline-end: 0 !important;
+    left: auto !important;
+    right: 0 !important;
+    transform: translateX(100%);
   }
 
   [dir="rtl"] .app-sidebar-container.sidebar-open {
-    transform: translateX(0);
+    transform: translateX(0) !important;
   }
 
   /* Sidebar overlay backdrop */
@@ -126,19 +141,12 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.55);
   }
 
   .sidebar-backdrop.active {
     opacity: 1;
     pointer-events: auto;
-  }
-
-  /* Light theme backdrop */
-  :host-context(.light-theme) .sidebar-backdrop {
-    background: rgba(255, 255, 255, 0.35);
   }
 
   .main-app-container {

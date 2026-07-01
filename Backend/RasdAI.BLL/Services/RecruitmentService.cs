@@ -216,6 +216,31 @@ public class RecruitmentService : IRecruitmentService
         };
     }
 
+    public async Task<CandidateDto?> UpdateCandidateAsync(int id, UpdateCandidateDto dto, Guid tenantId)
+    {
+        var entity = await _context.Candidates
+            .FirstOrDefaultAsync(c => c.Id == id && c.TenantId == tenantId && !c.IsDeleted);
+
+        if (entity == null) return null;
+
+        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.AppliedRole != null) entity.AppliedRole = dto.AppliedRole;
+        if (dto.Rating.HasValue) entity.Rating = dto.Rating.Value;
+
+        await _context.SaveChangesAsync();
+
+        return new CandidateDto
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            AppliedRole = entity.AppliedRole,
+            Rating = entity.Rating,
+            Stage = entity.Stage,
+            JobVacancyId = entity.JobVacancyId,
+            CreatedAt = entity.CreatedAt
+        };
+    }
+
     public async Task<CandidateDto?> MoveCandidateAsync(int id, MoveCandidateDto dto, Guid tenantId)
     {
         var validStages = new[] { "applied", "interview", "test", "offer", "hired" };

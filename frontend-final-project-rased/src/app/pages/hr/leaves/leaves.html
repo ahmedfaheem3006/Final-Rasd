@@ -1,87 +1,341 @@
 <div class="leaves-container animate-fade-in">
+
   <!-- Header -->
   <header class="page-header">
     <div class="header-info">
-      <div class="breadcrumbs">{{ i18n.isRtl() ? 'الموارد البشرية / طلبات الإجازات' : 'HR / Leave Approvals' }}</div>
-      <h1>{{ i18n.isRtl() ? 'اعتماد طلبات الإجازات العامة' : 'Company-Wide Leave Approvals' }}</h1>
-      <p class="subtitle">{{ i18n.isRtl() ? 'مراجعة طلبات الإجازات المرفوعة من مدراء الأقسام المختلفة مع تقدير الأثر المالي على مسير الرواتب' : 'Approve or reject leave requests across all departments with financial impact details.' }}</p>
+      <div class="breadcrumbs">{{ i18n.isRtl() ? 'الموارد البشرية / إدارة الإجازات' : 'HR / Leave Management' }}</div>
+      <h1>{{ i18n.isRtl() ? 'إدارة طلبات الإجازات' : 'Leave Requests Management' }}</h1>
+      <p class="subtitle">{{ i18n.isRtl() ? 'مراجعة واعتماد ورفض طلبات إجازات موظفي الشركة' : 'Review, approve, and reject employee leave requests.' }}</p>
     </div>
+    <button class="btn-new-request" (click)="openCreateModal()">
+      <i class="fa-solid fa-plus"></i>
+      {{ i18n.isRtl() ? 'طلب إجازة جديد' : 'New Leave Request' }}
+    </button>
   </header>
 
-  <!-- Inbox Table Card -->
-  <div class="glass-card">
-    <div class="card-header-toolbar">
-      <h3><i class="fa-solid fa-inbox"></i> {{ i18n.isRtl() ? 'صندوق الوارد: طلبات بانتظار الاعتماد' : 'Inbox: Pending Leave Requests' }}</h3>
-      <span class="pending-count">{{ requests().filter(r => r.status === 'Pending').length }} {{ i18n.isRtl() ? 'معلقة' : 'Pending' }}</span>
+  <!-- Stats Summary Cards -->
+  <div class="stats-row">
+    <div class="stat-card stat-total" (click)="statusFilter.set('All')" [class.active-filter]="statusFilter() === 'All'">
+      <div class="stat-icon"><i class="fa-solid fa-calendar-days"></i></div>
+      <div class="stat-body">
+        <span class="stat-num">{{ stats().total }}</span>
+        <span class="stat-label">{{ i18n.isRtl() ? 'إجمالي الطلبات' : 'Total Requests' }}</span>
+      </div>
     </div>
-
-    <div class="table-responsive">
-      <table class="leaves-table">
-        <thead>
-          <tr>
-            <th>{{ i18n.isRtl() ? 'الموظف' : 'Employee' }}</th>
-            <th>{{ i18n.isRtl() ? 'القسم' : 'Department' }}</th>
-            <th>{{ i18n.isRtl() ? 'نوع الإجازة' : 'Leave Type' }}</th>
-            <th>{{ i18n.isRtl() ? 'المدة والتواريخ' : 'Duration & Dates' }}</th>
-            <th>{{ i18n.isRtl() ? 'الأثر المالي والرواتب' : 'Financial Impact' }}</th>
-            <th>{{ i18n.isRtl() ? 'الحالة' : 'Status' }}</th>
-            <th>{{ i18n.isRtl() ? 'الإجراءات' : 'Actions' }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (req of requests(); track req.id) {
-            <tr [class.highlight-pending]="req.status === 'Pending'">
-              <td>
-                <div class="emp-cell">
-                  <div class="emp-avatar-circle">{{ req.employeeName.slice(0,2) }}</div>
-                  <span class="emp-name">{{ req.employeeName }}</span>
-                </div>
-              </td>
-              <td>{{ i18n.isRtl() ? req.department : req.departmentEn }}</td>
-              <td>
-                <span class="badge-type">{{ i18n.isRtl() ? req.leaveType : req.leaveTypeEn }}</span>
-              </td>
-              <td>
-                <div class="dates-cell">
-                  <strong>{{ req.days }} {{ i18n.isRtl() ? 'أيام' : 'days' }}</strong>
-                  <span>{{ req.startDate }} {{ i18n.isRtl() ? 'إلى' : 'to' }} {{ req.endDate }}</span>
-                </div>
-              </td>
-              <td>
-                <div class="impact-cell" [ngClass]="req.impactType.toLowerCase()">
-                  <i class="fa-solid" [ngClass]="{
-                    'fa-circle-check': req.impactType === 'Paid',
-                    'fa-triangle-exclamation': req.impactType === 'Unpaid',
-                    'fa-circle-minus': req.impactType === 'Partial'
-                  }"></i>
-                  <span>{{ i18n.isRtl() ? req.impactDetails : req.impactDetailsEn }}</span>
-                </div>
-              </td>
-              <td>
-                <span class="badge-status" [ngClass]="req.status.toLowerCase()">
-                  {{ req.status === 'Pending' ? (i18n.isRtl() ? 'معلقة' : 'Pending') : '' }}
-                  {{ req.status === 'Approved' ? (i18n.isRtl() ? 'معتمدة' : 'Approved') : '' }}
-                  {{ req.status === 'Rejected' ? (i18n.isRtl() ? 'مرفوضة' : 'Rejected') : '' }}
-                </span>
-              </td>
-              <td>
-                <div class="actions-buttons">
-                  @if (req.status === 'Pending') {
-                    <button (click)="approveRequest(req.id)" class="btn-approve" [title]="i18n.isRtl() ? 'اعتماد الإجازة' : 'Approve'">
-                      <i class="fa-solid fa-check"></i>
-                    </button>
-                    <button (click)="rejectRequest(req.id)" class="btn-reject" [title]="i18n.isRtl() ? 'رفض الإجازة' : 'Reject'">
-                      <i class="fa-solid fa-xmark"></i>
-                    </button>
-                  } @else {
-                    <span class="action-done-label"><i class="fa-solid fa-lock"></i></span>
-                  }
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <div class="stat-card stat-pending" (click)="statusFilter.set('Pending')" [class.active-filter]="statusFilter() === 'Pending'">
+      <div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+      <div class="stat-body">
+        <span class="stat-num">{{ stats().pending }}</span>
+        <span class="stat-label">{{ i18n.isRtl() ? 'قيد المراجعة' : 'Pending' }}</span>
+      </div>
+    </div>
+    <div class="stat-card stat-approved" (click)="statusFilter.set('Approved')" [class.active-filter]="statusFilter() === 'Approved'">
+      <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <div class="stat-body">
+        <span class="stat-num">{{ stats().approved }}</span>
+        <span class="stat-label">{{ i18n.isRtl() ? 'معتمدة' : 'Approved' }}</span>
+      </div>
+    </div>
+    <div class="stat-card stat-rejected" (click)="statusFilter.set('Rejected')" [class.active-filter]="statusFilter() === 'Rejected'">
+      <div class="stat-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+      <div class="stat-body">
+        <span class="stat-num">{{ stats().rejected }}</span>
+        <span class="stat-label">{{ i18n.isRtl() ? 'مرفوضة' : 'Rejected' }}</span>
+      </div>
     </div>
   </div>
+
+  <!-- Main Table Card -->
+  <div class="glass-card">
+
+    <!-- Toolbar: Title + Status Tabs + Search -->
+    <div class="card-header-toolbar">
+      <h3>
+        <i class="fa-solid fa-inbox"></i>
+        {{ i18n.isRtl() ? 'صندوق طلبات الإجازات' : 'Leave Requests Inbox' }}
+        @if (stats().pending > 0) {
+          <span class="pending-count">{{ stats().pending }} {{ i18n.isRtl() ? 'قيد الانتظار' : 'pending' }}</span>
+        }
+      </h3>
+
+      <div class="toolbar-right">
+        <div class="filter-tabs">
+          <button class="filter-tab" [class.active]="statusFilter() === 'All'" (click)="statusFilter.set('All')">
+            {{ i18n.isRtl() ? 'الكل' : 'All' }}
+          </button>
+          <button class="filter-tab" [class.active]="statusFilter() === 'Pending'" (click)="statusFilter.set('Pending')">
+            {{ i18n.isRtl() ? 'قيد المراجعة' : 'Pending' }}
+          </button>
+          <button class="filter-tab" [class.active]="statusFilter() === 'Approved'" (click)="statusFilter.set('Approved')">
+            {{ i18n.isRtl() ? 'معتمدة' : 'Approved' }}
+          </button>
+          <button class="filter-tab" [class.active]="statusFilter() === 'Rejected'" (click)="statusFilter.set('Rejected')">
+            {{ i18n.isRtl() ? 'مرفوضة' : 'Rejected' }}
+          </button>
+        </div>
+
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            [ngModel]="searchTerm()"
+            (ngModelChange)="searchTerm.set($event)"
+            [placeholder]="i18n.isRtl() ? 'ابحث باسم الموظف...' : 'Search by employee name...'"
+          />
+          @if (searchTerm()) {
+            <button class="clear-search" (click)="searchTerm.set('')">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="loading-state">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>{{ i18n.isRtl() ? 'جاري تحميل طلبات الإجازات...' : 'Loading leave requests...' }}</span>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="leaves-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.isRtl() ? 'الموظف' : 'Employee' }}</th>
+              <th>{{ i18n.isRtl() ? 'القسم' : 'Department' }}</th>
+              <th>{{ i18n.isRtl() ? 'نوع الإجازة' : 'Leave Type' }}</th>
+              <th>{{ i18n.isRtl() ? 'الفترة الزمنية' : 'Period' }}</th>
+              <th>{{ i18n.isRtl() ? 'الأيام' : 'Days' }}</th>
+              <th>{{ i18n.isRtl() ? 'التأثير المالي' : 'Financial Impact' }}</th>
+              <th>{{ i18n.isRtl() ? 'الحالة' : 'Status' }}</th>
+              <th>{{ i18n.isRtl() ? 'الإجراءات' : 'Actions' }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (req of filtered(); track req.id) {
+              <tr [class.highlight-pending]="req.status === 'Pending'">
+
+                <!-- Employee -->
+                <td>
+                  <div class="emp-cell">
+                    <div class="emp-avatar-circle">{{ req.employeeName.slice(0, 2) }}</div>
+                    <div>
+                      <div class="emp-name">{{ req.employeeName }}</div>
+                      @if (req.reason) {
+                        <div class="emp-reason">{{ req.reason | slice:0:40 }}{{ req.reason.length > 40 ? '...' : '' }}</div>
+                      }
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Department -->
+                <td>{{ i18n.isRtl() ? req.department : req.departmentEn }}</td>
+
+                <!-- Leave Type -->
+                <td>
+                  <span class="badge-type">{{ i18n.isRtl() ? req.leaveType : req.leaveTypeEn }}</span>
+                </td>
+
+                <!-- Period -->
+                <td>
+                  <div class="dates-cell">
+                    <strong>{{ req.startDate }}</strong>
+                    <span>{{ i18n.isRtl() ? 'حتى' : 'to' }} {{ req.endDate }}</span>
+                  </div>
+                </td>
+
+                <!-- Days -->
+                <td><strong>{{ req.days }}</strong></td>
+
+                <!-- Financial Impact -->
+                <td>
+                  <div class="impact-cell" [ngClass]="req.impactType.toLowerCase()">
+                    <i class="fa-solid" [ngClass]="{
+                      'fa-circle-check': req.impactType === 'Paid',
+                      'fa-circle-minus': req.impactType === 'Unpaid',
+                      'fa-circle-half-stroke': req.impactType === 'Partial'
+                    }"></i>
+                    <span>{{ i18n.isRtl() ? req.impactDetails : req.impactDetailsEn }}</span>
+                  </div>
+                </td>
+
+                <!-- Status -->
+                <td>
+                  <span class="badge-status" [ngClass]="req.status.toLowerCase()">
+                    {{ req.status === 'Pending' ? (i18n.isRtl() ? 'قيد المراجعة' : 'Pending')
+                      : req.status === 'Approved' ? (i18n.isRtl() ? 'معتمدة' : 'Approved')
+                      : (i18n.isRtl() ? 'مرفوضة' : 'Rejected') }}
+                  </span>
+                  @if (req.status === 'Rejected' && req.rejectionReason) {
+                    <div class="rejection-reason-preview" [title]="req.rejectionReason">
+                      {{ req.rejectionReason | slice:0:30 }}{{ req.rejectionReason.length > 30 ? '...' : '' }}
+                    </div>
+                  }
+                </td>
+
+                <!-- Actions -->
+                <td>
+                  <div class="actions-buttons">
+                    @if (req.status === 'Pending') {
+                      <button class="btn-approve" (click)="approveRequest(req.id)" [title]="i18n.isRtl() ? 'اعتماد' : 'Approve'">
+                        <i class="fa-solid fa-check"></i>
+                      </button>
+                      <button class="btn-reject" (click)="openRejectModal(req.id)" [title]="i18n.isRtl() ? 'رفض' : 'Reject'">
+                        <i class="fa-solid fa-xmark"></i>
+                      </button>
+                    } @else {
+                      <span class="action-done-label">
+                        {{ req.status === 'Approved' ? (i18n.isRtl() ? '✓ معتمد' : '✓ Done') : (i18n.isRtl() ? '✗ مرفوض' : '✗ Rejected') }}
+                      </span>
+                    }
+                    <button class="btn-delete" (click)="deleteRequest(req.id)" [title]="i18n.isRtl() ? 'حذف الطلب' : 'Delete'">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="empty-state-cell">
+                  <div class="empty-state">
+                    <i class="fa-solid fa-calendar-xmark"></i>
+                    <p>
+                      @if (searchTerm()) {
+                        {{ i18n.isRtl() ? 'لا توجد نتائج مطابقة للبحث' : 'No results match your search' }}
+                      } @else if (statusFilter() !== 'All') {
+                        {{ i18n.isRtl() ? 'لا توجد طلبات بهذه الحالة' : 'No requests with this status' }}
+                      } @else {
+                        {{ i18n.isRtl() ? 'لا توجد طلبات إجازة حتى الآن' : 'No leave requests yet' }}
+                      }
+                    </p>
+                    @if (statusFilter() !== 'All' || searchTerm()) {
+                      <button class="btn-reset-filter" (click)="statusFilter.set('All'); searchTerm.set('')">
+                        {{ i18n.isRtl() ? 'عرض الكل' : 'Show all' }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
 </div>
+
+<!-- ════════════════════ Reject Reason Modal ════════════════════ -->
+@if (showRejectModal()) {
+  <div class="modal-backdrop" (click)="closeRejectModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="fa-solid fa-circle-xmark" style="color:#ef4444;"></i>
+          {{ i18n.isRtl() ? 'رفض طلب الإجازة' : 'Reject Leave Request' }}
+        </h3>
+        <button class="modal-close" (click)="closeRejectModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">{{ i18n.isRtl() ? 'يمكنك ذكر سبب الرفض (اختياري)' : 'Optionally enter a rejection reason' }}</p>
+        <textarea
+          [(ngModel)]="rejectReason"
+          [placeholder]="i18n.isRtl() ? 'سبب الرفض...' : 'Reason for rejection...'"
+          class="modal-textarea"
+          rows="3"
+        ></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" (click)="closeRejectModal()">
+          {{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}
+        </button>
+        <button class="btn-modal-reject" (click)="confirmReject()">
+          <i class="fa-solid fa-xmark"></i>
+          {{ i18n.isRtl() ? 'تأكيد الرفض' : 'Confirm Rejection' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ════════════════════ Create Leave Request Modal ════════════════════ -->
+@if (showCreateModal()) {
+  <div class="modal-backdrop" (click)="closeCreateModal()">
+    <div class="modal-box modal-box-wide" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="fa-solid fa-calendar-plus" style="color:#7c3aed;"></i>
+          {{ i18n.isRtl() ? 'تقديم طلب إجازة جديد' : 'Submit New Leave Request' }}
+        </h3>
+        <button class="modal-close" (click)="closeCreateModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="form-field">
+          <label>{{ i18n.isRtl() ? 'الموظف *' : 'Employee *' }}</label>
+          <select
+            class="modal-select"
+            [ngModel]="newEmployeeId()"
+            (ngModelChange)="newEmployeeId.set($event ? +$event : null)"
+          >
+            <option [ngValue]="null">{{ i18n.isRtl() ? '-- اختر موظفاً --' : '-- Select Employee --' }}</option>
+            @for (emp of employees(); track emp.id) {
+              <option [value]="emp.id">{{ emp.fullName }} ({{ emp.roleName }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>{{ i18n.isRtl() ? 'نوع الإجازة *' : 'Leave Type *' }}</label>
+          <select class="modal-select" [(ngModel)]="newLeaveType">
+            @for (type of leaveTypes; track type.value) {
+              <option [value]="type.value">{{ i18n.isRtl() ? type.labelAr : type.labelEn }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>{{ i18n.isRtl() ? 'تاريخ البداية *' : 'Start Date *' }}</label>
+            <input type="date" class="modal-input" [(ngModel)]="newStartDate" />
+          </div>
+          <div class="form-field">
+            <label>{{ i18n.isRtl() ? 'تاريخ النهاية *' : 'End Date *' }}</label>
+            <input type="date" class="modal-input" [(ngModel)]="newEndDate" [min]="newStartDate" />
+          </div>
+        </div>
+
+        @if (newStartDate && newEndDate) {
+          <div class="days-preview">
+            <i class="fa-solid fa-moon"></i>
+            {{ calcDays() }} {{ i18n.isRtl() ? 'يوم/أيام' : 'day(s)' }}
+          </div>
+        }
+
+        <div class="form-field">
+          <label>{{ i18n.isRtl() ? 'السبب (اختياري)' : 'Reason (optional)' }}</label>
+          <textarea
+            class="modal-textarea"
+            [(ngModel)]="newReason"
+            rows="2"
+            [placeholder]="i18n.isRtl() ? 'سبب الإجازة...' : 'Reason for leave...'"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" (click)="closeCreateModal()">
+          {{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}
+        </button>
+        <button class="btn-modal-submit" (click)="submitCreate()" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          } @else {
+            <i class="fa-solid fa-paper-plane"></i>
+          }
+          {{ i18n.isRtl() ? (isSubmitting() ? 'جاري التقديم...' : 'تقديم الطلب') : (isSubmitting() ? 'Submitting...' : 'Submit Request') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

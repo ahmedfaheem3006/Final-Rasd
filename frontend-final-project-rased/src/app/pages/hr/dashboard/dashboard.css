@@ -478,6 +478,7 @@
 .timeline-marker.marker-green { background-color: var(--success-color, #10b881); }
 .timeline-marker.marker-blue { background-color: #3b82f6; }
 .timeline-marker.marker-purple { background-color: #8b5cf6; }
+.timeline-marker.marker-amber { background-color: #f59e0b; }
 
 .timeline-content {
   flex-grow: 1;

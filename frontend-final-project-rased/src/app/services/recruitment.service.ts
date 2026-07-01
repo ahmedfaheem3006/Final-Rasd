@@ -55,6 +55,10 @@ export class RecruitmentService {
     return this.http.post<any>(`${this.baseUrl}/candidates`, dto);
   }
 
+  updateCandidate(id: number, dto: { name?: string; appliedRole?: string; rating?: number }): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/candidates/${id}`, dto);
+  }
+
   moveCandidate(id: number, stage: string): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/candidates/${id}/move`, { stage });
   }

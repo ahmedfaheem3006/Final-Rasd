@@ -90,6 +90,8 @@ Frame findings in terms of how they affect sales performance, revenue, deal exec
   isTyping = signal(false);
   isUploading = signal(false);
   showHistoryModal = signal(false);
+  showLimitModal = signal(false);
+  limitModalMessage = signal('');
   private shouldScroll = false;
 
   constructor() {
@@ -358,20 +360,17 @@ Frame findings in terms of how they affect sales performance, revenue, deal exec
       error: (err) => {
         this.isUploading.set(false);
         this.isTyping.set(false);
-
-        const errorReply = isAr
-          ? `❌ **فشل الاتصال بالخادم لتحليل العقد.**\n\nيرجى التأكد من أن **الباك إند (API) يعمل بنجاح** على المنفذ 5292 (Localhost)، وتأكد من اتصالك بالإنترنت.`
-          : `❌ **Failed to connect to the server for contract analysis.**\n\nPlease make sure the **backend API is running** on port 5292, and check your internet connection.`;
-
-        this.toastService.error(
-          isAr ? 'فشل الاتصال بالخادم' : 'Server Connection Failed',
-          isAr ? 'خطأ' : 'Error'
-        );
-
-        this.messages.update(prev => [
-          ...prev,
-          { role: 'assistant', text: errorReply, safeText: this.sanitizeMarkdown(errorReply), time: timeStr }
-        ]);
+        const serverMsg = err?.error?.message;
+        if (serverMsg) {
+          this.limitModalMessage.set(serverMsg);
+          this.showLimitModal.set(true);
+        } else {
+          const errorReply = isAr
+            ? `❌ **فشل الاتصال بالخادم لتحليل العقد.**\n\nيرجى التأكد من أن الخادم يعمل وأعد المحاولة.`
+            : `❌ **Failed to connect to the server for contract analysis.**\n\nPlease make sure the API is running and try again.`;
+          this.toastService.error(isAr ? 'فشل الاتصال بالخادم' : 'Server Connection Failed', isAr ? 'خطأ' : 'Error');
+          this.messages.update(prev => [...prev, { role: 'assistant', text: errorReply, safeText: this.sanitizeMarkdown(errorReply), time: timeStr }]);
+        }
         this.shouldScroll = true;
       }
     });
@@ -435,17 +434,22 @@ Frame findings in terms of how they affect sales performance, revenue, deal exec
       },
       error: (err) => {
         this.isTyping.set(false);
-        const reply = contractData
-          ? this.getSpecializedContractChatResponse(messageText)
-          : this.getSimulatedChatResponse(messageText);
-        this.messages.update(prev => [
-          ...prev,
-          { role: 'assistant', text: reply, safeText: this.sanitizeMarkdown(reply), time: timeStr }
-        ]);
+        const serverMsg = err?.error?.message;
+        if (serverMsg) {
+          this.limitModalMessage.set(serverMsg);
+          this.showLimitModal.set(true);
+        } else {
+          const reply = contractData
+            ? this.getSpecializedContractChatResponse(messageText)
+            : this.getSimulatedChatResponse(messageText);
+          this.messages.update(prev => [...prev, { role: 'assistant', text: reply, safeText: this.sanitizeMarkdown(reply), time: timeStr }]);
+        }
         this.shouldScroll = true;
       }
     });
   }
+
+  closeLimitModal() { this.showLimitModal.set(false); }
 
   selectSuggestion(suggestion: string) {
     if (this.contractData()) {

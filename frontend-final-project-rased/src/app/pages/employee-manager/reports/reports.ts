@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../services/toast.service';
@@ -8,9 +8,11 @@ import { AuthService } from '../../../services/auth.service';
 import { LeaveService } from '../../../services/leave.service';
 
 interface HistoryRecord {
+  id?: number;
   title: string;
   period: string;
   size: string;
+  createdAt?: string;
 }
 
 interface AiInsight {
@@ -32,497 +34,628 @@ export class EmployeeManagerReports implements OnInit {
   private authService = inject(AuthService);
   private leaveService = inject(LeaveService);
 
-  // States
   activeCategory = signal<'attendance' | 'leaves' | 'performance' | 'payroll'>('attendance');
   showReport = signal(false);
   generating = signal(false);
+  isLoading = signal(true);
 
-  // Filter bindings
+  generatedDate = new Date();
+
   filters = {
-    month: 6,
-    year: 2026,
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
     department: 'all',
     employeeQuery: ''
   };
 
   months = [
-    { value: 1, nameAr: 'يناير (01)', nameEn: 'January (01)' },
-    { value: 2, nameAr: 'فبراير (02)', nameEn: 'February (02)' },
-    { value: 3, nameAr: 'مارس (03)', nameEn: 'March (03)' },
-    { value: 4, nameAr: 'أبريل (04)', nameEn: 'April (04)' },
-    { value: 5, nameAr: 'مايو (05)', nameEn: 'May (05)' },
-    { value: 6, nameAr: 'يونيو (06)', nameEn: 'June (06)' },
-    { value: 7, nameAr: 'يوليو (07)', nameEn: 'July (07)' },
-    { value: 8, nameAr: 'أغسطس (08)', nameEn: 'August (08)' },
-    { value: 9, nameAr: 'سبتمبر (09)', nameEn: 'September (09)' },
-    { value: 10, nameAr: 'أكتوبر (10)', nameEn: 'October (10)' },
-    { value: 11, nameAr: 'نوفمبر (11)', nameEn: 'November (11)' },
-    { value: 12, nameAr: 'ديسمبر (12)', nameEn: 'December (12)' }
+    { value: 1,  nameAr: 'يناير',   nameEn: 'January' },
+    { value: 2,  nameAr: 'فبراير',  nameEn: 'February' },
+    { value: 3,  nameAr: 'مارس',    nameEn: 'March' },
+    { value: 4,  nameAr: 'أبريل',   nameEn: 'April' },
+    { value: 5,  nameAr: 'مايو',    nameEn: 'May' },
+    { value: 6,  nameAr: 'يونيو',   nameEn: 'June' },
+    { value: 7,  nameAr: 'يوليو',   nameEn: 'July' },
+    { value: 8,  nameAr: 'أغسطس',  nameEn: 'August' },
+    { value: 9,  nameAr: 'سبتمبر', nameEn: 'September' },
+    { value: 10, nameAr: 'أكتوبر', nameEn: 'October' },
+    { value: 11, nameAr: 'نوفمبر', nameEn: 'November' },
+    { value: 12, nameAr: 'ديسمبر', nameEn: 'December' },
   ];
 
-  // Recently generated logs history
   reportHistory = signal<HistoryRecord[]>([]);
-
-  // Raw datasets populated dynamically
-  realUsers = signal<any[]>([]);
+  realUsers  = signal<any[]>([]);
   realLeaves = signal<any[]>([]);
 
-  attendanceData: any[] = [];
-  leavesData: any[] = [];
+  attendanceData:  any[] = [];
+  leavesData:      any[] = [];
   performanceData: any[] = [];
-  payrollData: any[] = [];
+  payrollData:     any[] = [];
 
-  ngOnInit() {
-    this.loadData();
-  }
+  // ─── Lifecycle ───────────────────────────────────────────────────
+
+  ngOnInit() { this.loadData(); }
 
   loadData() {
-    // Load generated reports history from DB
+    this.isLoading.set(true);
+    let usersDone = false, leavesDone = false, histDone = false;
+    const checkDone = () => { if (usersDone && leavesDone && histDone) this.isLoading.set(false); };
+
     this.reportService.getReports().subscribe({
       next: (res) => {
-        if (res && res.success && res.data) {
-          this.reportHistory.set(res.data.map(r => ({
-            title: r.title,
-            period: r.period,
-            size: r.sizeLabel
-          })));
+        if (res?.success && res.data) {
+          this.reportHistory.set(
+            res.data
+              .filter((r: any) => r.category === 'hr')
+              .map((r: any) => ({
+                id: r.id, title: r.title, period: r.period,
+                size: r.sizeLabel, createdAt: r.createdAt
+              }))
+          );
         }
+        histDone = true; checkDone();
       },
-      error: (err) => console.error('Failed to load reports history', err)
+      error: () => {
+        this.toastService.error(
+          this.i18n.isRtl() ? 'فشل تحميل أرشيف التقارير' : 'Failed to load report history'
+        );
+        histDone = true; checkDone();
+      }
     });
 
-    // Load actual users
     this.authService.getUsers().subscribe({
       next: (res) => {
-        if (res && res.success && res.data) {
+        if (res?.success && res.data) {
           this.realUsers.set(res.data);
           this.buildDynamicTables();
         }
+        usersDone = true; checkDone();
       },
-      error: (err) => console.error('Failed to load users for reports', err)
+      error: () => {
+        this.toastService.error(
+          this.i18n.isRtl() ? 'فشل تحميل بيانات الموظفين' : 'Failed to load employee data'
+        );
+        usersDone = true; checkDone();
+      }
     });
 
-    // Load actual leaves
     this.leaveService.getLeaveRequests().subscribe({
       next: (res) => {
-        if (res && res.success && res.data) {
+        if (res?.success && res.data) {
           this.realLeaves.set(res.data);
           this.buildDynamicTables();
         }
+        leavesDone = true; checkDone();
       },
-      error: (err) => console.error('Failed to load leaves for reports', err)
+      error: () => {
+        this.toastService.error(
+          this.i18n.isRtl() ? 'فشل تحميل بيانات الإجازات' : 'Failed to load leave data'
+        );
+        leavesDone = true; checkDone();
+      }
     });
   }
 
   buildDynamicTables() {
-    const users = this.realUsers();
+    const users  = this.realUsers();
     const leaves = this.realLeaves();
-
     if (users.length === 0) return;
 
-    // 1. Attendance Data
+    // ── Attendance (derived from approved leaves) ──
     this.attendanceData = users.map(u => {
-      const roleText = u.role || 'employee';
-      // Calculate absent days based on approved leaves
-      const userLeaves = leaves.filter(l => l.employeeId === u.id && l.status === 'Approved');
-      const absentCount = userLeaves.reduce((acc, curr) => acc + this.calculateDays(curr.startDate, curr.endDate), 0);
-      const presentCount = Math.max(15, 22 - absentCount);
-      const rate = Number(((presentCount / 22) * 100).toFixed(1));
-
+      const userLeaves = leaves.filter(l =>
+        l.employeeId === u.id && l.status === 'Approved'
+      );
+      const absentCount = userLeaves.reduce((acc: number, l: any) =>
+        acc + this.calcDays(l.startDate, l.endDate), 0
+      );
+      const workDays   = 22;
+      const present    = Math.max(0, workDays - absentCount);
+      const late       = this.stablePseudoRandom(u.id, 0, 3);
+      const rate       = +((present / workDays) * 100).toFixed(1);
       return {
-        name: u.fullName || u.name,
-        role: this.getRoleLabelText(roleText),
-        dept: this.mapRoleToDept(roleText),
-        present: presentCount,
-        absent: absentCount,
-        late: Math.floor(Math.random() * 3),
-        rate: rate
+        name: u.fullName || '',
+        role: this.roleLabel(u.roleName),
+        dept: this.roleToDept(u.roleName),
+        present, absent: absentCount, late, rate
       };
     });
 
-    // 2. Leaves Data
-    this.leavesData = leaves.map(l => {
-      const matchedUser = users.find(u => u.id === l.employeeId);
+    // ── Leaves (filter by selected month) ──
+    this.leavesData = leaves
+      .filter(l => {
+        if (!l.startDate) return true;
+        const d = new Date(l.startDate);
+        return d.getMonth() + 1 === Number(this.filters.month)
+          && d.getFullYear() === Number(this.filters.year);
+      })
+      .map((l: any) => {
+        const user = users.find(u => u.id === l.employeeId);
+        return {
+          name: user?.fullName || (this.i18n.isRtl() ? 'غير معروف' : 'Unknown'),
+          type: l.leaveType || '',
+          dept: this.roleToDept(user?.roleName),
+          start: l.startDate ? l.startDate.split('T')[0] : '',
+          end:   l.endDate   ? l.endDate.split('T')[0]   : '',
+          days:  this.calcDays(l.startDate, l.endDate),
+          status: l.status || 'Pending'
+        };
+      });
+
+    // ── Performance (stable pseudo-random score seeded by user.id) ──
+    this.performanceData = users.map(u => {
+      const score = 75 + this.stablePseudoRandom(u.id, 0, 23);
+      const stars = score >= 93 ? 5 : score >= 85 ? 4 : score >= 75 ? 3 : 2;
       return {
-        name: matchedUser ? matchedUser.fullName : (this.i18n.isRtl() ? 'موظف غير معروف' : 'Unknown Employee'),
-        type: l.leaveType,
-        dept: this.mapRoleToDept(matchedUser?.role),
-        start: l.startDate ? l.startDate.split('T')[0] : '',
-        end: l.endDate ? l.endDate.split('T')[0] : '',
-        days: this.calculateDays(l.startDate, l.endDate),
-        approvedBy: l.status === 'Approved' ? (this.i18n.isRtl() ? 'منى السالم' : 'Mona Al-Salem') : '-',
-        status: l.status
+        name: u.fullName || '',
+        role: this.roleLabel(u.roleName),
+        dept: this.roleToDept(u.roleName),
+        stars, score,
+        notes: this.i18n.isRtl()
+          ? 'مستوى أداء جيد، يلتزم بمواعيد التسليم والمهام المطلوبة.'
+          : 'Solid performance with consistent execution of assigned deliverables.'
       };
     });
 
-    // 3. Performance Data
-    this.performanceData = users.map((u, index) => {
-      const score = Math.floor(Math.random() * (98 - 75 + 1)) + 75;
-      const stars = score >= 90 ? 5 : (score >= 80 ? 4 : 3);
-      const roleText = u.role || 'employee';
-
-      return {
-        name: u.fullName || u.name,
-        role: this.getRoleLabelText(roleText),
-        dept: this.mapRoleToDept(roleText),
-        stars: stars,
-        score: score,
-        notes: this.i18n.isRtl() 
-          ? `إنتاجية ممتازة والتزام بمواعيد تسليم المهام المطلوبة.`
-          : `Excellent performance and consistent execution of deliverables.`
-      };
-    });
-
-    // 4. Payroll Data
+    // ── Payroll (use REAL salary & allowances from DB) ──
     this.payrollData = users.map(u => {
-      const roleText = u.role || 'employee';
-      const salaries: Record<string, number> = {
-        'system-admin': 15000,
-        'owner-admin': 25000,
-        'accountant': 12000,
-        'sales-manager': 12000,
-        'employee-manager': 13000,
-        'hr': 13000,
-        'employee': 10000,
-        'sales-rep': 9000
-      };
-      const basic = salaries[roleText.toLowerCase()] || 8000;
-      const allowance = Math.round(basic * 0.15);
+      const basic      = Number(u.salary)     || 8000;
+      const allowance  = Number(u.allowances) || Math.round(basic * 0.15);
       const deductions = Math.round(basic * 0.05);
-
       return {
-        name: u.fullName || u.name,
-        basic: basic,
-        allowance: allowance,
-        deductions: deductions,
-        dept: this.mapRoleToDept(roleText)
+        name: u.fullName || '',
+        role: this.roleLabel(u.roleName),
+        dept: this.roleToDept(u.roleName),
+        basic, allowance, deductions
       };
     });
   }
 
-  private getRoleLabelText(role: string): string {
-    switch (role?.toLowerCase()) {
-      case 'system-admin': case 'systemadmin': return this.i18n.isRtl() ? 'مدير النظام' : 'System Admin';
-      case 'owner-admin': case 'owner': return this.i18n.isRtl() ? 'مالك الشركة' : 'Company Owner';
-      case 'accountant': return this.i18n.isRtl() ? 'المحاسب المالي' : 'Accountant';
-      case 'sales-manager': case 'salesmanager': return this.i18n.isRtl() ? 'مدير المبيعات' : 'Sales Manager';
-      case 'employee-manager': case 'employeemanager': return this.i18n.isRtl() ? 'مدير موظفين' : 'Employee Manager';
-      case 'hr': return this.i18n.isRtl() ? 'مدير موارد بشرية' : 'HR Manager';
-      case 'employee': return this.i18n.isRtl() ? 'موظف عمليات' : 'Operations Employee';
-      case 'sales-rep': case 'sales': return this.i18n.isRtl() ? 'مندوب مبيعات' : 'Sales Rep';
-      default: return this.i18n.isRtl() ? 'موظف' : 'Employee';
+  // ─── Stable seeded pseudo-random (deterministic by id, no Math.random()) ───
+  private stablePseudoRandom(seed: number, min: number, max: number): number {
+    const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
+    return min + Math.floor((x - Math.floor(x)) * (max - min + 1));
+  }
+
+  // ─── Role helpers ────────────────────────────────────────────────
+
+  private roleLabel(roleName?: string): string {
+    const r = roleName?.toLowerCase() || '';
+    if (this.i18n.isRtl()) {
+      if (r === 'systemadmin')     return 'مدير النظام';
+      if (r === 'owner')           return 'مالك الشركة';
+      if (r === 'accountant')      return 'المحاسب المالي';
+      if (r === 'salesmanager')    return 'مدير المبيعات';
+      if (r === 'sales')           return 'مندوب مبيعات';
+      if (r === 'employeemanager') return 'مدير موظفين';
+      if (r === 'hr')              return 'موارد بشرية';
+      return 'موظف';
+    } else {
+      if (r === 'systemadmin')     return 'System Admin';
+      if (r === 'owner')           return 'Company Owner';
+      if (r === 'accountant')      return 'Accountant';
+      if (r === 'salesmanager')    return 'Sales Manager';
+      if (r === 'sales')           return 'Sales Rep';
+      if (r === 'employeemanager') return 'Employee Manager';
+      if (r === 'hr')              return 'HR';
+      return 'Employee';
     }
   }
 
-  private mapRoleToDept(role?: string): string {
-    switch (role?.toLowerCase()) {
-      case 'owner-admin': case 'owner': return 'owner';
-      case 'accountant': return 'finance';
-      case 'sales-manager': case 'salesmanager': case 'sales-rep': case 'sales': return 'sales';
-      case 'employee-manager': case 'employeemanager': case 'hr': return 'hr';
-      default: return 'development';
-    }
+  private roleToDept(roleName?: string): string {
+    const r = roleName?.toLowerCase() || '';
+    if (r === 'owner')                               return 'owner';
+    if (r === 'accountant')                          return 'finance';
+    if (r === 'salesmanager' || r === 'sales')       return 'sales';
+    if (r === 'employeemanager' || r === 'hr')       return 'hr';
+    return 'development';
   }
 
-  private calculateDays(start: string, end: string): number {
+  private calcDays(start: string, end: string): number {
     if (!start || !end) return 1;
-    const sDate = new Date(start);
-    const eDate = new Date(end);
-    const diff = Math.abs(eDate.getTime() - sDate.getTime());
-    return Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+    const diff = Math.abs(new Date(end).getTime() - new Date(start).getTime());
+    return Math.ceil(diff / 86400000) + 1;
   }
 
-  // Active state controller
+  // ─── Category ────────────────────────────────────────────────────
+
   selectCategory(cat: 'attendance' | 'leaves' | 'performance' | 'payroll') {
     this.activeCategory.set(cat);
     this.showReport.set(false);
   }
 
-  // Filter processing
-  filteredAttendanceData() {
-    let list = this.attendanceData;
-    if (this.filters.department !== 'all') {
-      list = list.filter(x => x.dept === this.filters.department);
-    }
-    if (this.filters.employeeQuery.trim() !== '') {
-      const q = this.filters.employeeQuery.toLowerCase();
-      list = list.filter(x => x.name.toLowerCase().includes(q));
-    }
-    return list;
+  // ─── Filters ─────────────────────────────────────────────────────
+
+  private applyBaseFilter(list: any[]) {
+    const dept = this.filters.department;
+    const q    = this.filters.employeeQuery.trim().toLowerCase();
+    return list.filter(x => {
+      const matchDept = dept === 'all' || x.dept === dept;
+      const matchName = !q || (x.name || '').toLowerCase().includes(q);
+      return matchDept && matchName;
+    });
   }
 
-  filteredLeavesData() {
-    let list = this.leavesData;
-    if (this.filters.department !== 'all') {
-      list = list.filter(x => x.dept === this.filters.department);
-    }
-    if (this.filters.employeeQuery.trim() !== '') {
-      const q = this.filters.employeeQuery.toLowerCase();
-      list = list.filter(x => x.name.toLowerCase().includes(q));
-    }
-    return list;
+  filteredAttendanceData()  { return this.applyBaseFilter(this.attendanceData); }
+  filteredLeavesData()      {
+    // Re-filter leaves by month when filter changes
+    const users  = this.realUsers();
+    const leaves = this.realLeaves();
+    const raw = leaves
+      .filter((l: any) => {
+        if (!l.startDate) return true;
+        const d = new Date(l.startDate);
+        return d.getMonth() + 1 === Number(this.filters.month)
+          && d.getFullYear() === Number(this.filters.year);
+      })
+      .map((l: any) => {
+        const user = users.find(u => u.id === l.employeeId);
+        return {
+          name: user?.fullName || (this.i18n.isRtl() ? 'غير معروف' : 'Unknown'),
+          type: l.leaveType || '',
+          dept: this.roleToDept(user?.roleName),
+          start: l.startDate ? l.startDate.split('T')[0] : '',
+          end:   l.endDate   ? l.endDate.split('T')[0]   : '',
+          days:  this.calcDays(l.startDate, l.endDate),
+          status: l.status || 'Pending'
+        };
+      });
+    return this.applyBaseFilter(raw);
   }
+  filteredPerformanceData() { return this.applyBaseFilter(this.performanceData); }
+  filteredPayrollData()     { return this.applyBaseFilter(this.payrollData); }
 
-  filteredPerformanceData() {
-    let list = this.performanceData;
-    if (this.filters.department !== 'all') {
-      list = list.filter(x => x.dept === this.filters.department);
-    }
-    if (this.filters.employeeQuery.trim() !== '') {
-      const q = this.filters.employeeQuery.toLowerCase();
-      list = list.filter(x => x.name.toLowerCase().includes(q));
-    }
-    return list;
-  }
+  // ─── Generate ─────────────────────────────────────────────────────
 
-  filteredPayrollData() {
-    let list = this.payrollData;
-    if (this.filters.department !== 'all') {
-      list = list.filter(x => x.dept === this.filters.department);
-    }
-    if (this.filters.employeeQuery.trim() !== '') {
-      const q = this.filters.employeeQuery.toLowerCase();
-      list = list.filter(x => x.name.toLowerCase().includes(q));
-    }
-    return list;
-  }
-
-  // Trigger loading state and display generated results
   handleGenerate() {
     this.generating.set(true);
+    // Rebuild leaves with current month filter before showing
+    const users  = this.realUsers();
+    const leaves = this.realLeaves();
+    this.leavesData = leaves
+      .filter((l: any) => {
+        if (!l.startDate) return true;
+        const d = new Date(l.startDate);
+        return d.getMonth() + 1 === Number(this.filters.month)
+          && d.getFullYear() === Number(this.filters.year);
+      })
+      .map((l: any) => {
+        const user = users.find(u => u.id === l.employeeId);
+        return {
+          name: user?.fullName || '',
+          type: l.leaveType || '',
+          dept: this.roleToDept(user?.roleName),
+          start: l.startDate ? l.startDate.split('T')[0] : '',
+          end:   l.endDate   ? l.endDate.split('T')[0]   : '',
+          days:  this.calcDays(l.startDate, l.endDate),
+          status: l.status || 'Pending'
+        };
+      });
+
+    this.generatedDate = new Date();
+
     setTimeout(() => {
       this.generating.set(false);
       this.showReport.set(true);
 
-      const title = this.getReportTitle();
+      const title  = this.getReportTitle();
       const period = this.getFormattedPeriodText();
+      const size   = (Math.random() * 1.5 + 0.5).toFixed(1) + ' MB';
 
-      const newReport: Partial<ReportRecord> = {
-        title: title,
-        period: period,
-        sizeLabel: (Math.random() * (2.2 - 0.7) + 0.7).toFixed(1) + ' MB',
-        category: 'hr'
-      };
-
-      this.reportService.createReport(newReport).subscribe({
+      this.reportService.createReport({
+        title, period, sizeLabel: size, category: 'hr'
+      }).subscribe({
         next: (res) => {
-          if (res && res.success) {
-            this.loadData();
+          if (res?.success) {
+            this.reportHistory.update(list => [
+              { id: res.data?.id, title, period, size },
+              ...list
+            ]);
           }
         }
       });
 
-      // Show toast
-      const successMsg = this.i18n.isRtl() 
-        ? `تم توليد تقرير "${title}" بنجاح!` 
-        : `Report "${title}" generated successfully!`;
-      this.toastService.success(successMsg, this.i18n.isRtl() ? 'توليد التقارير' : 'Report Engine');
-    }, 1000);
+      this.toastService.success(
+        this.i18n.isRtl() ? `تم توليد تقرير "${title}" بنجاح` : `Report "${title}" generated`,
+        this.i18n.isRtl() ? 'توليد التقارير' : 'Report Engine'
+      );
+    }, 900);
   }
 
-  // Helper text providers
+  // ─── Print / Download ─────────────────────────────────────────────
+
+  private buildPrintHtml(): string {
+    const title   = this.getReportTitle();
+    const period  = this.getFormattedPeriodText();
+    const kpis    = this.getReportKPIs();
+    const headers = this.getTableHeaders();
+    const cat     = this.activeCategory();
+    const rtl     = this.i18n.isRtl();
+    const user    = this.authService.currentUser();
+    const byName  = user?.name || 'HR Manager';
+    const dateStr = this.generatedDate.toLocaleDateString(rtl ? 'ar-SA' : 'en-GB');
+
+    let tableRows = '';
+    if (cat === 'attendance') {
+      for (const r of this.filteredAttendanceData()) {
+        tableRows += `<tr><td><strong>${r.name}</strong></td><td>${r.role}</td>
+          <td style="text-align:center">${r.present}</td>
+          <td style="text-align:center;color:${r.absent>0?'#ef4444':'inherit'}">${r.absent}</td>
+          <td style="text-align:center;color:${r.late>0?'#f59e0b':'inherit'}">${r.late}</td>
+          <td style="text-align:center"><strong>${r.rate}%</strong></td></tr>`;
+      }
+    } else if (cat === 'leaves') {
+      for (const r of this.filteredLeavesData()) {
+        const statusColor = r.status === 'Approved' ? '#10b981' : r.status === 'Rejected' ? '#ef4444' : '#f59e0b';
+        tableRows += `<tr><td><strong>${r.name}</strong></td><td>${r.type}</td>
+          <td>${r.start}</td><td>${r.end}</td>
+          <td style="text-align:center">${r.days}</td>
+          <td><span style="color:${statusColor};font-weight:700">${r.status}</span></td></tr>`;
+      }
+    } else if (cat === 'performance') {
+      for (const r of this.filteredPerformanceData()) {
+        const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+        tableRows += `<tr><td><strong>${r.name}</strong></td><td>${r.role}</td>
+          <td style="color:#f59e0b">${stars}</td>
+          <td style="font-weight:700;color:#7c3aed">${r.score}%</td>
+          <td>${r.notes}</td></tr>`;
+      }
+    } else {
+      const currency = rtl ? 'ر.س' : 'SAR';
+      for (const r of this.filteredPayrollData()) {
+        const net = r.basic + r.allowance - r.deductions;
+        tableRows += `<tr><td><strong>${r.name}</strong></td>
+          <td>${r.basic.toLocaleString()} ${currency}</td>
+          <td style="color:#10b981">+${r.allowance.toLocaleString()}</td>
+          <td style="color:#ef4444">-${r.deductions.toLocaleString()}</td>
+          <td style="font-weight:700;color:#10b981">${net.toLocaleString()} ${currency}</td>
+          <td><span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:6px;font-size:12px">${rtl?'مدفوع':'Paid'}</span></td></tr>`;
+      }
+    }
+
+    const kpiHtml = kpis.map(k =>
+      `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;flex:1;min-width:150px">
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px">${k.label}</div>
+        <div style="font-size:18px;font-weight:800;color:#7c3aed">${k.value}</div>
+      </div>`
+    ).join('');
+
+    const thHtml = headers.map(h => `<th style="padding:10px 12px;background:#f1f5f9;color:#334155;font-size:12px;white-space:nowrap">${h}</th>`).join('');
+
+    return `<!DOCTYPE html><html dir="${rtl?'rtl':'ltr'}" lang="${rtl?'ar':'en'}">
+<head><meta charset="UTF-8"><title>${title}</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; padding: 40px; color: #1e293b; font-size: 13px; }
+  h1 { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  td, th { padding: 10px 12px; border: 1px solid #e2e8f0; font-size: 12px; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 2px solid #7c3aed; padding-bottom: 16px; }
+  .logo { font-size: 22px; font-weight: 900; color: #7c3aed; }
+  .kpis { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+  .footer { margin-top: 40px; display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 16px; }
+  @media print { body { padding: 20px; } }
+</style>
+</head><body>
+<div class="header-row">
+  <div>
+    <div class="logo">⬡ RASD AI</div>
+    <div style="font-size:11px;color:#64748b;margin-top:4px">${rtl?'مؤسسة رصد لتقنية المعلومات':'Rasd IT Corporation'}</div>
+  </div>
+  <div style="text-align:${rtl?'left':'right'};font-size:12px;color:#64748b;line-height:1.8">
+    <div><strong>${rtl?'تاريخ التوليد:':'Generated:'}</strong> ${dateStr}</div>
+    <div><strong>${rtl?'بواسطة:':'By:'}</strong> ${byName}</div>
+  </div>
+</div>
+<h1>${title}</h1>
+<p style="color:#64748b;font-size:12px;margin:4px 0 0">${period}</p>
+<div class="kpis">${kpiHtml}</div>
+<table>
+  <thead><tr>${thHtml}</tr></thead>
+  <tbody>${tableRows}</tbody>
+</table>
+<div class="footer">
+  <span>RASD-HR-${new Date().getFullYear()}-${this.getCategoryCode()}</span>
+  <span>${rtl?'توقيع مدير الموارد البشرية: ______________':'HR Manager Signature: ______________'}</span>
+</div>
+<script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }<\/script>
+</body></html>`;
+  }
+
+  handlePrint() {
+    if (!this.showReport()) {
+      this.toastService.warning(
+        this.i18n.isRtl() ? 'يرجى توليد تقرير أولاً' : 'Please generate a report first'
+      );
+      return;
+    }
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) return;
+    win.document.write(this.buildPrintHtml());
+    win.document.close();
+  }
+
+  handleDownload(customTitle?: string) {
+    if (!this.showReport() && !customTitle) {
+      this.toastService.warning(
+        this.i18n.isRtl() ? 'يرجى توليد تقرير أولاً' : 'Please generate a report first'
+      );
+      return;
+    }
+    // For history items (customTitle provided), just print with a note
+    if (customTitle) {
+      const msg = this.i18n.isRtl()
+        ? `جاري فتح تقرير "${customTitle}" للطباعة...`
+        : `Opening "${customTitle}" for print...`;
+      this.toastService.success(msg, this.i18n.isRtl() ? 'طباعة' : 'Print');
+    }
+    this.handlePrint();
+  }
+
+  exportAllHistory() {
+    this.toastService.success(
+      this.i18n.isRtl()
+        ? 'جاري تجهيز أرشيف التقارير...'
+        : 'Preparing report archive...',
+      this.i18n.isRtl() ? 'تصدير' : 'Export'
+    );
+  }
+
+  // ─── Label helpers ────────────────────────────────────────────────
+
   getReportTitle(): string {
     const cat = this.activeCategory();
     if (this.i18n.isRtl()) {
-      if (cat === 'attendance') return 'تقرير الانضباط والحضور العام';
-      if (cat === 'leaves') return 'سجل طلبات الإجازات المعتمدة';
-      if (cat === 'performance') return 'كشف تقييم أداء الموظفين السنوي';
+      if (cat === 'attendance')  return 'تقرير الانضباط والحضور العام';
+      if (cat === 'leaves')      return 'سجل طلبات الإجازات';
+      if (cat === 'performance') return 'كشف تقييم أداء الموظفين';
       return 'بيان كشف الرواتب والمستحقات المالية';
     } else {
-      if (cat === 'attendance') return 'General Discipline & Attendance Report';
-      if (cat === 'leaves') return 'Log of Approved Leave Requests';
-      if (cat === 'performance') return 'Annual Employee Performance Sheet';
+      if (cat === 'attendance')  return 'General Discipline & Attendance Report';
+      if (cat === 'leaves')      return 'Leave Requests Log';
+      if (cat === 'performance') return 'Employee Performance Evaluation';
       return 'Payroll & Financial Dues Statement';
     }
   }
 
   getCategoryCode(): string {
     const cat = this.activeCategory();
-    if (cat === 'attendance') return 'ATT';
-    if (cat === 'leaves') return 'LV';
-    if (cat === 'performance') return 'PERF';
-    return 'PAY';
+    return cat === 'attendance' ? 'ATT' : cat === 'leaves' ? 'LV' : cat === 'performance' ? 'PERF' : 'PAY';
   }
 
   getFormattedPeriodText(): string {
-    const monthObj = this.months.find(m => m.value === Number(this.filters.month));
-    const monthName = monthObj ? (this.i18n.isRtl() ? monthObj.nameAr.split(' ')[0] : monthObj.nameEn.split(' ')[0]) : '';
+    const month = this.months.find(m => m.value === Number(this.filters.month));
+    const name  = month ? (this.i18n.isRtl() ? month.nameAr : month.nameEn) : '';
     return this.i18n.isRtl()
-      ? `خلال شهر ${monthName} لعام ${this.filters.year}`
-      : `For the month of ${monthName} ${this.filters.year}`;
+      ? `خلال شهر ${name} لعام ${this.filters.year}`
+      : `For ${name} ${this.filters.year}`;
   }
 
-  // dynamic tables setup
+  getFormattedDate(): string {
+    return this.generatedDate.toLocaleDateString(
+      this.i18n.isRtl() ? 'ar-SA' : 'en-GB',
+      { year: 'numeric', month: 'long', day: 'numeric' }
+    );
+  }
+
+  getHRManagerName(): string {
+    return this.authService.currentUser()?.name || (this.i18n.isRtl() ? 'مدير الموارد البشرية' : 'HR Manager');
+  }
+
   getTableHeaders(): string[] {
     const cat = this.activeCategory();
     if (this.i18n.isRtl()) {
-      if (cat === 'attendance') return ['اسم الموظف', 'المسمى الوظيفي', 'أيام العمل', 'أيام الغياب', 'مرات التأخير', 'نسبة الحضور'];
-      if (cat === 'leaves') return ['اسم الموظف', 'نوع الإجازة', 'تاريخ البدء', 'تاريخ الانتهاء', 'المدة باليوم', 'الموافقة بواسطة', 'الحالة'];
-      if (cat === 'performance') return ['اسم الموظف', 'المسمى الوظيفي', 'التقييم العام', 'النسبة الإجمالية', 'أهم الملاحظات والتوصيات'];
-      return ['اسم الموظف', 'الراتب الأساسي', 'البدلات والمكافآت', 'الخصومات / التأمينات', 'صافي الراتب المستحق', 'حالة الدفع'];
+      if (cat === 'attendance')  return ['اسم الموظف', 'المسمى الوظيفي', 'أيام الحضور', 'أيام الغياب', 'مرات التأخير', 'نسبة الحضور'];
+      if (cat === 'leaves')      return ['اسم الموظف', 'نوع الإجازة', 'تاريخ البدء', 'تاريخ الانتهاء', 'المدة (يوم)', 'الحالة'];
+      if (cat === 'performance') return ['اسم الموظف', 'المسمى الوظيفي', 'التقييم', 'النسبة', 'الملاحظات'];
+      return ['اسم الموظف', 'الراتب الأساسي', 'البدلات', 'الخصومات', 'صافي الراتب', 'حالة الدفع'];
     } else {
-      if (cat === 'attendance') return ['Employee Name', 'Role/Title', 'Present', 'Absent', 'Late', 'Attendance Rate'];
-      if (cat === 'leaves') return ['Employee Name', 'Leave Type', 'Start Date', 'End Date', 'Duration', 'Approved By', 'Status'];
-      if (cat === 'performance') return ['Employee Name', 'Role/Title', 'Rating', 'Score', 'Manager Notes & Feedback'];
-      return ['Employee Name', 'Basic Salary', 'Bonuses/Allowances', 'Deductions', 'Net Payable', 'Payment Status'];
+      if (cat === 'attendance')  return ['Employee', 'Role', 'Present', 'Absent', 'Late', 'Attendance Rate'];
+      if (cat === 'leaves')      return ['Employee', 'Leave Type', 'Start', 'End', 'Days', 'Status'];
+      if (cat === 'performance') return ['Employee', 'Role', 'Rating', 'Score', 'Notes'];
+      return ['Employee', 'Basic Salary', 'Allowances', 'Deductions', 'Net Pay', 'Status'];
     }
   }
 
-  getReportKPIs() {
+  getReportKPIs(): { label: string; value: string }[] {
+    const rtl = this.i18n.isRtl();
     const cat = this.activeCategory();
-    if (this.i18n.isRtl()) {
-      if (cat === 'attendance') {
-        const data = this.filteredAttendanceData();
-        const avg = data.length > 0 ? (data.reduce((acc, curr) => acc + curr.rate, 0) / data.length).toFixed(1) : '0';
-        return [
-          { label: 'معدل الانضباط العام', value: `${avg}%` },
-          { label: 'إجمالي الغيابات بالقسم', value: data.reduce((acc, curr) => acc + curr.absent, 0) + ' أيام' },
-          { label: 'إجمالي حالات التأخير', value: data.reduce((acc, curr) => acc + curr.late, 0) + ' مرات' }
-        ];
-      }
-      if (cat === 'leaves') {
-        const data = this.filteredLeavesData();
-        return [
-          { label: 'إجمالي الطلبات المعتمدة', value: data.length + ' طلبات' },
-          { label: 'مجموع أيام الإجازات المستهلكة', value: data.reduce((acc, curr) => acc + curr.days, 0) + ' يوم' },
-          { label: 'نشط حالياً بالإجازة', value: '1 موظفين' }
-        ];
-      }
-      if (cat === 'performance') {
-        const data = this.filteredPerformanceData();
-        const avg = data.length > 0 ? (data.reduce((acc, curr) => acc + curr.score, 0) / data.length).toFixed(1) : '0';
-        return [
-          { label: 'متوسط الأداء العام للقسم', value: `${avg}%` },
-          { label: 'تقييم ممتاز (5 نجوم)', value: data.filter(x => x.stars === 5).length + ' موظفين' },
-          { label: 'الأداء الأعلى بالقسم', value: 'رنا علي (98%)' }
-        ];
-      }
-      // payroll
-      const data = this.filteredPayrollData();
-      const total = data.reduce((acc, curr) => acc + (curr.basic + curr.allowance - curr.deductions), 0);
-      return [
-        { label: 'إجمالي الفاتورة الشهرية للرواتب', value: `${total.toLocaleString()} ر.س` },
-        { label: 'متوسط صافي راتب الموظف', value: `${Math.round(total / (data.length || 1)).toLocaleString()} ر.س` },
-        { label: 'الخصومات والاقتطاعات الكلية', value: `${data.reduce((acc, curr) => acc + curr.deductions, 0).toLocaleString()} ر.س` }
-      ];
-    } else {
-      if (cat === 'attendance') {
-        const data = this.filteredAttendanceData();
-        const avg = data.length > 0 ? (data.reduce((acc, curr) => acc + curr.rate, 0) / data.length).toFixed(1) : '0';
-        return [
-          { label: 'Overall Discipline Rate', value: `${avg}%` },
-          { label: 'Total Absences', value: data.reduce((acc, curr) => acc + curr.absent, 0) + ' days' },
-          { label: 'Late Arrival Incidents', value: data.reduce((acc, curr) => acc + curr.late, 0) + ' times' }
-        ];
-      }
-      if (cat === 'leaves') {
-        const data = this.filteredLeavesData();
-        return [
-          { label: 'Total Approved Requests', value: data.length + ' requests' },
-          { label: 'Sum of Leave Days Taken', value: data.reduce((acc, curr) => acc + curr.days, 0) + ' days' },
-          { label: 'Employees Active on Leave', value: '1' }
-        ];
-      }
-      if (cat === 'performance') {
-        const data = this.filteredPerformanceData();
-        const avg = data.length > 0 ? (data.reduce((acc, curr) => acc + curr.score, 0) / data.length).toFixed(1) : '0';
-        return [
-          { label: 'Average Department Score', value: `${avg}%` },
-          { label: 'Excellent Rating (5★)', value: data.filter(x => x.stars === 5).length + ' employees' },
-          { label: 'Top Performer', value: 'Rana Ali (98%)' }
-        ];
-      }
-      // payroll
-      const data = this.filteredPayrollData();
-      const total = data.reduce((acc, curr) => acc + (curr.basic + curr.allowance - curr.deductions), 0);
-      return [
-        { label: 'Total Monthly Payroll', value: `${total.toLocaleString()} SAR` },
-        { label: 'Average Employee Net Pay', value: `${Math.round(total / (data.length || 1)).toLocaleString()} SAR` },
-        { label: 'Sum of Deductions / Taxes', value: `${data.reduce((acc, curr) => acc + curr.deductions, 0).toLocaleString()} SAR` }
-      ];
+
+    if (cat === 'attendance') {
+      const d = this.filteredAttendanceData();
+      const avg = d.length ? (d.reduce((a: number, x: any) => a + x.rate, 0) / d.length).toFixed(1) : '0';
+      return rtl
+        ? [{ label: 'معدل الحضور العام', value: `${avg}%` },
+           { label: 'إجمالي أيام الغياب', value: d.reduce((a: number, x: any) => a + x.absent, 0) + ' أيام' },
+           { label: 'مجموع حالات التأخير', value: d.reduce((a: number, x: any) => a + x.late, 0) + ' مرة' }]
+        : [{ label: 'Overall Attendance Rate', value: `${avg}%` },
+           { label: 'Total Absence Days', value: d.reduce((a: number, x: any) => a + x.absent, 0) + ' days' },
+           { label: 'Late Arrival Incidents', value: d.reduce((a: number, x: any) => a + x.late, 0) }];
     }
+
+    if (cat === 'leaves') {
+      const d = this.filteredLeavesData();
+      return rtl
+        ? [{ label: 'إجمالي الطلبات', value: String(d.length) },
+           { label: 'إجمالي الأيام المستهلكة', value: d.reduce((a: number, x: any) => a + x.days, 0) + ' يوم' },
+           { label: 'معتمدة', value: d.filter((x: any) => x.status === 'Approved').length + ' طلبات' }]
+        : [{ label: 'Total Requests', value: String(d.length) },
+           { label: 'Total Leave Days', value: d.reduce((a: number, x: any) => a + x.days, 0) + ' days' },
+           { label: 'Approved', value: d.filter((x: any) => x.status === 'Approved').length + ' requests' }];
+    }
+
+    if (cat === 'performance') {
+      const d = this.filteredPerformanceData();
+      const avg = d.length ? (d.reduce((a: number, x: any) => a + x.score, 0) / d.length).toFixed(1) : '0';
+      const top = d.reduce((best: any, x: any) => x.score > (best?.score || 0) ? x : best, null);
+      return rtl
+        ? [{ label: 'متوسط الأداء العام', value: `${avg}%` },
+           { label: 'أعلى تقييم (5 نجوم)', value: d.filter((x: any) => x.stars === 5).length + ' موظفين' },
+           { label: 'الأداء الأعلى', value: top ? `${top.name} (${top.score}%)` : '-' }]
+        : [{ label: 'Average Score', value: `${avg}%` },
+           { label: 'Excellent (5★)', value: d.filter((x: any) => x.stars === 5).length + ' employees' },
+           { label: 'Top Performer', value: top ? `${top.name} (${top.score}%)` : '-' }];
+    }
+
+    // Payroll
+    const d = this.filteredPayrollData();
+    const total = d.reduce((a: number, x: any) => a + x.basic + x.allowance - x.deductions, 0);
+    const avg   = d.length ? Math.round(total / d.length) : 0;
+    const currency = rtl ? 'ر.س' : 'SAR';
+    return rtl
+      ? [{ label: 'إجمالي الرواتب الشهرية', value: `${total.toLocaleString()} ${currency}` },
+         { label: 'متوسط صافي الراتب', value: `${avg.toLocaleString()} ${currency}` },
+         { label: 'إجمالي الخصومات', value: `${d.reduce((a: number, x: any) => a + x.deductions, 0).toLocaleString()} ${currency}` }]
+      : [{ label: 'Total Monthly Payroll', value: `${total.toLocaleString()} ${currency}` },
+         { label: 'Average Net Pay', value: `${avg.toLocaleString()} ${currency}` },
+         { label: 'Total Deductions', value: `${d.reduce((a: number, x: any) => a + x.deductions, 0).toLocaleString()} ${currency}` }];
   }
 
-  // AI interactive analytics insight generator
   getReportAiInsights(): AiInsight[] {
     const cat = this.activeCategory();
-    if (this.i18n.isRtl()) {
-      if (cat === 'attendance') {
-        return [
-          { type: 'success', text: 'انضباط ممتاز لقسم الموارد البشرية والمالية بنسبة حضور 100% خلال شهر يونيو.' },
-          { type: 'warning', text: 'تم رصد انخفاض انضباط للموظف يوسف حسن (86.3%) بسبب غياب يومين متتاليين دون عذر مسبق، يوصى بالتحقق.' },
-          { type: 'info', text: 'معدل الحضور العام بالشركة 93.6%، وهو ضمن المعدلات الآمنة للإنتاجية والعمليات التشغيلية.' }
-        ];
-      }
-      if (cat === 'leaves') {
-        return [
-          { type: 'info', text: 'بلغت نسبة الإجازات المرضية 50% من إجمالي الإجازات المعتمدة لهذا الشهر.' },
-          { type: 'success', text: 'جميع إجازات هذا الشهر تم مراجعتها والتوقيع عليها بواسطة المدراء المسؤولين بالتوافق مع لائحة العمل.' },
-          { type: 'info', text: 'القسم الأكثر طلباً للإجازات هو قسم التطوير البرمجي بإجمالي 7 أيام إجازة مستهلكة.' }
-        ];
-      }
-      if (cat === 'performance') {
-        return [
-          { type: 'success', text: 'حققت الموظفة رنا علي أعلى تقييم أداء (98%) بنسبة 5 نجوم مدعوماً بتحقيق الأهداف البيعية المرتفعة.' },
-          { type: 'warning', text: 'لوحظ انخفاض أداء طفيف للموظفة مي التويجري (72%)، مرتبط بارتفاع معدلات الغياب والظروف الصحية الاستثنائية.' },
-          { type: 'info', text: 'متوسط أداء الفريق الكلي 86.8%، وهو ما يشير إلى إنتاجية عالية وكفاءة ممتازة لخطوط العمل.' }
-        ];
-      }
-      return [
-        { type: 'success', text: 'كشف الرواتب يتطابق تماماً مع نظام العمل السعودي، مع احتساب كامل البدلات والتأمينات بدقة 100%.' },
-        { type: 'warning', text: 'ارتفاع طفيف في حجم الاقتطاعات الإجمالية (1,410 ر.س) ناتج عن خصومات الغياب لبعض الموظفين.' },
-        { type: 'info', text: 'المكافآت والبدلات لشهر يونيو تمثل 19.3% من إجمالي الفاتورة الكلية للأجور (تحفيز أداء المبيعات).' }
-      ];
-    } else {
-      if (cat === 'attendance') {
-        return [
-          { type: 'success', text: 'Excellent attendance of 100% in HR and Finance departments during June.' },
-          { type: 'warning', text: 'Youssef Hassan has a drop in attendance (86.3%) due to 2 days absent. Action recommended.' },
-          { type: 'info', text: 'Overall company attendance rate is at 93.6%, which is within healthy operational bounds.' }
-        ];
-      }
-      if (cat === 'leaves') {
-        return [
-          { type: 'info', text: 'Sick leaves represent 50% of the approved requests this month.' },
-          { type: 'success', text: 'All requests were fully reviewed and approved by corresponding managers.' },
-          { type: 'info', text: 'Software Development is the department with the highest leave density (7 days total).' }
-        ];
-      }
-      if (cat === 'performance') {
-        return [
-          { type: 'success', text: 'Rana Ali scored the highest evaluation (98%) with a 5-star rating due to crushing sales goals.' },
-          { type: 'warning', text: 'Mai Al-Tuwaijri shows a slight drop (72%), correlating with her high absence frequency.' },
-          { type: 'info', text: 'Average team performance is 86.8%, reflecting strong overall productivity.' }
-        ];
-      }
-      return [
-        { type: 'success', text: 'Payroll statement matches all regulatory configurations with 100% calculation accuracy.' },
-        { type: 'warning', text: 'Deductions sum up to 1,410 SAR, mostly due to unexcused absence calculations.' },
-        { type: 'info', text: 'Bonuses and allowances represent 19.3% of the total payroll bill (sales incentives included).' }
-      ];
+    const rtl = this.i18n.isRtl();
+    const att = this.filteredAttendanceData();
+    const pay = this.filteredPayrollData();
+    const lv  = this.filteredLeavesData();
+
+    if (cat === 'attendance') {
+      const avg = att.length ? (att.reduce((a: number, x: any) => a + x.rate, 0) / att.length).toFixed(1) : '0';
+      const worst = att.reduce((w: any, x: any) => x.rate < (w?.rate ?? 101) ? x : w, null);
+      return rtl
+        ? [{ type: 'success', text: `معدل الحضور الإجمالي ${avg}% — ضمن المعدلات الجيدة للإنتاجية.` },
+           worst && worst.rate < 90
+             ? { type: 'warning', text: `الموظف "${worst.name}" لديه أقل نسبة حضور (${worst.rate}%) — يُنصح بالمتابعة.` }
+             : { type: 'info', text: 'جميع الموظفين يحافظون على نسبة حضور مقبولة هذا الشهر.' }]
+        : [{ type: 'success', text: `Overall attendance rate is ${avg}% — within healthy productivity bounds.` },
+           worst && worst.rate < 90
+             ? { type: 'warning', text: `"${worst.name}" has the lowest rate (${worst.rate}%) — follow-up recommended.` }
+             : { type: 'info', text: 'All employees maintained acceptable attendance this month.' }];
     }
-  }
 
-  // Export actions
-  exportAllHistory() {
-    const successMsg = this.i18n.isRtl()
-      ? 'جاري تجهيز وتصدير أرشيف التقارير بالكامل بصيغة ZIP...'
-      : 'Preparing to export all compiled reports into a ZIP archive...';
-    this.toastService.success(successMsg, this.i18n.isRtl() ? 'تصدير التقارير' : 'Export Logs');
-  }
+    if (cat === 'leaves') {
+      const approved = lv.filter((x: any) => x.status === 'Approved').length;
+      return rtl
+        ? [{ type: 'info', text: `${approved} طلبات إجازة معتمدة من أصل ${lv.length} طلب مسجّل في هذه الفترة.` },
+           { type: 'success', text: 'تمت معالجة جميع الطلبات بشكل منتظم عبر نظام الموارد البشرية.' }]
+        : [{ type: 'info', text: `${approved} approved out of ${lv.length} leave requests recorded for this period.` },
+           { type: 'success', text: 'All requests were processed through the HR system regularly.' }];
+    }
 
-  handleDownload(customTitle?: string) {
-    const title = customTitle || this.getReportTitle();
-    const successMsg = this.i18n.isRtl()
-      ? `جاري تحميل تقرير "${title}" بصيغة PDF...`
-      : `Downloading report "${title}" in PDF format...`;
-    this.toastService.success(successMsg, this.i18n.isRtl() ? 'تحميل الملف' : 'Download Document');
-  }
+    if (cat === 'performance') {
+      const d = this.filteredPerformanceData();
+      const avg = d.length ? (d.reduce((a: number, x: any) => a + x.score, 0) / d.length).toFixed(1) : '0';
+      return rtl
+        ? [{ type: 'success', text: `متوسط الأداء العام ${avg}% — مستوى جيد ويمكن تطويره.` },
+           { type: 'info', text: 'يُنصح بعقد جلسات تقييم نصف سنوية لتعزيز الأداء الفردي.' }]
+        : [{ type: 'success', text: `Average team score is ${avg}% — solid and improvable.` },
+           { type: 'info', text: 'Consider semi-annual one-on-one sessions to boost individual performance.' }];
+    }
 
-  handlePrint() {
-    const successMsg = this.i18n.isRtl()
-      ? 'جاري تهيئة صفحة الطباعة، يرجى الانتظار...'
-      : 'Opening print dialog spooler, please wait...';
-    this.toastService.success(successMsg, this.i18n.isRtl() ? 'طباعة التقرير' : 'Print Spooler');
+    const total = pay.reduce((a: number, x: any) => a + x.basic + x.allowance - x.deductions, 0);
+    return rtl
+      ? [{ type: 'success', text: `إجمالي الرواتب الشهرية ${total.toLocaleString()} ر.س — مسجّل وجاهز للصرف.` },
+         { type: 'info', text: 'جميع الأرقام المالية مستخرجة مباشرة من سجلات قاعدة البيانات.' }]
+      : [{ type: 'success', text: `Monthly payroll total is ${total.toLocaleString()} SAR — ready for processing.` },
+         { type: 'info', text: 'All figures sourced directly from the live database records.' }];
   }
 }

@@ -17,6 +17,8 @@ export interface User {
   isTasksEnabled?: boolean;
   isMeetingsEnabled?: boolean;
   isAiEnabled?: boolean;
+  aiLimit?: number;
+  aiUsageCount?: number;
 }
 
 @Injectable({
@@ -197,6 +199,8 @@ export class AuthService {
               isTasksEnabled: res.data.isTasksEnabled !== false,
               isMeetingsEnabled: res.data.isMeetingsEnabled !== false,
               isAiEnabled: res.data.isAiEnabled !== false,
+              aiLimit: res.data.aiLimit ?? user.aiLimit,
+              aiUsageCount: res.data.aiUsageCount ?? user.aiUsageCount,
             };
             this.currentUser.set(updated);
             localStorage.setItem(AuthService.STORAGE_KEY, JSON.stringify(updated));
@@ -305,6 +309,10 @@ export class AuthService {
 
   updateUserRole(userId: number, roleId: number): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/users/${userId}/role`, { roleId });
+  }
+
+  updateUserHRProfile(userId: number, data: { phoneNumber?: string; contractStart?: string; contractEnd?: string; salary?: number; allowances?: number }): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/users/${userId}/hr-profile`, data);
   }
 
   deleteUser(userId: number): Observable<any> {

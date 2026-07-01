@@ -76,6 +76,8 @@ export class TranscribeMeeting implements OnInit {
   isUploading = signal(false);
   isTyping = signal(false);
   showHistoryModal = signal(false);
+  showLimitModal = signal(false);
+  limitModalMessage = signal('');
   loadingStep = signal<number>(0); // 0 = Idle, 1 = Audio Extract, 2 = Chunking, 3 = Transcribing, 4 = Analyzing
 
   meetingData = signal<MeetingData | null>(null);
@@ -408,30 +410,17 @@ export class TranscribeMeeting implements OnInit {
         this.loadingStep.set(0);
         this.isUploading.set(false);
         this.isTyping.set(false);
-
-        // Mock fallback to keep UX smooth if offline/error
-        const mockRes = this.getSimulatedMeetingTranscription(displayName);
-        this.messages.update(prev => [...prev, { 
-          role: 'assistant', 
-          text: mockRes.assistantReply, 
-          safeText: this.parseMarkdown(mockRes.assistantReply),
-          time: timeStr 
-        }]);
-
-        // Pre-select mock task assignees
-        const processedTasks = mockRes.data.proposedTasks.map((t: any) => {
-          const found = this.usersList().find(u => u.fullName?.toLowerCase().includes(t.assignedUserName?.toLowerCase()));
-          const loggedIn = this.usersList().find(u => u.email === this.currentUser()?.email);
-          return {
-            ...t,
-            assignedUserId: found ? found.id : (loggedIn ? loggedIn.id : (this.usersList().length > 0 ? this.usersList()[0].id : 1))
-          };
-        });
-
-        this.meetingData.set({
-          ...mockRes.data,
-          proposedTasks: processedTasks
-        });
+        const serverMsg = err?.error?.message;
+        if (serverMsg) {
+          this.limitModalMessage.set(serverMsg);
+          this.showLimitModal.set(true);
+        } else {
+          const isAr = this.i18n.currentLang() === 'ar';
+          const reply = isAr
+            ? 'تعذّر الاتصال بالخادم لتفريغ الاجتماع. تأكد من أن الخادم يعمل وأعد المحاولة.'
+            : 'Could not reach the server for meeting transcription. Please make sure the API is running and try again.';
+          this.messages.update(prev => [...prev, { role: 'assistant', text: reply, safeText: this.parseMarkdown(reply), time: timeStr }]);
+        }
       }
     });
   }
@@ -471,16 +460,19 @@ export class TranscribeMeeting implements OnInit {
       },
       error: (err) => {
         this.isTyping.set(false);
-        const reply = this.getSimulatedChatResponse(messageText);
-        this.messages.update(prev => [...prev, { 
-          role: 'assistant', 
-          text: reply, 
-          safeText: this.parseMarkdown(reply),
-          time: timeStr 
-        }]);
+        const serverMsg = err?.error?.message;
+        if (serverMsg) {
+          this.limitModalMessage.set(serverMsg);
+          this.showLimitModal.set(true);
+        } else {
+          const reply = this.getSimulatedChatResponse(messageText);
+          this.messages.update(prev => [...prev, { role: 'assistant', text: reply, safeText: this.parseMarkdown(reply), time: timeStr }]);
+        }
       }
     });
   }
+
+  closeLimitModal() { this.showLimitModal.set(false); }
 
   selectSuggestion(suggestion: string) {
     this.sendMessage(suggestion);

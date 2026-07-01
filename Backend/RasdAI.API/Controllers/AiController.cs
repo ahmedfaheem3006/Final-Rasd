@@ -88,8 +88,75 @@ public class AiController : ControllerBase
             return BadRequest(new { success = false, message = "بيانات المستخدم أو الشركة غير متوفرة في السياق" });
         }
 
-        var result = await _aiService.ChatWithAssistantAsync(requestDto, _tenantContext.TenantId.Value, _tenantContext.UserId.Value);
-        return Ok(new { success = true, data = result });
+        try
+        {
+            var result = await _aiService.ChatWithAssistantAsync(requestDto, _tenantContext.TenantId.Value, _tenantContext.UserId.Value);
+            return Ok(new { success = true, data = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("analyze-interview")]
+    [DisableRequestSizeLimit]
+    public async Task<IActionResult> AnalyzeInterview(
+        [FromForm] IFormFile? file,
+        [FromForm] string? candidateName,
+        [FromForm] string? jobRole,
+        [FromForm] string? language)
+    {
+        if (_tenantContext.TenantId == null)
+            return BadRequest(new { success = false, message = "معرف الشركة غير متوفر في السياق" });
+
+        if (file == null || file.Length == 0)
+            return BadRequest(new { success = false, message = "يرجى رفع ملف مقابلة صالح (فيديو أو صوت)" });
+
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        var fileBytes = ms.ToArray();
+
+        try
+        {
+            var result = await _aiService.AnalyzeInterviewAsync(
+                file.FileName, fileBytes,
+                _tenantContext.TenantId.Value,
+                candidateName ?? "المرشح",
+                jobRole ?? "الوظيفة",
+                language ?? "ar");
+            return Ok(new { success = true, data = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("chat-interview")]
+    public async Task<IActionResult> ChatAboutInterview([FromBody] InterviewChatRequestDto requestDto)
+    {
+        if (_tenantContext.TenantId == null)
+            return BadRequest(new { success = false, message = "معرف الشركة غير متوفر في السياق" });
+
+        if (string.IsNullOrWhiteSpace(requestDto.Question))
+            return BadRequest(new { success = false, message = "يرجى إدخال سؤال" });
+
+        try
+        {
+            var lang = requestDto.Language ?? "ar";
+            var result = await _aiService.ChatAboutInterviewAsync(
+                requestDto.Question,
+                requestDto.InterviewTranscript ?? "",
+                requestDto.CandidateName ?? "المرشح",
+                requestDto.JobRole ?? "الوظيفة",
+                _tenantContext.TenantId.Value, lang);
+            return Ok(new { success = true, data = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     [HttpPost("chat-meeting")]
@@ -105,9 +172,16 @@ public class AiController : ControllerBase
             return BadRequest(new { success = false, message = "يرجى إدخال سؤال" });
         }
 
-        var lang = requestDto.Language ?? "ar";
-        var result = await _aiService.ChatAboutMeetingAsync(requestDto.Question, requestDto.MeetingTranscript ?? "", _tenantContext.TenantId.Value, lang);
-        return Ok(new { success = true, data = result });
+        try
+        {
+            var lang = requestDto.Language ?? "ar";
+            var result = await _aiService.ChatAboutMeetingAsync(requestDto.Question, requestDto.MeetingTranscript ?? "", _tenantContext.TenantId.Value, lang);
+            return Ok(new { success = true, data = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     #region AI History Log Endpoints
@@ -230,6 +304,15 @@ public class AiController : ControllerBase
     }
 
     #endregion
+}
+
+public class InterviewChatRequestDto
+{
+    public string Question { get; set; } = string.Empty;
+    public string? InterviewTranscript { get; set; }
+    public string? CandidateName { get; set; }
+    public string? JobRole { get; set; }
+    public string? Language { get; set; }
 }
 
 public class MeetingChatRequestDto

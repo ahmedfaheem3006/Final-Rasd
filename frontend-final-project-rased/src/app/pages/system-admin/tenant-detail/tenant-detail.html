@@ -44,7 +44,7 @@
         </div>
         <div class="info-row">
           <span class="info-label">{{ i18n.currentLang() === 'ar' ? 'الباقة' : 'Plan' }}</span>
-          <span class="plan-tag" [ngClass]="tenant().price < 100 ? 'starter' : tenant().price < 300 ? 'professional' : 'enterprise'">
+          <span class="plan-tag" [ngClass]="tenant().price === 0 ? 'free' : tenant().price < 100 ? 'starter' : tenant().price < 300 ? 'professional' : 'enterprise'">
             {{ tenant().plan }}
           </span>
         </div>
@@ -145,7 +145,7 @@
             <div class="form-group-modal">
               <label>{{ i18n.currentLang() === 'ar' ? 'سعر الاشتراك شهرياً' : 'Monthly Subscription Price' }}</label>
               <select [(ngModel)]="editPrice" name="editPrice" (change)="onPricePlanChange()" required class="form-select-modal">
-                <option [ngValue]="0" disabled selected>
+                <option [ngValue]="null" disabled>
                   {{ i18n.currentLang() === 'ar' ? '-- اختر الباقة المناسبة --' : '-- Select Plan --' }}
                 </option>
                 <option *ngFor="let p of availablePlans()" [ngValue]="p.price">
@@ -178,6 +178,41 @@
                 <span *ngIf="editAiLimit >= 999999" [style.right]="i18n.isRtl() ? 'auto' : '12px'" [style.left]="i18n.isRtl() ? '12px' : 'auto'" style="position: absolute; background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; pointer-events: none; top: 10px;">
                   {{ i18n.currentLang() === 'ar' ? 'غير محدود' : 'Unlimited' }}
                 </span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-muted);">
+                <span>
+                  {{ i18n.currentLang() === 'ar' ? 'الحد الافتراضي لهذه الباقة: ' : 'Default for this plan: ' }}
+                  <strong [style.color]="editAiLimit !== getPlanDefaultAiLimit(editPrice) ? '#ef4444' : 'inherit'">
+                    {{ getPlanDefaultAiLimit(editPrice) >= 999999 ? (i18n.currentLang() === 'ar' ? 'غير محدود' : 'Unlimited') : getPlanDefaultAiLimit(editPrice) }}
+                  </strong>
+                </span>
+                <button type="button" *ngIf="editAiLimit !== getPlanDefaultAiLimit(editPrice)" (click)="resetAiLimitToPlanDefault()" style="background: transparent; border: none; color: var(--primary); font-size: 11px; font-weight: 700; cursor: pointer; padding: 2px 6px;">
+                  {{ i18n.currentLang() === 'ar' ? 'إعادة للافتراضي' : 'Reset to default' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Max Users Input -->
+            <div class="form-group-modal">
+              <label style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">
+                {{ i18n.currentLang() === 'ar' ? 'الحد الأقصى لعدد المستخدمين' : 'Max Team Members' }}
+              </label>
+              <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                <input type="number" [(ngModel)]="editMaxUsers" name="editMaxUsers" required min="1" style="width: 100%; height: 40px; padding: 0 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; color: #334155; background-color: #f8fafc;" />
+                <span *ngIf="editMaxUsers >= 999999" [style.right]="i18n.isRtl() ? 'auto' : '12px'" [style.left]="i18n.isRtl() ? '12px' : 'auto'" style="position: absolute; background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; pointer-events: none; top: 10px;">
+                  {{ i18n.currentLang() === 'ar' ? 'غير محدود' : 'Unlimited' }}
+                </span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-muted);">
+                <span>
+                  {{ i18n.currentLang() === 'ar' ? 'الحد الافتراضي لهذه الباقة: ' : 'Default for this plan: ' }}
+                  <strong [style.color]="editMaxUsers !== getPlanDefaultMaxUsers(editPrice) ? '#ef4444' : 'inherit'">
+                    {{ getPlanDefaultMaxUsers(editPrice) >= 999999 ? (i18n.currentLang() === 'ar' ? 'غير محدود' : 'Unlimited') : getPlanDefaultMaxUsers(editPrice) }}
+                  </strong>
+                </span>
+                <button type="button" *ngIf="editMaxUsers !== getPlanDefaultMaxUsers(editPrice)" (click)="resetMaxUsersToPlanDefault()" style="background: transparent; border: none; color: var(--primary); font-size: 11px; font-weight: 700; cursor: pointer; padding: 2px 6px;">
+                  {{ i18n.currentLang() === 'ar' ? 'إعادة للافتراضي' : 'Reset to default' }}
+                </button>
               </div>
             </div>
 

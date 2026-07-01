@@ -12,48 +12,28 @@
   <div class="toolbar-panel">
     <div class="search-box">
       <i class="fa-solid fa-magnifying-glass"></i>
-      <input 
-        type="text" 
-        [ngModel]="searchTerm()" 
-        (ngModelChange)="searchTerm.set($event)" 
+      <input
+        type="text"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
         [placeholder]="i18n.isRtl() ? 'ابحث باسم الموظف أو بريده الإلكتروني...' : 'Search by name or email...'"
       />
     </div>
-    
+
     <div class="filters-row">
-      <button 
-        (click)="filterDept.set('all')" 
-        [class.active]="filterDept() === 'all'" 
-        class="filter-tab"
-      >
+      <button (click)="filterDept.set('all')" [class.active]="filterDept() === 'all'" class="filter-tab">
         {{ i18n.isRtl() ? 'الكل' : 'All' }}
       </button>
-      <button 
-        (click)="filterDept.set('technology')" 
-        [class.active]="filterDept() === 'technology'" 
-        class="filter-tab"
-      >
+      <button (click)="filterDept.set('technology')" [class.active]="filterDept() === 'technology'" class="filter-tab">
         {{ i18n.isRtl() ? 'القسم التقني' : 'Technology' }}
       </button>
-      <button 
-        (click)="filterDept.set('sales')" 
-        [class.active]="filterDept() === 'sales'" 
-        class="filter-tab"
-      >
+      <button (click)="filterDept.set('sales')" [class.active]="filterDept() === 'sales'" class="filter-tab">
         {{ i18n.isRtl() ? 'المبيعات' : 'Sales' }}
       </button>
-      <button 
-        (click)="filterDept.set('finance')" 
-        [class.active]="filterDept() === 'finance'" 
-        class="filter-tab"
-      >
+      <button (click)="filterDept.set('finance')" [class.active]="filterDept() === 'finance'" class="filter-tab">
         {{ i18n.isRtl() ? 'القسم المالي' : 'Finance' }}
       </button>
-      <button 
-        (click)="filterDept.set('human resources')" 
-        [class.active]="filterDept() === 'human resources'" 
-        class="filter-tab"
-      >
+      <button (click)="filterDept.set('human resources')" [class.active]="filterDept() === 'human resources'" class="filter-tab">
         {{ i18n.isRtl() ? 'الموارد البشرية' : 'HR' }}
       </button>
     </div>
@@ -106,6 +86,7 @@
   <div class="drawer-backdrop" [class.open]="selectedEmployee()" (click)="closeDrawer()">
     <div class="detail-drawer" [class.open]="selectedEmployee()" (click)="$event.stopPropagation()">
       @if (selectedEmployee(); as emp) {
+
         <div class="drawer-header">
           <div class="header-profile">
             <div class="drawer-avatar">{{ emp.name.slice(0, 2) }}</div>
@@ -114,86 +95,142 @@
               <span>{{ i18n.isRtl() ? emp.role : emp.roleEn }}</span>
             </div>
           </div>
-          <button (click)="closeDrawer()" class="close-drawer-btn">&times;</button>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            @if (!editMode()) {
+              <button (click)="enterEditMode()" class="edit-profile-btn" [title]="i18n.isRtl() ? 'تعديل الملف' : 'Edit Profile'">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            }
+            <button (click)="closeDrawer()" class="close-drawer-btn">&times;</button>
+          </div>
         </div>
 
         <div class="drawer-body">
-          <!-- Main Section Details -->
-          <div class="detail-section">
-            <h4>{{ i18n.isRtl() ? 'معلومات الاتصال والملف الشخصي' : 'Contact Information' }}</h4>
-            <div class="info-row">
-              <span class="label">{{ i18n.isRtl() ? 'البريد الإلكتروني:' : 'Email:' }}</span>
-              <span class="value">{{ emp.email }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">{{ i18n.isRtl() ? 'الهاتف الجوال:' : 'Phone:' }}</span>
-              <span class="value">{{ emp.phone }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">{{ i18n.isRtl() ? 'القسم الوظيفي:' : 'Department:' }}</span>
-              <span class="value">{{ i18n.isRtl() ? emp.department : emp.departmentEn }}</span>
-            </div>
-          </div>
 
-          <!-- Contract Section details -->
-          <div class="detail-section">
-            <h4>{{ i18n.isRtl() ? 'تفاصيل عقد العمل السنوي' : 'Contract details' }}</h4>
-            <div class="info-row">
-              <span class="label">{{ i18n.isRtl() ? 'تاريخ التعيين:' : 'Start Date:' }}</span>
-              <span class="value">{{ emp.contractStart }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">{{ i18n.isRtl() ? 'انتهاء العقد الحالي:' : 'Expiry Date:' }}</span>
-              <span class="value">{{ emp.contractEnd }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">{{ i18n.isRtl() ? 'حالة العقد:' : 'Contract Status:' }}</span>
-              <span class="status-badge" [ngClass]="emp.status.toLowerCase()">{{ emp.status }}</span>
-            </div>
-          </div>
+          @if (!editMode()) {
+            <!-- VIEW MODE -->
 
-          <!-- Financial Details -->
-          <div class="detail-section bg-gradient-financial">
-            <h4>{{ i18n.isRtl() ? 'البيانات المالية والتعويضات' : 'Financial Allocations' }}</h4>
-            <div class="info-row">
-              <span class="label">{{ i18n.isRtl() ? 'الراتب الأساسي:' : 'Basic Salary:' }}</span>
-              <span class="value-financial">{{ emp.salary | number }} ر.س</span>
-            </div>
-            <div class="info-row">
-              <span class="label">{{ i18n.isRtl() ? 'البدلات الثابتة:' : 'Fixed Allowances:' }}</span>
-              <span class="value-financial">{{ emp.allowances | number }} ر.س</span>
-            </div>
-            <hr class="financial-hr"/>
-            <div class="info-row">
-              <span class="label-total">{{ i18n.isRtl() ? 'إجمالي الراتب الشهري:' : 'Total Monthly Salary:' }}</span>
-              <span class="value-total">{{ (emp.salary + emp.allowances) | number }} ر.س</span>
-            </div>
-          </div>
-
-          <!-- Payslip History -->
-          <div class="detail-section">
-            <h4>{{ i18n.isRtl() ? 'أحدث كشوف المرتبات الصادرة' : 'Payslips History' }}</h4>
-            <div class="payslips-list">
-              <div class="payslip-item">
-                <div class="payslip-left">
-                  <i class="fa-solid fa-file-invoice-dollar"></i>
-                  <span>{{ i18n.isRtl() ? 'كشف رواتب يونيو 2026' : 'June 2026 Payslip' }}</span>
-                </div>
-                <button class="payslip-print-btn" [title]="i18n.isRtl() ? 'طباعة الكشف' : 'Print Payslip'">
-                  <i class="fa-solid fa-print"></i>
-                </button>
+            <!-- Contact Info -->
+            <div class="detail-section">
+              <h4>{{ i18n.isRtl() ? 'معلومات الاتصال' : 'Contact Information' }}</h4>
+              <div class="info-row">
+                <span class="label">{{ i18n.isRtl() ? 'البريد الإلكتروني:' : 'Email:' }}</span>
+                <span class="value">{{ emp.email }}</span>
               </div>
-              <div class="payslip-item">
-                <div class="payslip-left">
-                  <i class="fa-solid fa-file-invoice-dollar"></i>
-                  <span>{{ i18n.isRtl() ? 'كشف رواتب مايو 2026' : 'May 2026 Payslip' }}</span>
-                </div>
-                <button class="payslip-print-btn">
-                  <i class="fa-solid fa-print"></i>
-                </button>
+              <div class="info-row">
+                <span class="label">{{ i18n.isRtl() ? 'الهاتف الجوال:' : 'Phone:' }}</span>
+                <span class="value">{{ emp.phone || (i18n.isRtl() ? 'غير محدد' : 'Not set') }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">{{ i18n.isRtl() ? 'القسم الوظيفي:' : 'Department:' }}</span>
+                <span class="value">{{ i18n.isRtl() ? emp.department : emp.departmentEn }}</span>
               </div>
             </div>
-          </div>
+
+            <!-- Contract -->
+            <div class="detail-section">
+              <h4>{{ i18n.isRtl() ? 'تفاصيل عقد العمل' : 'Contract Details' }}</h4>
+              <div class="info-row">
+                <span class="label">{{ i18n.isRtl() ? 'تاريخ التعيين:' : 'Start Date:' }}</span>
+                <span class="value">{{ emp.contractStart || (i18n.isRtl() ? 'غير محدد' : 'Not set') }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">{{ i18n.isRtl() ? 'انتهاء العقد:' : 'Expiry Date:' }}</span>
+                <span class="value">{{ emp.contractEnd || (i18n.isRtl() ? 'غير محدد' : 'Not set') }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">{{ i18n.isRtl() ? 'حالة العقد:' : 'Status:' }}</span>
+                <span class="status-badge" [ngClass]="emp.status.toLowerCase()">{{ emp.status }}</span>
+              </div>
+            </div>
+
+            <!-- Financial -->
+            <div class="detail-section bg-gradient-financial">
+              <h4>{{ i18n.isRtl() ? 'البيانات المالية' : 'Financial Allocations' }}</h4>
+              <div class="info-row">
+                <span class="label">{{ i18n.isRtl() ? 'الراتب الأساسي:' : 'Basic Salary:' }}</span>
+                <span class="value-financial">{{ emp.salary | number }} ر.س</span>
+              </div>
+              <div class="info-row">
+                <span class="label">{{ i18n.isRtl() ? 'البدلات الثابتة:' : 'Fixed Allowances:' }}</span>
+                <span class="value-financial">{{ emp.allowances | number }} ر.س</span>
+              </div>
+              <hr class="financial-hr"/>
+              <div class="info-row">
+                <span class="label-total">{{ i18n.isRtl() ? 'إجمالي الراتب الشهري:' : 'Total Monthly:' }}</span>
+                <span class="value-total">{{ (emp.salary + emp.allowances) | number }} ر.س</span>
+              </div>
+            </div>
+
+            <!-- Payslips -->
+            <div class="detail-section">
+              <h4>{{ i18n.isRtl() ? 'كشوف المرتبات' : 'Payslips' }}</h4>
+              <div class="payslips-list">
+                @for (month of (i18n.isRtl() ? payslipMonthsAr : payslipMonths); track $index) {
+                  <div class="payslip-item">
+                    <div class="payslip-left">
+                      <i class="fa-solid fa-file-invoice-dollar"></i>
+                      <span>{{ i18n.isRtl() ? 'كشف رواتب ' : 'Payslip — ' }}{{ month }}</span>
+                    </div>
+                    <button class="payslip-print-btn" (click)="printPayslip(month, emp)" [title]="i18n.isRtl() ? 'طباعة الكشف' : 'Print Payslip'">
+                      <i class="fa-solid fa-print"></i>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+          } @else {
+            <!-- EDIT MODE -->
+
+            <div class="detail-section">
+              <h4>{{ i18n.isRtl() ? 'تعديل بيانات الاتصال' : 'Edit Contact' }}</h4>
+              <div class="edit-field">
+                <label>{{ i18n.isRtl() ? 'رقم الهاتف' : 'Phone Number' }}</label>
+                <input type="tel" [(ngModel)]="editPhone" class="edit-input" placeholder="+966 5X XXX XXXX" />
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h4>{{ i18n.isRtl() ? 'تعديل بيانات العقد' : 'Edit Contract' }}</h4>
+              <div class="edit-field">
+                <label>{{ i18n.isRtl() ? 'تاريخ التعيين' : 'Contract Start' }}</label>
+                <input type="date" [(ngModel)]="editContractStart" class="edit-input" />
+              </div>
+              <div class="edit-field">
+                <label>{{ i18n.isRtl() ? 'انتهاء العقد' : 'Contract End' }}</label>
+                <input type="date" [(ngModel)]="editContractEnd" class="edit-input" />
+              </div>
+            </div>
+
+            <div class="detail-section bg-gradient-financial">
+              <h4>{{ i18n.isRtl() ? 'تعديل البيانات المالية' : 'Edit Financials' }}</h4>
+              <div class="edit-field">
+                <label>{{ i18n.isRtl() ? 'الراتب الأساسي (ر.س)' : 'Basic Salary (SAR)' }}</label>
+                <input type="number" [(ngModel)]="editSalary" class="edit-input" min="0" />
+              </div>
+              <div class="edit-field">
+                <label>{{ i18n.isRtl() ? 'البدلات (ر.س)' : 'Allowances (SAR)' }}</label>
+                <input type="number" [(ngModel)]="editAllowances" class="edit-input" min="0" />
+              </div>
+              <hr class="financial-hr" />
+              <div class="info-row">
+                <span class="label-total">{{ i18n.isRtl() ? 'الإجمالي:' : 'Total:' }}</span>
+                <span class="value-total">{{ (editSalary + editAllowances) | number }} ر.س</span>
+              </div>
+            </div>
+
+            <div class="edit-actions">
+              <button class="btn-save" (click)="saveHRProfile()" [disabled]="isSaving()">
+                <i class="fa-solid" [class.fa-floppy-disk]="!isSaving()" [class.fa-spinner]="isSaving()" [class.fa-spin]="isSaving()"></i>
+                {{ i18n.isRtl() ? (isSaving() ? 'جاري الحفظ...' : 'حفظ التغييرات') : (isSaving() ? 'Saving...' : 'Save Changes') }}
+              </button>
+              <button class="btn-cancel" (click)="cancelEdit()">
+                {{ i18n.isRtl() ? 'إلغاء' : 'Cancel' }}
+              </button>
+            </div>
+          }
+
         </div>
       }
     </div>

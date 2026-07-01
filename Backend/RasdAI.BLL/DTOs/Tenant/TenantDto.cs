@@ -10,6 +10,8 @@ public class TenantDto
     public bool IsActive { get; set; }
     public decimal Price { get; set; }
     public int AiLimit { get; set; }
+    public int MaxUsers { get; set; }
+    public int CurrentUserCount { get; set; }
 
     // Owner Details
     public string OwnerName { get; set; } = string.Empty;

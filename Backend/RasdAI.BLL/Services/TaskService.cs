@@ -83,4 +83,16 @@ public class TaskService : ITaskService
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<bool> DeleteTaskAsync(int taskId, Guid tenantId)
+    {
+        var task = await _context.Tasks
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.TenantId == tenantId);
+
+        if (task == null) return false;
+
+        _context.Tasks.Remove(task);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

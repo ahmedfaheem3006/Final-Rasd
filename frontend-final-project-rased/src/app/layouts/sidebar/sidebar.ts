@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect, computed } from '@angular/core';
+import { Component, inject, signal, effect, computed, untracked } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { I18nService } from '../../services/i18n.service';
@@ -61,17 +61,21 @@ export class Sidebar {
         
         // Use the user's email or a placeholder as the tenant identifier
         const tenantId = user.email || 'default-tenant';
-        this.companyPermissionsService.updateEnabledModules(tenantId, modules);
+        // untracked: prevents enabledModules read inside updateEnabledModules from
+        // being tracked by this effect (would cause an infinite update loop)
+        untracked(() => this.companyPermissionsService.updateEnabledModules(tenantId, modules));
       }
     });
 
     effect(() => {
       if (this.isMobileOpen()) {
-        document.body.style.overflow = 'hidden';
-        document.body.classList.add('mobile-drawer-open');
+        // Set overflow on <html>, not <body> — body overflow:hidden breaks
+        // position:fixed elements on iOS Safari
+        document.documentElement.style.overflow = 'hidden';
+        document.documentElement.classList.add('mobile-drawer-open');
       } else {
-        document.body.style.overflow = '';
-        document.body.classList.remove('mobile-drawer-open');
+        document.documentElement.style.overflow = '';
+        document.documentElement.classList.remove('mobile-drawer-open');
       }
     });
   }

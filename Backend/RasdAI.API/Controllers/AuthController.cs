@@ -132,6 +132,25 @@ public class AuthController : ControllerBase
     }
 
     [Authorize(Roles = "Owner,SystemAdmin,HR")]
+    [HttpPut("users/{id}/hr-profile")]
+    public async Task<IActionResult> UpdateUserHRProfile(int id, [FromBody] UpdateUserHRProfileDto dto)
+    {
+        if (_tenantContext.TenantId == null)
+            return BadRequest(new { success = false, message = "معرف الشركة غير متوفر" });
+
+        try
+        {
+            var result = await _authService.UpdateUserHRProfileAsync(id, _tenantContext.TenantId.Value, dto);
+            if (!result) return NotFound(new { success = false, message = "الموظف غير موجود" });
+            return Ok(new { success = true, message = "تم تحديث بيانات الموظف بنجاح" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [Authorize(Roles = "Owner,SystemAdmin,HR")]
     [HttpPut("users/{id}/role")]
     public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateUserRoleDto updateDto)
     {

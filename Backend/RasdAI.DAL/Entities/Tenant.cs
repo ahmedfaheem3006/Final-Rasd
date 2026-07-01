@@ -11,6 +11,8 @@ public class Tenant
     public bool IsActive { get; set; } = true;
     public decimal Price { get; set; } = 0.0m;
     public int AiLimit { get; set; } = 100;
+    public int AiRequestsUsed { get; set; } = 0;
+    public int MaxUsers { get; set; } = 3;
     public string? Address { get; set; }
     public string? Phone { get; set; }
 

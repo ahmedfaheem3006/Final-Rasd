@@ -8,7 +8,7 @@
     </div>
     <div class="header-date">
       <i class="fa-regular fa-calendar"></i>
-      <span>{{ i18n.isRtl() ? 'يونيو 2026' : 'June 2026' }}</span>
+      <span>{{ today | date:(i18n.isRtl() ? 'MMMM yyyy' : 'MMMM yyyy') }}</span>
     </div>
   </header>
 
@@ -37,7 +37,7 @@
       </div>
     </div>
 
-    <div class="metric-card col-amber" [routerLink]="['/app/hr/leaves']">
+    <div class="metric-card col-amber" [routerLink]="['/app/hr/leaves']" style="cursor:pointer">
       <div class="metric-header">
         <span class="metric-title">{{ i18n.isRtl() ? 'طلبات الإجازات المعلقة' : 'Pending Leaves' }}</span>
         <div class="metric-icon"><i class="fa-solid fa-calendar-minus"></i></div>
@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <div class="metric-card col-purple" [routerLink]="['/app/hr/reports']">
+    <div class="metric-card col-purple">
       <div class="metric-header">
         <span class="metric-title">{{ i18n.isRtl() ? 'إجمالي الرواتب الشهرية' : 'Total Monthly Salaries' }}</span>
         <div class="metric-icon"><i class="fa-solid fa-wallet"></i></div>
@@ -71,6 +71,11 @@
           <span class="badge-alert">{{ alerts().length }}</span>
         </div>
         <div class="alerts-list">
+          @if (alerts().length === 0) {
+            <p style="text-align:center; color: var(--text-muted); font-size:0.85rem; padding:1rem 0;">
+              {{ i18n.isRtl() ? 'لا توجد تنبيهات معلقة' : 'No pending alerts' }}
+            </p>
+          }
           @for (alert of alerts(); track alert.id) {
             <div class="alert-item" [ngClass]="'severity-' + alert.severity">
               <div class="alert-indicator"></div>
@@ -81,9 +86,9 @@
                 </div>
                 <p class="alert-detail">{{ alert.detail }}</p>
               </div>
-              <button class="btn-action-alert" [title]="i18n.isRtl() ? 'معالجة التنبيه' : 'Resolve Alert'">
+              <a [routerLink]="['/app/hr/leaves']" class="btn-action-alert" [title]="i18n.isRtl() ? 'مراجعة الطلب' : 'Review Request'">
                 <i class="fa-solid fa-chevron-left" [class.fa-chevron-right]="!i18n.isRtl()"></i>
-              </button>
+              </a>
             </div>
           }
         </div>
@@ -101,43 +106,44 @@
           </a>
           <a [routerLink]="['/app/hr/leaves']" class="shortcut-tile">
             <div class="tile-icon icon-amber"><i class="fa-solid fa-calendar-check"></i></div>
-            <div class="tile-label">{{ i18n.isRtl() ? 'طلبات الإجازات العامة' : 'Leave Approvals' }}</div>
+            <div class="tile-label">{{ i18n.isRtl() ? 'طلبات الإجازات' : 'Leave Approvals' }}</div>
           </a>
           <a [routerLink]="['/app/hr/recruitment']" class="shortcut-tile">
             <div class="tile-icon icon-purple"><i class="fa-solid fa-briefcase"></i></div>
             <div class="tile-label">{{ i18n.isRtl() ? 'بوابة التوظيف (ATS)' : 'Recruitment Pipeline' }}</div>
           </a>
-          <a [routerLink]="['/app/hr/reports']" class="shortcut-tile">
-            <div class="tile-icon icon-emerald"><i class="fa-solid fa-chart-line"></i></div>
-            <div class="tile-label">{{ i18n.isRtl() ? 'التقارير والمستندات' : 'Payroll & HR Reports' }}</div>
+          <a [routerLink]="['/app/hr/employees']" class="shortcut-tile">
+            <div class="tile-icon icon-emerald"><i class="fa-solid fa-id-card"></i></div>
+            <div class="tile-label">{{ i18n.isRtl() ? 'بيانات كشف الرواتب' : 'Payroll Overview' }}</div>
           </a>
         </div>
       </div>
     </div>
 
-    <!-- Right Column: Payroll & Visual Chart -->
+    <!-- Right Column: Payroll Chart & Activity Feed -->
     <div class="workspace-col-right">
       <!-- Payroll Bar Chart -->
       <div class="glass-card">
         <div class="card-header">
           <h3><i class="fa-solid fa-chart-bar"></i> {{ i18n.isRtl() ? 'نمو إجمالي الرواتب (النصف الأول)' : 'Monthly Salaries Growth (H1)' }}</h3>
-          <span class="payroll-total">{{ i18n.isRtl() ? 'إجمالي الرواتب: $142.5k' : 'Total: $142.5k' }}</span>
+          <span class="payroll-total">
+            {{ i18n.isRtl() ? 'الإجمالي: ' : 'Total: ' }}{{ fmtAmount(payrollTotal()) }}
+          </span>
         </div>
-        
+
         <div class="chart-container">
           <div class="y-axis">
-            <span>$150k</span>
-            <span>$100k</span>
-            <span>$50k</span>
-            <span>$0k</span>
+            @for (label of yAxisLabels(); track $index) {
+              <span>{{ label }}</span>
+            }
           </div>
           <div class="chart-bars">
             @for (stat of payrollStats(); track stat.month) {
               <div class="bar-wrapper">
                 <div class="bar-tooltip">{{ stat.amount | number }}</div>
-                <div 
-                  class="chart-bar" 
-                  [style.height.%]="(stat.amount / 150000) * 100"
+                <div
+                  class="chart-bar"
+                  [style.height.%]="chartMax() > 0 ? (stat.amount / chartMax()) * 100 : 0"
                 ></div>
                 <span class="bar-label">{{ stat.month }}</span>
               </div>
@@ -149,30 +155,26 @@
       <!-- Live Activities Feed -->
       <div class="glass-card">
         <div class="card-header">
-          <h3><i class="fa-solid fa-history"></i> {{ i18n.isRtl() ? 'أحدث النشاطات وحالة الأنظمة' : 'Recent HR Activities' }}</h3>
+          <h3><i class="fa-solid fa-history"></i> {{ i18n.isRtl() ? 'أحدث نشاطات الموارد البشرية' : 'Recent HR Activities' }}</h3>
         </div>
         <div class="activities-timeline">
-          <div class="timeline-item">
-            <div class="timeline-marker marker-green"></div>
-            <div class="timeline-content">
-              <span class="time">10:45 AM</span>
-              <p>تم سحب الرواتب بنجاح لشهر يونيو وإصدار الكشف المؤقت</p>
+          @if (recentActivities().length === 0) {
+            <p style="color: var(--text-muted); font-size:0.85rem; text-align:center; padding: 0.75rem 0;">
+              {{ i18n.isRtl() ? 'لا توجد نشاطات حديثة' : 'No recent activity' }}
+            </p>
+          }
+          @for (activity of recentActivities(); track $index) {
+            <div class="timeline-item">
+              <div class="timeline-marker" [ngClass]="activity.marker"></div>
+              <div class="timeline-content">
+                <span class="time">{{ activity.time }}</span>
+                <p>
+                  <strong>{{ i18n.isRtl() ? activity.nameAr : activity.nameEn }}</strong>
+                  — {{ i18n.isRtl() ? activity.descAr : activity.descEn }}
+                </p>
+              </div>
             </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-marker marker-blue"></div>
-            <div class="timeline-content">
-              <span class="time">أمس</span>
-              <p>قام الموظف <strong>فهد المطيري</strong> بتوقيع العقد السنوي الجديد رقم 2026-A</p>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-marker marker-purple"></div>
-            <div class="timeline-content">
-              <span class="time">منذ يومين</span>
-              <p>تم إدراج 3 مرشحين جدد في مرحلة المقابلة الشخصية لوظيفة مهندس برمجيات</p>
-            </div>
-          </div>
+          }
         </div>
       </div>
     </div>

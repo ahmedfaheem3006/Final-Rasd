@@ -369,6 +369,11 @@
   visibility: visible;
 }
 
+/* RTL open: specificity (0,4,0) beats the RTL closed rule (0,3,0) */
+.landing-container.rtl .mobile-menu.open {
+  transform: translateX(0);
+}
+
 /* Drawer header */
 .mobile-menu-head {
   display: flex;

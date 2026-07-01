@@ -73,4 +73,18 @@ export class AiService {
   deleteMeetingHistory(id: number): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}/meeting/history/${id}`);
   }
+
+  // ─── Interview Analysis ───────────────────────────────────────────────────
+  analyzeInterview(file: File, candidateName: string, jobRole: string, language: string = 'ar'): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('candidateName', candidateName);
+    formData.append('jobRole', jobRole);
+    formData.append('language', language);
+    return this.http.post<any>(`${this.baseUrl}/analyze-interview`, formData);
+  }
+
+  chatAboutInterview(question: string, interviewTranscript: string, candidateName: string, jobRole: string, language: string = 'ar'): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/chat-interview`, { question, interviewTranscript, candidateName, jobRole, language });
+  }
 }

@@ -17,5 +17,6 @@ public interface IRecruitmentService
     Task<CandidateDto?> GetCandidateByIdAsync(int id, Guid tenantId);
     Task<CandidateDto> CreateCandidateAsync(CreateCandidateDto dto, Guid tenantId, int userId);
     Task<CandidateDto?> MoveCandidateAsync(int id, MoveCandidateDto dto, Guid tenantId);
+    Task<CandidateDto?> UpdateCandidateAsync(int id, UpdateCandidateDto dto, Guid tenantId);
     Task<bool> DeleteCandidateAsync(int id, Guid tenantId);
 }

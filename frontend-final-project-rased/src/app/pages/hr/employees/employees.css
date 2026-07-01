@@ -499,6 +499,90 @@
   color: var(--primary-color, #7c3aed);
 }
 
+/* Edit profile button */
+.edit-profile-btn {
+  background: var(--bg-hover, rgba(124,58,237,0.08));
+  border: 1px solid var(--primary-color, #7c3aed);
+  color: var(--primary-color, #7c3aed);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+.edit-profile-btn:hover { background: var(--primary-color, #7c3aed); color: #fff; }
+
+/* Edit fields */
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.edit-field label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.edit-input {
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--bg-input, #fff);
+  color: var(--text-title, #0f172a);
+  font-size: 0.88rem;
+  transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+.edit-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #7c3aed);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+}
+
+/* Edit action buttons */
+.edit-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.btn-save {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  background: var(--primary-color, #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background 0.2s ease;
+}
+.btn-save:hover:not(:disabled) { background: #6d28d9; }
+.btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-cancel {
+  padding: 0.65rem 1.25rem;
+  background: var(--bg-input, #f1f5f9);
+  color: var(--text-body, #475569);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-cancel:hover { background: var(--bg-card-hover); }
+
 @media (max-width: 600px) {
   .toolbar-panel { flex-direction: column; align-items: stretch; }
   .search-box { max-width: none; }

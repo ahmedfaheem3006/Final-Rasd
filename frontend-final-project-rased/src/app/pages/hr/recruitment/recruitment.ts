@@ -11,6 +11,8 @@ export interface Candidate {
   appliedRole: string;
   rating: number;
   stage: 'applied' | 'interview' | 'test' | 'offer' | 'hired';
+  jobVacancyId?: number;
+  createdAt?: string;
 }
 
 export interface JobVacancy {
@@ -33,180 +35,232 @@ export class HRRecruitment implements OnInit {
   private toastService = inject(ToastService);
   private recruitmentService = inject(RecruitmentService);
 
-  stages = [
-    { key: 'applied', nameAr: 'المتقدمون', nameEn: 'Applied', color: '#8b5cf6' },
-    { key: 'interview', nameAr: 'المقابلة', nameEn: 'Interviewing', color: '#3b82f6' },
-    { key: 'test', nameAr: 'التقييم الفني', nameEn: 'Tech Test', color: '#f59e0b' },
-    { key: 'offer', nameAr: 'عرض عمل', nameEn: 'Offer', color: '#eab308' },
-    { key: 'hired', nameAr: 'تم التعيين', nameEn: 'Hired', color: '#10b981' }
+  readonly stages = [
+    { key: 'applied',   nameAr: 'المتقدمون',      nameEn: 'Applied',      color: '#8b5cf6' },
+    { key: 'interview', nameAr: 'المقابلة',        nameEn: 'Interviewing', color: '#3b82f6' },
+    { key: 'test',      nameAr: 'التقييم الفني',   nameEn: 'Tech Test',    color: '#f59e0b' },
+    { key: 'offer',     nameAr: 'عرض عمل',         nameEn: 'Offer',        color: '#eab308' },
+    { key: 'hired',     nameAr: 'تم التعيين',      nameEn: 'Hired',        color: '#10b981' }
   ];
 
-  candidates = signal<Candidate[]>([]);
-  vacancies = signal<JobVacancy[]>([]);
+  candidates   = signal<Candidate[]>([]);
+  vacancies    = signal<JobVacancy[]>([]);
+  isLoading    = signal(true);
 
-  // Filters & Search
-  searchQuery = signal('');
+  // Filters
+  searchQuery        = signal('');
   selectedDepartment = signal('all');
 
-  // Modals state
-  showJobModal = signal(false);
-  showCandidateModal = signal(false);
+  // Star rating hover: { candidateId, hoveredStar }
+  ratingHover = signal<{ id: number; star: number } | null>(null);
 
-  // Form Fields
+  // Modals
+  showJobModal       = signal(false);
+  showCandidateModal = signal(false);
+  isSubmitting       = signal(false);
+
+  // Add-job form
   newJobTitle = '';
-  newJobDept = '';
-  
-  newCandidateName = '';
-  newCandidateRole = '';
-  newCandidateStage: 'applied' | 'interview' | 'test' | 'offer' | 'hired' = 'applied';
+  newJobDept  = '';
+
+  // Add-candidate form
+  newCandidateName  = '';
+  newCandidateRole  = '';
+  newCandidateStage: Candidate['stage'] = 'applied';
   newCandidateRating = 5;
 
-  // Departments List
+  // ── Computed ──
+
   departments = computed(() => {
     const depts = new Set<string>();
     this.vacancies().forEach(j => depts.add(j.department));
     return Array.from(depts);
   });
 
-  // Top Metrics
-  totalApplicants = computed(() => this.candidates().length);
+  totalApplicants   = computed(() => this.candidates().length);
   openVacanciesCount = computed(() => this.vacancies().filter(v => v.status === 'Open').length);
-  inInterviewCount = computed(() => this.candidates().filter(c => c.stage === 'interview' || c.stage === 'test').length);
-  hiredCount = computed(() => this.candidates().filter(c => c.stage === 'hired').length);
+  inInterviewCount  = computed(() => this.candidates().filter(c => c.stage === 'interview' || c.stage === 'test').length);
+  hiredCount        = computed(() => this.candidates().filter(c => c.stage === 'hired').length);
 
-  // Filters
-  filteredCandidates = computed(() => {
-    const q = this.searchQuery().trim().toLowerCase();
-    return this.candidates().filter(c => {
-      const matchQuery = !q || c.name.toLowerCase().includes(q) || c.appliedRole.toLowerCase().includes(q);
-      return matchQuery;
-    });
-  });
+  hasOpenVacancies = computed(() => this.vacancies().some(v => v.status === 'Open'));
 
   filteredVacancies = computed(() => {
     const dept = this.selectedDepartment();
     return this.vacancies().filter(v => dept === 'all' || v.department === dept);
   });
 
-  hasOpenVacancies = computed(() => {
-    return this.vacancies().some(v => v.status === 'Open');
+  filteredCandidates = computed(() => {
+    const q    = this.searchQuery().trim().toLowerCase();
+    const dept = this.selectedDepartment();
+
+    // Roles that belong to the selected department (derived from vacancies)
+    const deptRoles = dept === 'all'
+      ? null
+      : new Set(this.vacancies().filter(v => v.department === dept).map(v => v.title.toLowerCase()));
+
+    return this.candidates().filter(c => {
+      const matchSearch = !q || c.name.toLowerCase().includes(q) || c.appliedRole.toLowerCase().includes(q);
+      const matchDept   = !deptRoles || deptRoles.has(c.appliedRole.toLowerCase());
+      return matchSearch && matchDept;
+    });
   });
 
-  ngOnInit() {
-    this.loadData();
-  }
+  // ── Lifecycle ──
+
+  ngOnInit() { this.loadData(); }
 
   loadData() {
-    console.log('loadData called');
-    // Load job vacancies
+    this.isLoading.set(true);
+    let vacanciesDone = false, candidatesDone = false;
+    const checkDone = () => { if (vacanciesDone && candidatesDone) this.isLoading.set(false); };
+
     this.recruitmentService.getVacancies().subscribe({
       next: (res) => {
-        console.log('getVacancies response:', res);
-        if (res && res.success && res.data) {
-          const mapped = res.data.map((j: any) => ({
-            id: j.id,
-            title: j.title,
-            department: j.department,
-            applicantsCount: j.applicantsCount,
-            status: j.status
-          }));
-          console.log('Mapped vacancies:', mapped);
-          this.vacancies.set(mapped);
+        if (res?.success && res.data) {
+          this.vacancies.set(res.data.map((j: any) => ({
+            id: j.id, title: j.title, department: j.department,
+            applicantsCount: j.applicantsCount, status: j.status
+          })));
         }
+        vacanciesDone = true; checkDone();
       },
-      error: (err) => console.error('Failed to load vacancies', err)
+      error: () => {
+        this.toastService.error(
+          this.i18n.isRtl() ? 'فشل تحميل قائمة الوظائف' : 'Failed to load vacancies'
+        );
+        vacanciesDone = true; checkDone();
+      }
     });
 
-    // Load candidates
     this.recruitmentService.getCandidates().subscribe({
       next: (res) => {
-        console.log('getCandidates response:', res);
-        if (res && res.success && res.data) {
-          const mapped = res.data.map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            appliedRole: c.appliedRole,
-            rating: c.rating,
-            stage: c.stage.toLowerCase(),
-            jobVacancyId: c.jobVacancyId,
-            createdAt: c.createdAt
-          }));
-          console.log('Mapped candidates:', mapped);
-          this.candidates.set(mapped);
+        if (res?.success && res.data) {
+          this.candidates.set(res.data.map((c: any) => ({
+            id: c.id, name: c.name, appliedRole: c.appliedRole,
+            rating: c.rating, stage: c.stage.toLowerCase() as Candidate['stage'],
+            jobVacancyId: c.jobVacancyId, createdAt: c.createdAt
+          })));
         }
+        candidatesDone = true; checkDone();
       },
-      error: (err) => console.error('Failed to load candidates', err)
-    });
-  }
-
-  getCandidatesByStage(stageKey: string) {
-    return this.filteredCandidates().filter(c => c.stage === stageKey);
-  }
-
-  moveCandidate(candidateId: number, direction: 'forward' | 'backward') {
-    const stageOrder: ('applied' | 'interview' | 'test' | 'offer' | 'hired')[] = ['applied', 'interview', 'test', 'offer', 'hired'];
-    const candidateObj = this.candidates().find(c => c.id === candidateId);
-    if (!candidateObj) return;
-
-    const currentIndex = stageOrder.indexOf(candidateObj.stage as any);
-    let newIndex = currentIndex;
-    if (direction === 'forward' && currentIndex < stageOrder.length - 1) {
-      newIndex++;
-    } else if (direction === 'backward' && currentIndex > 0) {
-      newIndex--;
-    }
-
-    const nextStage = stageOrder[newIndex];
-
-    this.recruitmentService.moveCandidate(candidateId, nextStage).subscribe({
-      next: (res) => {
-        if (res && res.success) {
-          this.loadData();
-          const matchedStage = this.stages.find(s => s.key === nextStage);
-          const targetStageName = this.i18n.isRtl() ? matchedStage?.nameAr || '' : matchedStage?.nameEn || '';
-          const msg = this.i18n.isRtl()
-            ? `تم نقل المرشح "${candidateObj.name}" بنجاح إلى مرحلة [${targetStageName}]`
-            : `Candidate "${candidateObj.name}" moved to [${targetStageName}]`;
-          this.toastService.info(msg, this.i18n.isRtl() ? 'بوابة التوظيف' : 'Recruitment Portal');
-        }
+      error: () => {
+        this.toastService.error(
+          this.i18n.isRtl() ? 'فشل تحميل قائمة المرشحين' : 'Failed to load candidates'
+        );
+        candidatesDone = true; checkDone();
       }
     });
   }
 
-  // Add Job Vacancy
+  getCandidatesByStage(stageKey: string): Candidate[] {
+    return this.filteredCandidates().filter(c => c.stage === stageKey);
+  }
+
+  // ── Stage navigation ──
+
+  moveCandidate(candidateId: number, direction: 'forward' | 'backward') {
+    const stageOrder: Candidate['stage'][] = ['applied', 'interview', 'test', 'offer', 'hired'];
+    const cand = this.candidates().find(c => c.id === candidateId);
+    if (!cand) return;
+
+    const idx = stageOrder.indexOf(cand.stage);
+    const newIdx = direction === 'forward' ? idx + 1 : idx - 1;
+    if (newIdx < 0 || newIdx >= stageOrder.length) return;
+
+    const nextStage = stageOrder[newIdx];
+    this.recruitmentService.moveCandidate(candidateId, nextStage).subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.candidates.update(list =>
+            list.map(c => c.id === candidateId ? { ...c, stage: nextStage } : c)
+          );
+          const stageName = this.stages.find(s => s.key === nextStage);
+          const label = this.i18n.isRtl() ? stageName?.nameAr : stageName?.nameEn;
+          this.toastService.info(
+            this.i18n.isRtl()
+              ? `تم نقل "${cand.name}" إلى [${label}]`
+              : `"${cand.name}" moved to [${label}]`,
+            this.i18n.isRtl() ? 'بوابة التوظيف' : 'Recruitment'
+          );
+        }
+      },
+      error: () => this.toastService.error(
+        this.i18n.isRtl() ? 'فشل نقل المرشح' : 'Failed to move candidate'
+      )
+    });
+  }
+
+  // ── Star rating ──
+
+  setRating(candidateId: number, rating: number) {
+    const cand = this.candidates().find(c => c.id === candidateId);
+    if (!cand || cand.rating === rating) return;
+
+    this.candidates.update(list =>
+      list.map(c => c.id === candidateId ? { ...c, rating } : c)
+    );
+
+    this.recruitmentService.updateCandidate(candidateId, { rating }).subscribe({
+      next: (res) => {
+        if (!res?.success) {
+          // revert optimistic update
+          this.candidates.update(list =>
+            list.map(c => c.id === candidateId ? { ...c, rating: cand.rating } : c)
+          );
+        }
+      },
+      error: () => {
+        this.candidates.update(list =>
+          list.map(c => c.id === candidateId ? { ...c, rating: cand.rating } : c)
+        );
+        this.toastService.error(
+          this.i18n.isRtl() ? 'فشل تحديث التقييم' : 'Failed to update rating'
+        );
+      }
+    });
+  }
+
+  getEffectiveStar(cand: Candidate, star: number): boolean {
+    const hover = this.ratingHover();
+    if (hover && hover.id === cand.id) return star <= hover.star;
+    return star <= cand.rating;
+  }
+
+  // ── Add Vacancy ──
+
   openJobModal() {
     this.newJobTitle = '';
-    this.newJobDept = this.departments()[0] || 'القسم التقني';
+    this.newJobDept  = this.departments()[0] || 'القسم التقني';
     this.showJobModal.set(true);
   }
 
-  closeJobModal() {
-    this.showJobModal.set(false);
-  }
+  closeJobModal() { this.showJobModal.set(false); }
 
   saveJob() {
-    if (!this.newJobTitle || !this.newJobDept) {
+    if (!this.newJobTitle.trim() || !this.newJobDept.trim()) {
       this.toastService.warning(
         this.i18n.isRtl() ? 'الرجاء إدخال المسمى الوظيفي والقسم' : 'Please enter Job Title and Department'
       );
       return;
     }
-
-    const dto = {
-      title: this.newJobTitle,
-      department: this.newJobDept
-    };
-
-    this.recruitmentService.createVacancy(dto).subscribe({
+    this.isSubmitting.set(true);
+    this.recruitmentService.createVacancy({ title: this.newJobTitle, department: this.newJobDept }).subscribe({
       next: (res) => {
-        if (res && res.success) {
+        if (res?.success) {
           this.toastService.success(
-            this.i18n.isRtl() ? `تم إضافة الوظيفة "${this.newJobTitle}" بنجاح` : `Job "${this.newJobTitle}" added successfully`,
+            this.i18n.isRtl()
+              ? `تم إضافة الوظيفة "${this.newJobTitle}" بنجاح`
+              : `Job "${this.newJobTitle}" added`,
             this.i18n.isRtl() ? 'الوظائف' : 'Vacancies'
           );
           this.loadData();
           this.closeJobModal();
         }
+        this.isSubmitting.set(false);
+      },
+      error: (err) => {
+        this.toastService.error(err?.error?.message || (this.i18n.isRtl() ? 'فشل إضافة الوظيفة' : 'Failed to add job'));
+        this.isSubmitting.set(false);
       }
     });
   }
@@ -214,118 +268,114 @@ export class HRRecruitment implements OnInit {
   toggleJobStatus(jobId: number) {
     this.recruitmentService.toggleVacancyStatus(jobId).subscribe({
       next: (res) => {
-        if (res && res.success) {
-          this.toastService.success(
-            this.i18n.isRtl() ? 'تم تحديث حالة الوظيفة بنجاح' : 'Job status updated successfully',
-            this.i18n.isRtl() ? 'حالة الوظيفة' : 'Job Status'
+        if (res?.success) {
+          this.vacancies.update(list =>
+            list.map(v => v.id === jobId ? { ...v, status: v.status === 'Open' ? 'Closed' : 'Open' } as JobVacancy : v)
           );
-          this.loadData();
+          this.toastService.success(
+            this.i18n.isRtl() ? 'تم تحديث حالة الوظيفة' : 'Job status updated'
+          );
         }
-      }
+      },
+      error: () => this.toastService.error(this.i18n.isRtl() ? 'فشل تحديث الحالة' : 'Failed to update status')
     });
   }
 
   deleteJob(jobId: number, event: Event) {
     event.stopPropagation();
-    const confirmMsg = this.i18n.isRtl() ? 'هل أنت متأكد من حذف هذه الوظيفة؟' : 'Are you sure you want to delete this job vacancy?';
-    if (confirm(confirmMsg)) {
-      this.recruitmentService.deleteVacancy(jobId).subscribe({
-        next: (res) => {
-          if (res && res.success) {
-            this.toastService.success(
-              this.i18n.isRtl() ? 'تم حذف الوظيفة بنجاح' : 'Job vacancy deleted successfully',
-              this.i18n.isRtl() ? 'حذف وظيفة' : 'Delete Job'
-            );
-            this.loadData();
-          }
+    const job = this.vacancies().find(v => v.id === jobId);
+    const msg = this.i18n.isRtl()
+      ? `هل أنت متأكد من حذف وظيفة "${job?.title}"؟`
+      : `Delete vacancy "${job?.title}"?`;
+    if (!confirm(msg)) return;
+
+    this.recruitmentService.deleteVacancy(jobId).subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.vacancies.update(list => list.filter(v => v.id !== jobId));
+          this.toastService.success(
+            this.i18n.isRtl() ? 'تم حذف الوظيفة بنجاح' : 'Vacancy deleted'
+          );
         }
-      });
-    }
+      },
+      error: () => this.toastService.error(this.i18n.isRtl() ? 'فشل حذف الوظيفة' : 'Failed to delete')
+    });
   }
 
-  // Add Candidate
+  // ── Add Candidate ──
+
   openCandidateModal() {
-    console.log('openCandidateModal called! vacancies:', this.vacancies());
-    this.newCandidateName = '';
-    const openJobs = this.vacancies().filter(v => v.status === 'Open');
-    console.log('openCandidateModal - openJobs found:', openJobs);
-    this.newCandidateRole = openJobs[0]?.title || '';
-    this.newCandidateStage = 'applied';
+    this.newCandidateName   = '';
+    this.newCandidateRole   = this.vacancies().find(v => v.status === 'Open')?.title || '';
+    this.newCandidateStage  = 'applied';
     this.newCandidateRating = 5;
     this.showCandidateModal.set(true);
-    console.log('openCandidateModal - showCandidateModal set to true:', this.showCandidateModal());
   }
 
-  closeCandidateModal() {
-    console.log('closeCandidateModal called');
-    this.showCandidateModal.set(false);
-  }
+  closeCandidateModal() { this.showCandidateModal.set(false); }
 
   saveCandidate() {
-    console.log('saveCandidate called! Name:', this.newCandidateName, 'Role:', this.newCandidateRole, 'Rating:', this.newCandidateRating, 'Stage:', this.newCandidateStage);
-    if (!this.newCandidateName || !this.newCandidateRole) {
+    if (!this.newCandidateName.trim() || !this.newCandidateRole.trim()) {
       this.toastService.warning(
         this.i18n.isRtl() ? 'الرجاء إدخال اسم المتقدم والوظيفة' : 'Please enter Candidate Name and Role'
       );
       return;
     }
-
     const matchedVacancy = this.vacancies().find(v => v.title === this.newCandidateRole);
-
-    const dto = {
+    this.isSubmitting.set(true);
+    this.recruitmentService.createCandidate({
       name: this.newCandidateName,
       appliedRole: this.newCandidateRole,
       rating: Number(this.newCandidateRating),
       stage: this.newCandidateStage,
       jobVacancyId: matchedVacancy?.id
-    };
-
-    this.recruitmentService.createCandidate(dto).subscribe({
+    }).subscribe({
       next: (res) => {
-        if (res && res.success) {
+        if (res?.success) {
           this.toastService.success(
-            this.i18n.isRtl() ? `تم إضافة المتقدم "${this.newCandidateName}" بنجاح` : `Candidate "${this.newCandidateName}" added successfully`,
+            this.i18n.isRtl()
+              ? `تم إضافة المرشح "${this.newCandidateName}" بنجاح`
+              : `Candidate "${this.newCandidateName}" added`,
             this.i18n.isRtl() ? 'المتقدمون' : 'Candidates'
           );
           this.loadData();
           this.closeCandidateModal();
         }
+        this.isSubmitting.set(false);
       },
       error: (err) => {
-        this.toastService.error(
-          this.i18n.isRtl() ? 'حدث خطأ أثناء إضافة المتقدم' : 'Failed to add candidate'
-        );
+        this.toastService.error(err?.error?.message || (this.i18n.isRtl() ? 'فشل إضافة المرشح' : 'Failed to add candidate'));
+        this.isSubmitting.set(false);
       }
     });
   }
 
   deleteCandidate(candidateId: number, event: Event) {
     event.stopPropagation();
-    const confirmMsg = this.i18n.isRtl() ? 'هل أنت متأكد من استبعاد هذا المرشح؟' : 'Are you sure you want to reject this candidate?';
-    if (confirm(confirmMsg)) {
-      const candidateObj = this.candidates().find(c => c.id === candidateId);
-      const name = candidateObj?.name || '';
-      
-      this.recruitmentService.deleteCandidate(candidateId).subscribe({
-        next: (res) => {
-          if (res && res.success) {
-            this.toastService.success(
-              this.i18n.isRtl() ? `تم استبعاد المرشح "${name}"` : `Candidate "${name}" has been rejected`,
-              this.i18n.isRtl() ? 'استبعاد مرشح' : 'Reject Candidate'
-            );
-            this.loadData();
-          }
+    const cand = this.candidates().find(c => c.id === candidateId);
+    const msg = this.i18n.isRtl()
+      ? `هل أنت متأكد من استبعاد "${cand?.name}"؟`
+      : `Reject candidate "${cand?.name}"?`;
+    if (!confirm(msg)) return;
+
+    this.recruitmentService.deleteCandidate(candidateId).subscribe({
+      next: (res) => {
+        if (res?.success) {
+          this.candidates.update(list => list.filter(c => c.id !== candidateId));
+          this.toastService.success(
+            this.i18n.isRtl() ? `تم استبعاد "${cand?.name}"` : `"${cand?.name}" rejected`,
+            this.i18n.isRtl() ? 'استبعاد' : 'Rejected'
+          );
         }
-      });
-    }
+      },
+      error: () => this.toastService.error(this.i18n.isRtl() ? 'فشل حذف المرشح' : 'Failed to delete')
+    });
   }
 
   getInitials(name: string): string {
     if (!name) return 'ر';
     const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
     return name.substring(0, 2).toUpperCase();
   }
 }

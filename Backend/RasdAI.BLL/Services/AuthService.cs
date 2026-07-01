@@ -13,6 +13,7 @@ using RasdAI.BLL.DTOs.Auth;
 using RasdAI.BLL.Interfaces;
 using RasdAI.DAL;
 using RasdAI.DAL.Entities;
+using RasdAI.DAL.Extensions;
 
 namespace RasdAI.BLL.Services;
 
@@ -125,11 +126,13 @@ public class AuthService : IAuthService
     {
         var user = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null || user.RoleId == 1)
-            return new { isCrmEnabled = true, isInvoicesEnabled = true, isTasksEnabled = true, isMeetingsEnabled = true, isAiEnabled = true };
+            return new { isCrmEnabled = true, isInvoicesEnabled = true, isTasksEnabled = true, isMeetingsEnabled = true, isAiEnabled = true, aiLimit = 999999, aiUsageCount = 0 };
 
         var tenant = await _context.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.TenantId == user.TenantId);
         if (tenant == null)
-            return new { isCrmEnabled = true, isInvoicesEnabled = true, isTasksEnabled = true, isMeetingsEnabled = true, isAiEnabled = true };
+            return new { isCrmEnabled = true, isInvoicesEnabled = true, isTasksEnabled = true, isMeetingsEnabled = true, isAiEnabled = true, aiLimit = 999999, aiUsageCount = 0 };
+
+        var aiUsageCount = await _context.GetAiUsageCountAsync(tenant.TenantId);
 
         return new
         {
@@ -137,7 +140,9 @@ public class AuthService : IAuthService
             isInvoicesEnabled = tenant.IsInvoicesEnabled,
             isTasksEnabled = tenant.IsTasksEnabled,
             isMeetingsEnabled = tenant.IsMeetingsEnabled,
-            isAiEnabled = tenant.IsAiEnabled
+            isAiEnabled = tenant.IsAiEnabled,
+            aiLimit = tenant.AiLimit,
+            aiUsageCount = aiUsageCount
         };
     }
 
@@ -155,6 +160,14 @@ public class AuthService : IAuthService
         if (!roleExists)
         {
             throw new Exception("الدور المحدد غير موجود بالنظام");
+        }
+
+        var tenant = await _context.Tenants.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.TenantId == tenantId);
+        if (tenant != null && tenant.MaxUsers < 999999)
+        {
+            var currentUserCount = await _context.Users.IgnoreQueryFilters().CountAsync(u => u.TenantId == tenantId && u.RoleId != 2);
+            if (currentUserCount >= tenant.MaxUsers)
+                throw new Exception($"تم الوصول للحد الأقصى لعدد الموظفين ({tenant.MaxUsers}) المسموح به في باقتك الحالية. يرجى الترقية لإضافة المزيد.");
         }
 
         var user = new User
@@ -240,9 +253,29 @@ public class AuthService : IAuthService
                 RoleId = u.RoleId,
                 RoleName = u.Role.Name,
                 ManagerId = u.ManagerId,
-                Status = u.Status
+                Status = u.Status,
+                PhoneNumber = u.PhoneNumber,
+                ContractStart = u.ContractStart,
+                ContractEnd = u.ContractEnd,
+                Salary = u.Salary,
+                Allowances = u.Allowances
             })
             .ToListAsync();
+    }
+
+    public async Task<bool> UpdateUserHRProfileAsync(int userId, Guid tenantId, UpdateUserHRProfileDto dto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && u.TenantId == tenantId);
+        if (user == null) return false;
+
+        if (dto.PhoneNumber != null) user.PhoneNumber = dto.PhoneNumber;
+        if (dto.ContractStart.HasValue) user.ContractStart = dto.ContractStart;
+        if (dto.ContractEnd.HasValue) user.ContractEnd = dto.ContractEnd;
+        if (dto.Salary.HasValue) user.Salary = dto.Salary.Value;
+        if (dto.Allowances.HasValue) user.Allowances = dto.Allowances.Value;
+
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     public async Task<bool> UpdateUserRoleAsync(int targetUserId, int newRoleId, Guid tenantId, int currentUserId)

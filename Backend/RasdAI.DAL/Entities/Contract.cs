@@ -12,7 +12,6 @@ public class Contract : ITenantEntity
     public string? FileName { get; set; }
     public string ContractNumber { get; set; } = string.Empty;
     public string ContractTitle { get; set; } = string.Empty;
-    public string? FileName { get; set; }
     public string ContractType { get; set; } = string.Empty; // Sales, Service, Maintenance, Subscription, Rental, Custom
     public string? Description { get; set; }
     public string? ReferenceNumber { get; set; }

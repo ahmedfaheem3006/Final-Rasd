@@ -48,6 +48,7 @@ export class TenantDetail implements OnInit {
   editOwnerEmail = '';
   editPrice = 0;
   editAiLimit = 100;
+  editMaxUsers = 3;
   editIsActive = true;
   editIsCrmEnabled = true;
   editIsInvoicesEnabled = true;
@@ -83,9 +84,10 @@ export class TenantDetail implements OnInit {
 
   setFallbackPlans() {
     this.availablePlans.set([
-      { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 49, periodAr: 'شهر', periodEn: 'mo' },
-      { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 199, periodAr: 'شهر', periodEn: 'mo' },
-      { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 300, periodAr: 'شهر', periodEn: 'mo' }
+      { id: 'free', nameAr: 'الباقة المجانية', nameEn: 'Free Trial', price: 0, aiLimit: 100, maxUsers: 1, periodAr: '3 أيام', periodEn: '3 days' },
+      { id: 'starter', nameAr: 'المبتدئ', nameEn: 'Starter', price: 50, aiLimit: 200, maxUsers: 3, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'professional', nameAr: 'الاحترافية', nameEn: 'Professional', price: 200, aiLimit: 5000, maxUsers: 15, periodAr: 'شهر', periodEn: 'mo' },
+      { id: 'enterprise', nameAr: 'المؤسسات', nameEn: 'Enterprise', price: 350, aiLimit: 999999, maxUsers: 999999, periodAr: 'شهر', periodEn: 'mo' }
     ]);
   }
 
@@ -112,6 +114,8 @@ export class TenantDetail implements OnInit {
             modules: this.getActiveModules(t),
             price: t.price,
             aiLimit: t.aiLimit,
+            maxUsers: t.maxUsers,
+            currentUserCount: t.currentUserCount,
             isCrmEnabled: t.isCrmEnabled,
             isInvoicesEnabled: t.isInvoicesEnabled,
             isTasksEnabled: t.isTasksEnabled,
@@ -126,26 +130,30 @@ export class TenantDetail implements OnInit {
             : `${t.aiLimit} (${isAr ? 'محدودة' : 'Limited'})`;
           const aiPercent = isUnlimited ? 0 : Math.min(100, Math.round((t.aiUsageCount / t.aiLimit) * 100));
 
-          // 2. Billing cycle progress calculation (based on CreatedAt registration date modulo 30 days)
+          // 2. Billing cycle progress calculation — 3-day window for free trial, 30-day monthly cycle otherwise
+          const isFreeTrial = t.price === 0;
+          const cycleLength = isFreeTrial ? 3 : 30;
           const createdDate = new Date(t.createdAt);
           const now = new Date();
           const diffMs = now.getTime() - createdDate.getTime();
           const diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-          const billingDay = (diffDays % 30) + 1;
-          const billingPercent = Math.min(100, Math.round((billingDay / 30) * 100));
+          const billingDay = isFreeTrial ? Math.min(diffDays + 1, cycleLength) : (diffDays % cycleLength) + 1;
+          const billingPercent = Math.min(100, Math.round((billingDay / cycleLength) * 100));
 
           this.usageStats.set([
-            { 
-              label: isAr ? 'الحد الأقصى للذكاء الاصطناعي' : 'AI Consumption Limit', 
-              value: `${t.aiUsageCount} / ${aiLimitText} ${isAr ? 'طلب' : 'Requests'}`, 
-              percent: aiPercent, 
-              color: 'primary' 
+            {
+              label: isAr ? 'الحد الأقصى للذكاء الاصطناعي' : 'AI Consumption Limit',
+              value: `${t.aiUsageCount} / ${aiLimitText} ${isAr ? 'طلب' : 'Requests'}`,
+              percent: aiPercent,
+              color: 'primary'
             },
-            { 
-              label: isAr ? `دورة الاشتراك شهرياً ($${t.price})` : `Monthly Plan Billing ($${t.price})`, 
-              value: `${billingDay} / 30 ${isAr ? 'يوم' : 'Days'}`, 
-              percent: billingPercent, 
-              color: 'success' 
+            {
+              label: isFreeTrial
+                ? (isAr ? 'الفترة التجريبية المجانية (3 أيام)' : 'Free Trial Period (3 days)')
+                : (isAr ? `دورة الاشتراك شهرياً ($${t.price})` : `Monthly Plan Billing ($${t.price})`),
+              value: `${billingDay} / ${cycleLength} ${isAr ? 'يوم' : 'Days'}`,
+              percent: billingPercent,
+              color: isFreeTrial && billingDay >= cycleLength ? 'warning' : 'success'
             },
             { 
               label: isAr ? 'حالة الترخيص' : 'License Status', 
@@ -207,6 +215,7 @@ export class TenantDetail implements OnInit {
 
   mapPriceToPlan(price: number): string {
     const isAr = this.i18n.currentLang() === 'ar';
+    if (price === 0) return isAr ? 'تجريبية مجانية' : 'Free Trial';
     if (price < 100) return isAr ? 'أساسي' : 'Basic';
     if (price < 300) return isAr ? 'احترافي' : 'Professional';
     return isAr ? 'مؤسسات' : 'Enterprise';
@@ -238,6 +247,7 @@ export class TenantDetail implements OnInit {
     this.editOwnerEmail = t.email;
     this.editPrice = t.price;
     this.editAiLimit = t.aiLimit;
+    this.editMaxUsers = t.maxUsers ?? this.getPlanDefaultMaxUsers(t.price);
     this.editIsActive = t.status === 'active';
     this.editIsCrmEnabled = t.isCrmEnabled;
     this.editIsInvoicesEnabled = t.isInvoicesEnabled;
@@ -250,14 +260,40 @@ export class TenantDetail implements OnInit {
   }
 
   onPricePlanChange() {
-    const price = Number(this.editPrice);
-    if (price === 49) {
-      this.editAiLimit = 200;
-    } else if (price === 199) {
-      this.editAiLimit = 5000;
-    } else {
-      this.editAiLimit = 999999;
-    }
+    this.editAiLimit = this.getPlanDefaultAiLimit(this.editPrice);
+    this.editMaxUsers = this.getPlanDefaultMaxUsers(this.editPrice);
+  }
+
+  // Returns the standard AI limit for a given price tier — used both to
+  // auto-fill on plan switch and to show admins the tier default vs. a
+  // manually overridden value in the edit modal.
+  getPlanDefaultAiLimit(price: number): number {
+    const p = Number(price);
+    const selected = this.availablePlans().find(plan => Number(plan.price) === p);
+    if (selected) return selected.aiLimit;
+    // Fallback if price doesn't match a known plan
+    if (p === 0) return 100;
+    if (p <= 50) return 200;
+    if (p <= 200) return 5000;
+    return 999999;
+  }
+
+  resetAiLimitToPlanDefault() {
+    this.editAiLimit = this.getPlanDefaultAiLimit(this.editPrice);
+  }
+
+  getPlanDefaultMaxUsers(price: number): number {
+    const p = Number(price);
+    const selected = this.availablePlans().find(plan => Number(plan.price) === p);
+    if (selected) return selected.maxUsers ?? 3;
+    if (p === 0) return 1;
+    if (p <= 50) return 3;
+    if (p <= 200) return 15;
+    return 999999;
+  }
+
+  resetMaxUsersToPlanDefault() {
+    this.editMaxUsers = this.getPlanDefaultMaxUsers(this.editPrice);
   }
 
   closeEditModal() {
@@ -275,6 +311,7 @@ export class TenantDetail implements OnInit {
       name: this.editName,
       price: Number(this.editPrice),
       aiLimit: Number(this.editAiLimit),
+      maxUsers: Number(this.editMaxUsers),
       isActive: this.editIsActive,
       ownerName: this.editOwnerName,
       ownerEmail: this.editOwnerEmail,

@@ -124,6 +124,18 @@ public class RecruitmentController : ControllerBase
         return Ok(new { success = true, message = "تم إضافة المرشح بنجاح", data = result });
     }
 
+    [HttpPut("candidates/{id}")]
+    public async Task<IActionResult> UpdateCandidate(int id, [FromBody] UpdateCandidateDto dto)
+    {
+        if (_tenantContext.TenantId == null)
+            return BadRequest(new { success = false, message = "معرف الشركة غير متوفر" });
+
+        var result = await _recruitmentService.UpdateCandidateAsync(id, dto, _tenantContext.TenantId.Value);
+        if (result == null) return NotFound(new { success = false, message = "المرشح غير موجود" });
+
+        return Ok(new { success = true, message = "تم تحديث بيانات المرشح", data = result });
+    }
+
     [HttpPut("candidates/{id}/move")]
     public async Task<IActionResult> MoveCandidate(int id, [FromBody] MoveCandidateDto dto)
     {

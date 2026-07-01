@@ -1,0 +1,242 @@
+<div class="interview-page">
+
+  <!-- ═══════════════════ HEADER ═══════════════════ -->
+  <header class="page-header">
+    <div class="header-text">
+      <div class="breadcrumb">{{ i18n.isRtl() ? 'الموارد البشرية / تحليل المقابلات' : 'HR / Interview Analysis' }}</div>
+      <h1><i class="fa-solid fa-user-magnifying-glass"></i> {{ i18n.isRtl() ? 'تحليل المقابلات بالذكاء الاصطناعي' : 'AI Interview Analysis' }}</h1>
+      <p>{{ i18n.isRtl() ? 'ارفع فيديو أو تسجيل صوتي للمقابلة وسيحلله الذكاء الاصطناعي لاستخراج نقاط القوة والضعف والتوصية النهائية.' : 'Upload an interview video or audio recording. The AI will extract strengths, weaknesses, and give a hiring recommendation.' }}</p>
+    </div>
+    @if (phase() === 'result') {
+      <button class="btn-reset" (click)="resetAnalysis()">
+        <i class="fa-solid fa-rotate-right"></i>
+        {{ i18n.isRtl() ? 'تحليل مقابلة جديدة' : 'New Interview' }}
+      </button>
+    }
+  </header>
+
+  <!-- ═══════════════════ PHASE: UPLOAD ═══════════════════ -->
+  @if (phase() === 'upload') {
+    <div class="upload-card">
+      <div class="upload-grid">
+
+        <!-- Drop zone -->
+        <div class="drop-zone" [class.dragging]="isDragging()"
+             (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)"
+             (click)="triggerFileInput()">
+          <input type="file" id="interviewFileInput" accept="video/*,audio/*,.mp4,.mp3,.wav,.webm,.mkv,.avi,.mov,.ogg,.m4a"
+                 (change)="onFileSelected($event)" style="display:none">
+          @if (fileName()) {
+            <div class="file-selected">
+              <i class="fa-solid fa-circle-check file-icon-ok"></i>
+              <div class="file-name">{{ fileName() }}</div>
+              <div class="file-hint">{{ i18n.isRtl() ? 'اضغط لتغيير الملف' : 'Click to change file' }}</div>
+            </div>
+          } @else {
+            <i class="fa-solid fa-video drop-icon"></i>
+            <div class="drop-title">{{ i18n.isRtl() ? 'ارفع ملف الفيديو أو الصوت' : 'Upload Interview Video or Audio' }}</div>
+            <div class="drop-sub">{{ i18n.isRtl() ? 'MP4، MOV، AVI، MP3، WAV، WebM...' : 'MP4, MOV, AVI, MP3, WAV, WebM...' }}</div>
+            <div class="drop-sub">{{ i18n.isRtl() ? 'اسحب وأفلت أو اضغط للاختيار' : 'Drag & drop or click to browse' }}</div>
+          }
+        </div>
+
+        <!-- Form fields -->
+        <div class="form-side">
+          <div class="form-field">
+            <label>{{ i18n.isRtl() ? 'اسم المرشح *' : 'Candidate Name *' }}</label>
+            <input type="text" [(ngModel)]="candidateName"
+                   [placeholder]="i18n.isRtl() ? 'مثال: أحمد المنصور' : 'e.g. Ahmad Al-Mansour'"
+                   class="form-input" />
+          </div>
+
+          <div class="form-field">
+            <label>{{ i18n.isRtl() ? 'الوظيفة المتقدم إليها *' : 'Position Applied For *' }}</label>
+            <input type="text" [(ngModel)]="jobRole"
+                   [placeholder]="i18n.isRtl() ? 'مثال: مطور Angular' : 'e.g. Angular Developer'"
+                   class="form-input" />
+          </div>
+
+          <div class="ai-info-box">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>{{ i18n.isRtl()
+              ? 'سيقوم الذكاء الاصطناعي بتفريغ نص المقابلة ثم تحليله لاستخراج نقاط القوة والضعف وتوصية التعيين.'
+              : 'AI will transcribe the interview then analyze it to extract strengths, weaknesses, and a hiring recommendation.' }}</span>
+          </div>
+
+          <button class="btn-analyze" [disabled]="!canAnalyze()" (click)="startAnalysis()">
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+            {{ i18n.isRtl() ? 'بدء التحليل بالذكاء الاصطناعي' : 'Start AI Analysis' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════ PHASE: ANALYZING ═══════════════════ -->
+  @if (phase() === 'analyzing') {
+    <div class="analyzing-state">
+      <div class="ai-pulse">
+        <div class="pulse-ring r1"></div>
+        <div class="pulse-ring r2"></div>
+        <div class="pulse-ring r3"></div>
+        <div class="pulse-core"><i class="fa-solid fa-microphone-lines"></i></div>
+      </div>
+      <h2>{{ i18n.isRtl() ? 'جاري تحليل المقابلة...' : 'Analyzing Interview...' }}</h2>
+      <div class="steps">
+        <div class="step active"><i class="fa-solid fa-spinner fa-spin"></i> {{ i18n.isRtl() ? 'تفريغ نص الصوت عبر Whisper AI' : 'Transcribing audio with Whisper AI' }}</div>
+        <div class="step"><i class="fa-solid fa-circle-dot"></i> {{ i18n.isRtl() ? 'تحليل نص المقابلة' : 'Analyzing interview transcript' }}</div>
+        <div class="step"><i class="fa-solid fa-circle-dot"></i> {{ i18n.isRtl() ? 'استخراج نقاط القوة والضعف' : 'Extracting strengths & weaknesses' }}</div>
+        <div class="step"><i class="fa-solid fa-circle-dot"></i> {{ i18n.isRtl() ? 'إصدار التوصية النهائية' : 'Generating hiring recommendation' }}</div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════ PHASE: RESULT ═══════════════════ -->
+  @if (phase() === 'result' && analysisResult(); as r) {
+    <div class="result-layout">
+
+      <!-- Left: Analysis Panel -->
+      <div class="analysis-panel">
+
+        <!-- Candidate header -->
+        <div class="candidate-header">
+          <div class="candidate-avatar">{{ r.candidateName.slice(0, 2) }}</div>
+          <div class="candidate-meta">
+            <h2>{{ r.candidateName }}</h2>
+            <div class="job-badge"><i class="fa-solid fa-briefcase"></i> {{ r.jobRole }}</div>
+            @if (r.isDemo) {
+              <span class="demo-tag">{{ i18n.isRtl() ? 'وضع العرض' : 'Demo' }}</span>
+            }
+          </div>
+          <div class="score-ring" [style.background]="scoreGradient(r.overallScore)">
+            <div class="score-inner">
+              <span class="score-number">{{ r.overallScore }}</span>
+              <span class="score-label">/100</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendation banner -->
+        <div class="recommendation-banner" [ngClass]="r.recommendation.toLowerCase()">
+          <i class="fa-solid"
+             [class.fa-circle-check]="r.recommendation === 'Accept'"
+             [class.fa-circle-question]="r.recommendation === 'Consider'"
+             [class.fa-circle-xmark]="r.recommendation === 'Reject'"></i>
+          <div>
+            <strong>{{ i18n.isRtl() ? 'التوصية:' : 'Recommendation:' }} {{ recommendationLabel(r.recommendation) }}</strong>
+            <p>{{ r.recommendationExplanation }}</p>
+          </div>
+        </div>
+
+        <!-- Strengths & Weaknesses -->
+        <div class="sw-grid">
+          <div class="sw-card strengths">
+            <h3><i class="fa-solid fa-circle-check"></i> {{ i18n.isRtl() ? 'نقاط القوة' : 'Strengths' }} <span class="count">{{ r.strengths.length }}</span></h3>
+            <ul>
+              @for (s of r.strengths; track s) {
+                <li><i class="fa-solid fa-check"></i> {{ s }}</li>
+              }
+              @empty {
+                <li class="empty">{{ i18n.isRtl() ? 'لم يتم تحديد نقاط قوة' : 'No strengths identified' }}</li>
+              }
+            </ul>
+          </div>
+
+          <div class="sw-card weaknesses">
+            <h3><i class="fa-solid fa-circle-exclamation"></i> {{ i18n.isRtl() ? 'نقاط الضعف' : 'Weaknesses' }} <span class="count">{{ r.weaknesses.length }}</span></h3>
+            <ul>
+              @for (w of r.weaknesses; track w) {
+                <li><i class="fa-solid fa-xmark"></i> {{ w }}</li>
+              }
+              @empty {
+                <li class="empty">{{ i18n.isRtl() ? 'لم يتم تحديد نقاط ضعف' : 'No weaknesses identified' }}</li>
+              }
+            </ul>
+          </div>
+        </div>
+
+        <!-- Transcript toggle -->
+        <div class="transcript-section">
+          <button class="btn-toggle-transcript" (click)="showFullTranscript.update(v => !v)">
+            <i class="fa-solid" [class.fa-chevron-down]="!showFullTranscript()" [class.fa-chevron-up]="showFullTranscript()"></i>
+            {{ showFullTranscript()
+              ? (i18n.isRtl() ? 'إخفاء نص المقابلة' : 'Hide Transcript')
+              : (i18n.isRtl() ? 'عرض نص المقابلة الكامل' : 'Show Full Transcript') }}
+          </button>
+          @if (showFullTranscript()) {
+            <div class="transcript-box">{{ r.transcript }}</div>
+          }
+        </div>
+      </div>
+
+      <!-- Right: Chat Panel -->
+      <div class="chat-panel">
+        <div class="chat-header">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>{{ i18n.isRtl() ? 'تحدث مع الذكاء الاصطناعي حول المقابلة' : 'Chat about the Interview' }}</span>
+        </div>
+
+        <div class="chat-body">
+          @for (msg of messages(); track msg.time + msg.role) {
+            <div class="msg-row" [class.user]="msg.role === 'user'" [class.ai]="msg.role === 'assistant'">
+              @if (msg.role === 'assistant') {
+                <div class="ai-avatar"><i class="fa-solid fa-robot"></i></div>
+              }
+              <div class="bubble" [innerHTML]="msg.safeHtml"></div>
+              @if (msg.role === 'user') {
+                <div class="user-avatar">{{ (currentUser()?.name || 'U').slice(0, 2) }}</div>
+              }
+            </div>
+          }
+          @if (isTyping()) {
+            <div class="msg-row ai">
+              <div class="ai-avatar"><i class="fa-solid fa-robot"></i></div>
+              <div class="bubble typing"><span></span><span></span><span></span></div>
+            </div>
+          }
+          <div #chatBottom></div>
+        </div>
+
+        <!-- Suggestions -->
+        @if (messages().length <= 1 && !isTyping()) {
+          <div class="suggestions">
+            @for (s of suggestions(); track s) {
+              <button class="suggestion-chip" (click)="selectSuggestion(s)">{{ s }}</button>
+            }
+          </div>
+        }
+
+        <!-- Input -->
+        <div class="chat-input-row">
+          <input type="text" [(ngModel)]="chatInput"
+                 [placeholder]="i18n.isRtl() ? 'اسأل عن المقابلة أو المرشح...' : 'Ask about the interview or candidate...'"
+                 (keydown.enter)="sendMessage()"
+                 [disabled]="isTyping()"
+                 class="chat-input" />
+          <button class="btn-send" (click)="sendMessage()" [disabled]="!chatInput.trim() || isTyping()">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- ══ AI Limit Modal ══ -->
+@if (showLimitModal()) {
+  <div class="modal-backdrop" (click)="closeLimitModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i> {{ i18n.isRtl() ? 'تنبيه' : 'Notice' }}</h3>
+        <button class="modal-close" (click)="closeLimitModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>{{ limitModalMessage() }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" (click)="closeLimitModal()">{{ i18n.isRtl() ? 'حسناً' : 'OK' }}</button>
+      </div>
+    </div>
+  </div>
+}

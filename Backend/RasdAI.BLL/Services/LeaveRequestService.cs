@@ -187,9 +187,6 @@ public class LeaveRequestService : ILeaveRequestService
         if (entity.Status != "Pending")
             throw new Exception("لا يمكن اعتماد طلب إجازة تم البت فيه مسبقاً");
 
-        if (entity.EmployeeId == userId)
-            throw new Exception("لا يمكن للموظف اعتماد طلب إجازة خاص به");
-
         entity.Status = "Approved";
         entity.ApprovedByUserId = userId;
         entity.ApprovedAt = DateTime.UtcNow;
@@ -210,9 +207,6 @@ public class LeaveRequestService : ILeaveRequestService
 
         if (entity.Status != "Pending")
             throw new Exception("لا يمكن رفض طلب إجازة تم البت فيه مسبقاً");
-
-        if (entity.EmployeeId == userId)
-            throw new Exception("لا يمكن للموظف رفض طلب إجازة خاص به");
 
         entity.Status = "Rejected";
         entity.RejectionReason = dto.RejectionReason;

@@ -10,4 +10,5 @@ public interface ITaskService
     Task<List<TaskDto>> GetTasksAsync(Guid tenantId);
     Task<TaskDto> CreateTaskAsync(CreateTaskDto createTaskDto, Guid tenantId);
     Task<bool> UpdateTaskStatusAsync(int taskId, string status, Guid tenantId);
+    Task<bool> DeleteTaskAsync(int taskId, Guid tenantId);
 }

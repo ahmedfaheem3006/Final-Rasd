@@ -119,3 +119,19 @@
     </div>
   </div>
 }
+
+<!-- Subscription Limit Modal -->
+@if (showLimitModal()) {
+  <div class="limit-modal-overlay" (click)="closeLimitModal()">
+    <div class="limit-modal-box" (click)="$event.stopPropagation()" [dir]="i18n.isRtl() ? 'rtl' : 'ltr'">
+      <div class="limit-modal-icon">🔒</div>
+      <h3 class="limit-modal-title">
+        {{ i18n.currentLang() === 'ar' ? 'تنبيه الاشتراك' : 'Subscription Limit' }}
+      </h3>
+      <p class="limit-modal-message">{{ limitModalMessage() }}</p>
+      <button class="limit-modal-btn" (click)="closeLimitModal()">
+        {{ i18n.currentLang() === 'ar' ? 'حسناً' : 'OK' }}
+      </button>
+    </div>
+  </div>
+}
